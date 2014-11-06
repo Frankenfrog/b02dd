@@ -1,1 +1,5 @@
-build/
+._*
+build*
+.DS_Store
+run*
+debug*

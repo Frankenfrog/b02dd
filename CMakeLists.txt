@@ -16,8 +16,8 @@ are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo
 MinSizeRel.")
 ENDIF()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb -std=c++0x" CACHE STRING "Debug options." FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++0x" CACHE STRING "Debug options." FORCE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{DOOFITSYS}/cmake/Modules/")
@@ -31,8 +31,17 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 # Project Definition
-project(template)
+project(B02DD)
 cmake_minimum_required(VERSION 2.6)
+
+if(${APPLE})
+  MESSAGE( STATUS "Building for Mac OS X, switching on C++11 flags for Mac OS X/clang" )
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+endif(${APPLE})
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  MESSAGE( STATUS "Building for Linux, switching off C++11 flags for Linux/gcc" )
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 FIND_PACKAGE(Boost 1.48 COMPONENTS program_options filesystem thread system random REQUIRED)
 
@@ -55,8 +64,14 @@ link_directories(${DooFit_LIBRARY_DIR})
 
 include_directories(${ROOT_INCLUDE_DIR})
 
-set(ALL_LIBRARIES ${DooSelection_LIBRARIES} ${DooFit_LIBRARIES} ${DooCore_LIBRARIES} ${ROOT_LIBRARIES} ${ROOFIT_LIBRARIES} ${ADDITIONAL_LIBRARIES} "-lTreePlayer")
+# CPToyMC
+SET(CPToyMC_BASE $ENV{CPTOYMCSYS})
+SET(CPToyMC_INCLUDES "${CPToyMC_BASE}/include")
+SET(CPToyMC_INCLUDE_DIR "${CPToyMC_BASE}/include")
+SET(CPToyMC_LIBRARY_DIR "${CPToyMC_BASE}/lib")
+SET(CPToyMC_LIBRARIES "-lCPToyMC")
+
+set(ALL_LIBRARIES ${DooSelection_LIBRARIES} ${DooFit_LIBRARIES} ${DooCore_LIBRARIES} ${ROOT_LIBRARIES} ${ROOFIT_LIBRARIES} ${Boost_LIBRARIES} ${ADDITIONAL_LIBRARIES} "-lTreePlayer")
 
 add_subdirectory(main)
-add_subdirectory(sandbox)
 add_subdirectory(src)
