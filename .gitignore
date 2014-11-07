@@ -3,3 +3,5 @@ build*
 .DS_Store
 run*
 debug*
+config/config*
+python/python*
