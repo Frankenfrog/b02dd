@@ -4,7 +4,7 @@ RUN_NAME=Production
 INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/2012/
 INPUT_FILE_NAME=DT2012_B02DD_Stripping20r0_DVv35r1_20141102_fmeier_TupleA.root
 BASE_FILE_NAME=DT2012_B02DD_Stripping20r0_DVv35r1_20141102_fmeier
-DATE=20141107
+DATE=20141120
 PRODUCER=fmeier
 
 echo "Starting Scythe ${RUN_NAME}..."
@@ -16,16 +16,16 @@ echo "starting reducers..."
 #echo "**TupleA** (flat)"
 #echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleA.root"
 #ArrayFlattenerGrimReaper "${INPUT_PATH}${INPUT_FILE_NAME}" B02DD/DecayTree "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleA.root" B02DD /home/fmeier/git/b02dd/config/Reducer/FlattenTuple.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat.log
-#
-echo ""
-echo "**TupleAPlus** (flat, common variables)"
-echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root"
-B02DDVariablesGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleA.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars.log
+
+#echo ""
+#echo "**TupleAPlus** (flat, common variables)"
+#echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root"
+#B02DDVariablesGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleA.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars.log
 
 echo ""
 echo "**Tuple B** (flat, common variables, pre-selection)"
 echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleB.root"
-MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/PreSelection.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected.log
+MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_noDcuts_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/PreSelection.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected.log
 #
 #echo ""
 #echo "**Tuple B** (flat, common variables, pre-selected, BDT selection of Dplus and Dminus)"
