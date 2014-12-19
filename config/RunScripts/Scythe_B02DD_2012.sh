@@ -22,16 +22,16 @@ echo "starting reducers..."
 #echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root"
 #B02DDVariablesGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleA.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars.log
 
-echo ""
-echo "**Tuple B** (flat, common variables, pre-selection)"
-echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleB.root"
-MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_noDcuts_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/PreSelection.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected.log
-#
 #echo ""
-#echo "**Tuple B** (flat, common variables, pre-selected, BDT selection of Dplus and Dminus)"
-#echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_BDT_TupleB.root"
-#TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_Dplus.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected_cuts_bdtDplus.log
-#TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_Dminus.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected_cuts_bdtDminus.log
+#echo "**Tuple B** (flat, common variables, pre-selection)"
+#echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleB.root"
+#MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_TupleAPlus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_noDcuts_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/PreSelection.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected.log
+
+echo ""
+echo "**Tuple B** (flat, common variables, pre-selected, BDT selection of Dplus and Dminus)"
+echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_flat_BDT_TupleB.root"
+TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_Dplus.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected_cuts_bdtDplus.log
+TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_Dminus.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected_cuts_bdtDminus.log
 #TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_DD.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_flat_vars_preselected_bdtDD.log
 #
 #echo ""
