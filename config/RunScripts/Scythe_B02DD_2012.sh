@@ -4,7 +4,7 @@ RUN_NAME=Production
 INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/2012/
 INPUT_FILE_NAME=DT2012_B02DD_Stripping21_DVv36r1_20150322_fmeier_combined_TupleA.root
 BASE_FILE_NAME=DT2012_B02DD_Stripping21_DVv36r1_20150322_fmeier_combined
-DATE=20150323
+DATE=20150412
 PRODUCER=fmeier
 
 echo "Starting Scythe ${RUN_NAME}..."
@@ -12,23 +12,20 @@ echo "Starting Scythe ${RUN_NAME}..."
 echo "using input file: ${INPUT_PATH}${INPUT_FILE_NAME}"
 echo "starting reducers..."
 
-echo ""
-echo "**TupleAPlus** (common variables)"
-echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root"
-B02DDVariablesGrimReaper "${INPUT_PATH}${INPUT_FILE_NAME}" B02DD/DecayTree "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars.log
+# echo ""
+# echo "**TupleAPlus** (common variables)"
+# echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root"
+# B02DDVariablesGrimReaper "${INPUT_PATH}${INPUT_FILE_NAME}" B02DD/DecayTree "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars.log
 
-echo ""
-echo "**Tuple B** (common variables, pre-selection)"
-echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB.root"
-MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/PreSelection.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected.log
+# echo ""
+# echo "**Tuple B** (common variables, pre-selection)"
+# echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB.root"
+# MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/PreSelection.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected.log
 
 echo ""
 echo "**Tuple B** (common variables, pre-selected, BDT selection)"
 echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_BDT_TupleB.root"
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_BDT1.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_bdt1.log
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_BDT2.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_bdt2.log
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_BDT3.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_bdt3.log
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_BDT4.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_bdt4.log
+TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_2012.cfg > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_bdt.log
 
 # echo ""
 # echo "**Tuple B** (common variables, pre-selection, BDT selection, final selection)"

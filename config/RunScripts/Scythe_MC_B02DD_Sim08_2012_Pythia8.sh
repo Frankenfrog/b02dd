@@ -4,7 +4,7 @@ RUN_NAME=MCProduction
 INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/MC/Sim08/2012/
 INPUT_FILE_NAME=MC_Sim08a_2012_Pythia8_B02DD_Stripping20_DVv36r1_20150325_fmeier_TupleA.root
 BASE_FILE_NAME=MC_Sim08a_2012_Pythia8_B02DD_Stripping20_DVv36r1_20150325_fmeier
-DATE=20150325
+DATE=20150412
 PRODUCER=fmeier
 echo "Starting Scythe ${RUN_NAME}..."
 
@@ -33,10 +33,7 @@ echo "starting reducers..."
 echo ""
 echo "**Tuple B** (common variables, pre-selected, BDT selection)"
 echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_BDT_TupleB.root"
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_MC_2012_P8_BDT1.cfg > scythe_${RUN_NAME}_${DATE}_Sim08a_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt1.log
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_MC_2012_P8_BDT2.cfg > scythe_${RUN_NAME}_${DATE}_Sim08a_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt2.log
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_MC_2012_P8_BDT3.cfg > scythe_${RUN_NAME}_${DATE}_Sim08a_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt3.log
-TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_MC_2012_P8_BDT4.cfg > scythe_${RUN_NAME}_${DATE}_Sim08a_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt4.log
+TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_MC_2012_P8_BDT.cfg > scythe_${RUN_NAME}_${DATE}_Sim08a_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt.log
 
 #echo ""
 #echo "**Tuple B** (flat, common variables, mass and time cuts, only used trigger lines, offline selection applied)"
