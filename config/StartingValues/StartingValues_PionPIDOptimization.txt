@@ -1,0 +1,11 @@
+parBkgExponent = -0.005 L(-0.1 - -0.0001) 
+parBkgYield =  5300  L(0 - 10000) 
+parSig1Yield =  2700 L(0 - 5000) 
+parSig2Yield =  350  L(0 - 1000) 
+parSigMassMean =  5280 L(5270 - 5290) // [MeV/c^{2}]
+parSigMassMean1 =  5217 C L(5210 - 5220) // [MeV/c^{2}]
+parSigMassMean2 =  5362 C L(5355 - 5375) // [MeV/c^{2}]
+parSigMassSigma =   14     L(12 - 20) // [MeV/c^{2}]
+parSigMassSigma1 =  20   C L(18 - 25) // [MeV/c^{2}]
+parSigMassSigma2 =  14.5 C L(10 - 20) // [MeV/c^{2}]
+parSigYield =  1100 L(0 - 1500) 
