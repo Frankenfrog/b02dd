@@ -107,13 +107,13 @@ int main(int argc, char * argv[]){
   RooArgSet         varPionProbNNs(varPiOneminus_ProbNNk,varPiOneminus_ProbNNpi,varPiOneplus_ProbNNk,varPiOneplus_ProbNNpi,varPiTwominus_ProbNNk,varPiTwominus_ProbNNpi,varPiTwoplus_ProbNNk,varPiTwoplus_ProbNNpi,"varPionProbNNs");
   RooArgSet         realvars(observables,variables,"realvars");
   realvars.add(varKaonProbNNs);
-  // realvars.add(varPionProbNNs);
+  realvars.add(varPionProbNNs);
   RooArgSet         categories(catTriggerSetTopo234BodyBBDT,"categories");
   
   // Get data set
-  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/2012/DT2012_B02DD_Stripping21_DVv36r1_20150322_fmeier_combined_20150323_fmeier_BDT4_TupleB_Kpipi.root","B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150504_fmeier_BDT_TupleB_BDT99applied.root","B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(Cut("BDTG2_classifier>-0.9"));
+  RooDataSet&       data = tuple.ConvertToDataSet(Cut(""));
   
   data.Print();
   
@@ -123,7 +123,7 @@ int main(int argc, char * argv[]){
   RooFormulaVar     varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID","@0/(@0+@1)",RooArgList(varPiOneplus_ProbNNk,varPiOneplus_ProbNNpi));
   RooFormulaVar     varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID","@0/(@0+@1)",RooArgList(varPiTwominus_ProbNNk,varPiTwominus_ProbNNpi));
   RooFormulaVar     varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID","@0/(@0+@1)",RooArgList(varPiTwoplus_ProbNNk,varPiTwoplus_ProbNNpi));
-  RooArgList        PID_formulas(varKminus_PID,varKplus_PID);//,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID);
+  RooArgList        PID_formulas(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID);
   data.addColumns(PID_formulas);
 
   // Mass PDF
@@ -169,7 +169,7 @@ int main(int argc, char * argv[]){
   spr.set_output_file_path(argv[3]);
 
   spr.set_output_tree_path("B02DD");
-  spr.set_cut_string("BDTG2_classifier>-0.9&&obsMass>5140&&obsMass<5400&&(Dplus_Kminus_or_piminus_ProbNNk/(Dplus_Kminus_or_piminus_ProbNNk+Dplus_Kminus_or_piminus_ProbNNpi))>0.2&&(Dminus_Kplus_or_piplus_ProbNNk/(Dminus_Kplus_or_piplus_ProbNNk+Dminus_Kplus_or_piplus_ProbNNpi))>0.2");
+  spr.set_cut_string("obsMass>5140&&obsMass<5400&&(Dplus_Kminus_or_piminus_ProbNNk/(Dplus_Kminus_or_piminus_ProbNNk+Dplus_Kminus_or_piminus_ProbNNpi))>0.2&&(Dminus_Kplus_or_piplus_ProbNNk/(Dminus_Kplus_or_piplus_ProbNNk+Dminus_Kplus_or_piplus_ProbNNpi))>0.2");
   spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
   spr.Initialize();
   spr.Run();
