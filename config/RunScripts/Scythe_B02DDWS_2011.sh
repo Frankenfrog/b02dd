@@ -12,10 +12,10 @@ echo "Starting Scythe ${RUN_NAME}..."
 echo "using input file: ${INPUT_PATH}${INPUT_FILE_NAME}"
 echo "starting reducers..."
 
-echo ""
-echo "**TupleAPlus** (common variables)"
-echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root"
-B02DDWSVariablesGrimReaper "${INPUT_PATH}${INPUT_FILE_NAME}" B02DD/DecayTree "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2011_B02DDWS_vars.log
+# echo ""
+# echo "**TupleAPlus** (common variables)"
+# echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root"
+# B02DDWSVariablesGrimReaper "${INPUT_PATH}${INPUT_FILE_NAME}" B02DD/DecayTree "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPlus.root" B02DD > scythe_${RUN_NAME}_${DATE}_DT2011_B02DDWS_vars.log
 
 echo ""
 echo "**Tuple B** (common variables, pre-selection)"
