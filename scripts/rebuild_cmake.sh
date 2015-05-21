@@ -18,12 +18,12 @@ fi
 echo "Building CMake build system."
 if [ "$1" = "debug" ]
 then
-  cmake -DCMAKE_BUILD_TYPE=Debug $CMAKE_BASE_DIR
+  cmake -DCMAKE_INSTALL_PREFIX=$B02DDSYS -DCMAKE_BUILD_TYPE=Dbg $CMAKE_BASE_DIR
 elif [ "$1" = "profiling" ]
 then
-  cmake -DCMAKE_BUILD_TYPE=Profiling $CMAKE_BASE_DIR
+  cmake -DCMAKE_INSTALL_PREFIX=$B02DDSYS -DCMAKE_BUILD_TYPE=Profiling $CMAKE_BASE_DIR
 else 
-  cmake -DCMAKE_BUILD_TYPE=Release $CMAKE_BASE_DIR
+  cmake -DCMAKE_INSTALL_PREFIX=$B02DDSYS -DCMAKE_BUILD_TYPE=Release $CMAKE_BASE_DIR
 fi
 
 echo "creating symbolic links"
