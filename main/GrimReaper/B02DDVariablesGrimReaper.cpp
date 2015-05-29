@@ -138,8 +138,8 @@ void MassLeaves(Reducer* _rdcr, cfg_tuple& cfg){
 
   // create copies of mass observables for different fit constraints
   // plus the 'nominal' mass observable depending on the following hierarchy
-  std::string main_observable_constraint = "PV";
-  std::string main_observable_constraint_error = "PV";
+  std::string main_observable_constraint = "DDPV";
+  std::string main_observable_constraint_error = "DDPV";
   if (_rdcr->LeafExists(std::get<0>(cfg)+"_FitDDPVConst_M"+flat_suffix)) {
     if (main_observable_constraint == "DDPV") main_observable_constraint = "FitDDPVConst_M";
     if (main_observable_constraint_error == "DDPV") main_observable_constraint_error = "FitDDPVConst_MERR";
@@ -1068,20 +1068,20 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   }
   // final state
   ReducerLeaf<Int_t>& catDplusFinalState = _rdcr->CreateIntLeaf("catDplusFinalState", -10);
-      TCut  Dplus_Kpipi = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
-      TCut  Dplus_pipipi = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
-      TCut  Dplus_KKpi = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
-      TCut  Dplus_KpiK = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+"==321"));
+      TCut  Dplus_Kpipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
+      TCut  Dplus_pipipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
+      TCut  Dplus_KKpi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
+      TCut  Dplus_KpiK = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==321"));
       catDplusFinalState.AddCondition("Kpipi",Dplus_Kpipi.GetTitle(),1);
       catDplusFinalState.AddCondition("pipipi",Dplus_pipipi.GetTitle(),2);
       catDplusFinalState.AddCondition("KKpi",Dplus_KKpi.GetTitle(),3);
       catDplusFinalState.AddCondition("KpiK",Dplus_KpiK.GetTitle(),4);
 
   ReducerLeaf<Int_t>& catDminusFinalState = _rdcr->CreateIntLeaf("catDminusFinalState", -10);
-      TCut  Dminus_Kpipi = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
-      TCut  Dminus_pipipi = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dminus_P2_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
-      TCut  Dminus_KKpi = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P0_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
-      TCut  Dminus_KpiK = TCut(TString(std::get<0>(cfg)+"_FitPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitPVConst_Dminus_P1_ID"+flat_suffix+"==-321"));
+      TCut  Dminus_Kpipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
+      TCut  Dminus_pipipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
+      TCut  Dminus_KKpi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
+      TCut  Dminus_KpiK = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-321"));
       catDminusFinalState.AddCondition("Kpipi",Dminus_Kpipi.GetTitle(),1);
       catDminusFinalState.AddCondition("pipipi",Dminus_pipipi.GetTitle(),2);
       catDminusFinalState.AddCondition("KKpi",Dminus_KKpi.GetTitle(),3);

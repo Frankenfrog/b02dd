@@ -50,7 +50,7 @@ void FitandPlot(RooDataSet* original_data, TString cut, TString identifier);
 
 int main(int argc, char * argv[]){
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",4800,5900,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",5000,5900,"MeV/c^{2}");
 
   // RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   // catDDFinalState.defineType("KpipiKpipi",1);
@@ -58,45 +58,21 @@ int main(int argc, char * argv[]){
   // for (int i = 2; i < 10; ++i){
   //   catDDFinalState.defineType(to_string(i).c_str(),i);
   // }
-  RooCategory        varB0_FitDDPVConst_Dplus_P0_ID("B0_FitDDPVConst_Dplus_P0_ID","B0_FitDDPVConst_Dplus_P0_ID");
-  // varB0_FitDDPVConst_Dplus_P0_ID.defineType("K-",-321);
-  varB0_FitDDPVConst_Dplus_P0_ID.defineType("pi+",211);
-  varB0_FitDDPVConst_Dplus_P0_ID.defineType("pi-",-211);
-  varB0_FitDDPVConst_Dplus_P0_ID.defineType("K+",321);
-  RooCategory        varB0_FitDDPVConst_Dplus_P1_ID("B0_FitDDPVConst_Dplus_P1_ID","B0_FitDDPVConst_Dplus_P1_ID");
-  varB0_FitDDPVConst_Dplus_P1_ID.defineType("K-",-321);
-  varB0_FitDDPVConst_Dplus_P1_ID.defineType("pi-",-211);
-  varB0_FitDDPVConst_Dplus_P1_ID.defineType("pi+",211);
-  varB0_FitDDPVConst_Dplus_P1_ID.defineType("K+",321);
-  RooCategory        varB0_FitDDPVConst_Dplus_P2_ID("B0_FitDDPVConst_Dplus_P2_ID","B0_FitDDPVConst_Dplus_P2_ID");
-  varB0_FitDDPVConst_Dplus_P2_ID.defineType("K-",-321);
-  varB0_FitDDPVConst_Dplus_P2_ID.defineType("pi-",-211);
-  varB0_FitDDPVConst_Dplus_P2_ID.defineType("pi+",211);
-  varB0_FitDDPVConst_Dplus_P2_ID.defineType("K+",321);
-  RooCategory        varB0_FitDDPVConst_Dplus0_P0_ID("B0_FitDDPVConst_Dplus0_P0_ID","B0_FitDDPVConst_Dplus0_P0_ID");
-  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("K-",-321);
-  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("pi-",-211);
-  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("pi+",211);
-  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("K+",321);
-  RooCategory        varB0_FitDDPVConst_Dplus0_P1_ID("B0_FitDDPVConst_Dplus0_P1_ID","B0_FitDDPVConst_Dplus0_P1_ID");
-  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("K-",-321);
-  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("pi-",-211);
-  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("pi+",211);
-  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("K+",321);
-  RooCategory        varB0_FitDDPVConst_Dplus0_P2_ID("B0_FitDDPVConst_Dplus0_P2_ID","B0_FitDDPVConst_Dplus0_P2_ID");
-  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("K-",-321);
-  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("pi-",-211);
-  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("pi+",211);
-  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("K+",321);
-  RooArgSet          IDs(varB0_FitDDPVConst_Dplus_P0_ID,varB0_FitDDPVConst_Dplus_P1_ID,varB0_FitDDPVConst_Dplus_P2_ID,varB0_FitDDPVConst_Dplus0_P0_ID,varB0_FitDDPVConst_Dplus0_P1_ID,varB0_FitDDPVConst_Dplus0_P2_ID,"IDs");
-  // int IDvalues [4] = {-321,-211,211,321};
-  // TIterator*         iterator = IDs.createIterator();
-  // RooCategory*       IDcategory;
-  // while ((IDcategory = dynamic_cast<RooCategory*>(iterator->Next()))){
-  //   for (int i = 0; i < 4; ++i){
-  //     IDcategory->defineType(to_string(i).c_str(),IDvalues[i]);
-  //   }
-  // }
+  RooCategory        Dplus1_Kminus_or_piminus_ID("Dplus1_Kminus_or_piminus_ID","Dplus1_Kminus_or_piminus_ID");
+  RooCategory        Dplus1_piplus_or_Kplus_One_ID("Dplus1_piplus_or_Kplus_One_ID","Dplus1_piplus_or_Kplus_One_ID");
+  RooCategory        Dplus1_piplus_or_Kplus_Two_ID("Dplus1_piplus_or_Kplus_Two_ID","Dplus1_piplus_or_Kplus_Two_ID");
+  RooCategory        Dplus2_Kminus_or_piminus_ID("Dplus2_Kminus_or_piminus_ID","Dplus2_Kminus_or_piminus_ID");
+  RooCategory        Dplus2_piplus_or_Kplus_One_ID("Dplus2_piplus_or_Kplus_One_ID","Dplus2_piplus_or_Kplus_One_ID");
+  RooCategory        Dplus2_piplus_or_Kplus_Two_ID("Dplus2_piplus_or_Kplus_Two_ID","Dplus2_piplus_or_Kplus_Two_ID");
+  RooArgSet          IDs(Dplus1_Kminus_or_piminus_ID,Dplus1_piplus_or_Kplus_One_ID,Dplus1_piplus_or_Kplus_Two_ID,Dplus2_Kminus_or_piminus_ID,Dplus2_piplus_or_Kplus_One_ID,Dplus2_piplus_or_Kplus_Two_ID,"IDs");
+  int IDvalues [4] = {-321,-211,211,321};
+  TIterator*         iterator = IDs.createIterator();
+  RooCategory*       IDcategory;
+  while ((IDcategory = dynamic_cast<RooCategory*>(iterator->Next()))){
+    for (int i = 0; i < 4; ++i){
+      IDcategory->defineType(to_string(i).c_str(),IDvalues[i]);
+    }
+  }
 
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
@@ -127,28 +103,20 @@ int main(int argc, char * argv[]){
   
   data.Print("v");
 
-  for (int i = 0; i < 10000; ++i)
-  {
-    data.get(i);
-    cout  <<  data.get()->getCatIndex("B0_FitDDPVConst_Dplus_P0_ID")  <<  endl;
-  }
-  return 1;
-
-
-  FitandPlot(&data, "abs(B0_FitDDPVConst_Dplus_P2_ID)==321", "Test");
-  FitandPlot(&data, "abs(B0_FitDDPVConst_Dplus_P2_ID)==321&&abs(B0_FitDDPVConst_Dplus_P0_ID)==211&&abs(B0_FitDDPVConst_Dplus_P1_ID)==211&&abs(B0_FitDDPVConst_Dplus0_P2_ID)==321&&abs(B0_FitDDPVConst_Dplus0_P0_ID)==211&&abs(B0_FitDDPVConst_Dplus0_P1_ID)==211", "Kpipi");
-  FitandPlot(&data, "varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65", "PIDcuts");
-  FitandPlot(&data, "BDTG2_classifier>-0.784", "BDT99");
-
+  // FitandPlot(&data, "abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "Kpipi");
+  // FitandPlot(&data, "varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65", "PIDcuts");
+  // FitandPlot(&data, "BDTG2_classifier>-0.784", "BDT99");
+  // FitandPlot(&data, "varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "Kpipi_PID");
+  FitandPlot(&data, "BDTG2_classifier>-0.784&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "BDT99_Kpipi");
 
   return 0;
 }
 
 void FitandPlot(RooDataSet* original_data, TString cut, TString identifier){
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",4800,5900,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",5000,5900,"MeV/c^{2}");
   // Mass PDF
-  RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
+  RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.001,-0.01,0.01);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
 
   RooRealVar        parBkgYield("parBkgYield","parBkgYield",2500000,0,3000000);
@@ -171,7 +139,7 @@ void FitandPlot(RooDataSet* original_data, TString cut, TString identifier){
   RooDataSet* fitdata = dynamic_cast<RooDataSet*>(original_data->reduce(cut));
   fitdata->Print();
   RooFitResult* fit_result = pdfBkgExtend.fitTo(*fitdata, fitting_args);
-  pdfBkgExtend.getParameters(*fitdata)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_"+identifier+".txt");
+  pdfBkgExtend.getParameters(*fitdata)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_WS_"+identifier+".txt");
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
   cfg_plot_mass.InitializeOptions();
