@@ -9,6 +9,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TStyle.h"
+#include "TIterator.h"
 
 //from RooFit
 #include "RooCmdArg.h"
@@ -45,16 +46,62 @@ using namespace doocore::io;
 using namespace doocore::lutils;
 using namespace doofit::plotting;
 
+void FitandPlot(RooDataSet* original_data, TString cut, TString identifier);
+
 int main(int argc, char * argv[]){
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",5150,5500,"MeV/c^{2}");
-  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",4800,5900,"MeV/c^{2}");
 
-  RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
-  catDDFinalState.defineType("KpipiKpipi",1);
+  // RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
+  // catDDFinalState.defineType("KpipiKpipi",1);
+  // catDDFinalState.defineType("others",-10);
+  // for (int i = 2; i < 10; ++i){
+  //   catDDFinalState.defineType(to_string(i).c_str(),i);
+  // }
+  RooCategory        varB0_FitDDPVConst_Dplus_P0_ID("B0_FitDDPVConst_Dplus_P0_ID","B0_FitDDPVConst_Dplus_P0_ID");
+  // varB0_FitDDPVConst_Dplus_P0_ID.defineType("K-",-321);
+  varB0_FitDDPVConst_Dplus_P0_ID.defineType("pi+",211);
+  varB0_FitDDPVConst_Dplus_P0_ID.defineType("pi-",-211);
+  varB0_FitDDPVConst_Dplus_P0_ID.defineType("K+",321);
+  RooCategory        varB0_FitDDPVConst_Dplus_P1_ID("B0_FitDDPVConst_Dplus_P1_ID","B0_FitDDPVConst_Dplus_P1_ID");
+  varB0_FitDDPVConst_Dplus_P1_ID.defineType("K-",-321);
+  varB0_FitDDPVConst_Dplus_P1_ID.defineType("pi-",-211);
+  varB0_FitDDPVConst_Dplus_P1_ID.defineType("pi+",211);
+  varB0_FitDDPVConst_Dplus_P1_ID.defineType("K+",321);
+  RooCategory        varB0_FitDDPVConst_Dplus_P2_ID("B0_FitDDPVConst_Dplus_P2_ID","B0_FitDDPVConst_Dplus_P2_ID");
+  varB0_FitDDPVConst_Dplus_P2_ID.defineType("K-",-321);
+  varB0_FitDDPVConst_Dplus_P2_ID.defineType("pi-",-211);
+  varB0_FitDDPVConst_Dplus_P2_ID.defineType("pi+",211);
+  varB0_FitDDPVConst_Dplus_P2_ID.defineType("K+",321);
+  RooCategory        varB0_FitDDPVConst_Dplus0_P0_ID("B0_FitDDPVConst_Dplus0_P0_ID","B0_FitDDPVConst_Dplus0_P0_ID");
+  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("K-",-321);
+  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("pi-",-211);
+  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("pi+",211);
+  varB0_FitDDPVConst_Dplus0_P0_ID.defineType("K+",321);
+  RooCategory        varB0_FitDDPVConst_Dplus0_P1_ID("B0_FitDDPVConst_Dplus0_P1_ID","B0_FitDDPVConst_Dplus0_P1_ID");
+  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("K-",-321);
+  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("pi-",-211);
+  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("pi+",211);
+  varB0_FitDDPVConst_Dplus0_P1_ID.defineType("K+",321);
+  RooCategory        varB0_FitDDPVConst_Dplus0_P2_ID("B0_FitDDPVConst_Dplus0_P2_ID","B0_FitDDPVConst_Dplus0_P2_ID");
+  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("K-",-321);
+  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("pi-",-211);
+  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("pi+",211);
+  varB0_FitDDPVConst_Dplus0_P2_ID.defineType("K+",321);
+  RooArgSet          IDs(varB0_FitDDPVConst_Dplus_P0_ID,varB0_FitDDPVConst_Dplus_P1_ID,varB0_FitDDPVConst_Dplus_P2_ID,varB0_FitDDPVConst_Dplus0_P0_ID,varB0_FitDDPVConst_Dplus0_P1_ID,varB0_FitDDPVConst_Dplus0_P2_ID,"IDs");
+  // int IDvalues [4] = {-321,-211,211,321};
+  // TIterator*         iterator = IDs.createIterator();
+  // RooCategory*       IDcategory;
+  // while ((IDcategory = dynamic_cast<RooCategory*>(iterator->Next()))){
+  //   for (int i = 0; i < 4; ++i){
+  //     IDcategory->defineType(to_string(i).c_str(),IDvalues[i]);
+  //   }
+  // }
+
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  RooCategory       varDTFStatusDDPVConst("varDTFStatusDDPVConst","varDTFStatusDDPVConst");
+  varDTFStatusDDPVConst.defineType("converged",0);
 
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
 
@@ -64,31 +111,52 @@ int main(int argc, char * argv[]){
   RooRealVar        varPiOne2plus_PID("varPiOne2plus_PID","varPiOne2plus_PID",0,1);
   RooRealVar        varPiTwo1plus_PID("varPiTwo1plus_PID","varPiTwo1plus_PID",0,1);
   RooRealVar        varPiTwo2plus_PID("varPiTwo2plus_PID","varPiTwo2plus_PID",0,1);
-  
-  RooArgSet         observables(obsMass/*,obsMassDauOne,obsMassDauTwo*/,"observables");
-  RooArgSet         variables(varBDT,"variables");
   RooArgSet         PIDs(varKminus1_PID,varKminus2_PID,varPiOne1plus_PID,varPiOne2plus_PID,varPiTwo1plus_PID,varPiTwo2plus_PID,"PIDs");
+
+  RooArgSet         observables(obsMass,"observables");
+  RooArgSet         variables(varBDT,"variables");
+  variables.add(IDs);
   variables.add(PIDs);
   RooArgSet         realvars(observables,variables,"realvars");
-  RooArgSet         categories(/*catDDFinalState,*/catTriggerSetTopo234BodyBBDT,"categories");
+  RooArgSet         categories(/*catDDFinalState,*/catTriggerSetTopo234BodyBBDT,varDTFStatusDDPVConst,"categories");
   
   // Get data set
   EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DDWS_Stripping21r0r1_DVv36r1_20150501_fmeier_combined_20150504_fmeier_BDT_TupleB.root","B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(Cut(TString(varBDT.GetName())+">-0.784"));
+  RooDataSet&       data = tuple.ConvertToDataSet();
   
-  data.Print();
+  data.Print("v");
 
+  for (int i = 0; i < 10000; ++i)
+  {
+    data.get(i);
+    cout  <<  data.get()->getCatIndex("B0_FitDDPVConst_Dplus_P0_ID")  <<  endl;
+  }
+  return 1;
+
+
+  FitandPlot(&data, "abs(B0_FitDDPVConst_Dplus_P2_ID)==321", "Test");
+  FitandPlot(&data, "abs(B0_FitDDPVConst_Dplus_P2_ID)==321&&abs(B0_FitDDPVConst_Dplus_P0_ID)==211&&abs(B0_FitDDPVConst_Dplus_P1_ID)==211&&abs(B0_FitDDPVConst_Dplus0_P2_ID)==321&&abs(B0_FitDDPVConst_Dplus0_P0_ID)==211&&abs(B0_FitDDPVConst_Dplus0_P1_ID)==211", "Kpipi");
+  FitandPlot(&data, "varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65", "PIDcuts");
+  FitandPlot(&data, "BDTG2_classifier>-0.784", "BDT99");
+
+
+  return 0;
+}
+
+void FitandPlot(RooDataSet* original_data, TString cut, TString identifier){
+
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{+}}}",4800,5900,"MeV/c^{2}");
   // Mass PDF
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
 
-  RooRealVar        parBkgYield("parBkgYield","parBkgYield",5000,0,10000);
+  RooRealVar        parBkgYield("parBkgYield","parBkgYield",2500000,0,3000000);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
   // Get Starting Values and Fit PDF to data
   pdfBkgExtend.Print();
-  pdfBkgExtend.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
+  // pdfBkgExtend.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
@@ -100,17 +168,15 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
-  RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65"));
-  optimized_data->Print();
-  RooFitResult* fit_result = pdfBkgExtend.fitTo(*optimized_data, fitting_args);
-  pdfBkgExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_WS.txt");
+  RooDataSet* fitdata = dynamic_cast<RooDataSet*>(original_data->reduce(cut));
+  fitdata->Print();
+  RooFitResult* fit_result = pdfBkgExtend.fitTo(*fitdata, fitting_args);
+  pdfBkgExtend.getParameters(*fitdata)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_"+identifier+".txt");
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
   cfg_plot_mass.InitializeOptions();
   cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots");
   std::vector<std::string> components_mass;
-  Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfBkgExtend, components_mass, "WSMass");
+  Plot Mass(cfg_plot_mass, obsMass, *fitdata, pdfBkgExtend, components_mass, string("WSMass_"+identifier));
   Mass.PlotItLogNoLogY();
-
-  return 0;
 }

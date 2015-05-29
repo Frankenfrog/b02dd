@@ -1089,14 +1089,13 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
 
   ReducerLeaf<Int_t>& catDDFinalState = _rdcr->CreateIntLeaf("catDDFinalState", -10);
       catDDFinalState.AddCondition("KpipiKpipi", TString(Dplus_Kpipi && Dminus_Kpipi), 1);
-      catDDFinalState.AddCondition("Kpipipipipi", TString(Dplus_Kpipi && Dminus_pipipi), 2);
-      catDDFinalState.AddCondition("pipipiKpipi", TString(Dplus_pipipi && Dminus_Kpipi), 3);
-      catDDFinalState.AddCondition("KpipiKKpi", TString(Dplus_Kpipi && Dminus_KKpi), 4);
-      catDDFinalState.AddCondition("KKpiKpipi", TString(Dplus_KKpi && Dminus_Kpipi), 5);
+      catDDFinalState.AddCondition("KpipiKKpi", TString((Dplus_Kpipi && Dminus_KKpi) || (Dplus_Kpipi && Dminus_KpiK) || (Dplus_KKpi && Dminus_Kpipi) || (Dplus_KpiK && Dminus_Kpipi)), 2);
+      catDDFinalState.AddCondition("KKpiKKpi", TString((Dplus_KKpi && Dminus_KKpi) || (Dplus_KKpi && Dminus_KpiK) || (Dplus_KpiK && Dminus_KKpi) || (Dplus_KpiK && Dminus_KpiK)), 3);
+      catDDFinalState.AddCondition("Kpipipipipi", TString((Dplus_Kpipi && Dminus_pipipi) || (Dplus_pipipi && Dminus_Kpipi)), 4);
+      catDDFinalState.AddCondition("KKpipipipi", TString((Dplus_KKpi && Dminus_pipipi) || (Dplus_KpiK && Dminus_pipipi) || (Dplus_pipipi && Dminus_KKpi) || (Dplus_pipipi && Dminus_KpiK)), 5);
       catDDFinalState.AddCondition("pipipipipipi", TString(Dplus_pipipi && Dminus_pipipi), 6);
-      catDDFinalState.AddCondition("pipipiKKpi", TString(Dplus_pipipi && Dminus_KKpi), 7);
-      catDDFinalState.AddCondition("KKpipipipi", TString(Dplus_KKpi && Dminus_pipipi), 8);
-      catDDFinalState.AddCondition("KKpiKKpi", TString(Dplus_KKpi && Dminus_KKpi), 9);
+      
+      
 
   // event and run number
   _rdcr->CreateIntCopyLeaf("idxEventNumber", _rdcr->GetInterimLeafByName("eventNumber"));

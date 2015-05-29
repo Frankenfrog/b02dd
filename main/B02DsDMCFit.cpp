@@ -168,6 +168,7 @@ int main(int argc, char * argv[]){
   components_mass += "pdfDsDMassCB1", "pdfDsDMassCB2";
 
   RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
+  optimized_data->Print();
   RooFitResult* fit_result = pdfDsDExtend.fitTo(*optimized_data, fitting_args);
   pdfDsDExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/FitResults_DsDMass.txt");
   Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfDsDExtend, components_mass, "DsDMass");

@@ -34,6 +34,7 @@
 #include "RooGaussian.h"
 #include "RooKeysPdf.h"
 #include "RooCBShape.h"
+#include "RooSimultaneous.h"
 
 #include "RooFormulaVar.h"
 #include "RooAbsPdf.h"
@@ -70,6 +71,7 @@ void ElectronPID_Optimization(RooAbsPdf* pdf, RooAbsPdf* pdfD, RooDataSet* data,
 int main(int argc, char * argv[]){
 
   bool massmodel_ipatia = false;
+  bool split_years      = false;
 
   RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5500,"MeV/c^{2}");
   RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
@@ -92,20 +94,23 @@ int main(int argc, char * argv[]){
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
 
-  RooRealVar        varKminus_ProbNNk("Dplus_Kminus_or_piminus_ProbNNk","Dplus_Kminus_or_piminus_ProbNNk",0,1);
-  RooRealVar        varKminus_ProbNNpi("Dplus_Kminus_or_piminus_ProbNNpi","Dplus_Kminus_or_piminus_ProbNNpi",0,1);
-  RooRealVar        varKplus_ProbNNk("Dminus_Kplus_or_piplus_ProbNNk","Dminus_Kplus_or_piplus_ProbNNk",0,1);
-  RooRealVar        varKplus_ProbNNpi("Dminus_Kplus_or_piplus_ProbNNpi","Dminus_Kplus_or_piplus_ProbNNpi",0,1);
-  RooRealVar        varPiOneminus_ProbNNk("Dminus_piminus_or_Kminus_One_ProbNNk","Dminus_piminus_or_Kminus_One_ProbNNk",0,1);
+  RooCategory       catYear("catYear","catYear");
+  catYear.defineType("2011",2011);
+  catYear.defineType("2012",2012);
+
+  RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
+  RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
+  RooRealVar        varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID",0,1);
+  RooRealVar        varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID",0,1);
+  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
+  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
+
   RooRealVar        varPiOneminus_ProbNNpi("Dminus_piminus_or_Kminus_One_ProbNNpi","Dminus_piminus_or_Kminus_One_ProbNNpi",0,1);
   RooRealVar        varPiOneminus_ProbNNe("Dminus_piminus_or_Kminus_One_ProbNNe","Dminus_piminus_or_Kminus_One_ProbNNe",0,1);
-  RooRealVar        varPiOneplus_ProbNNk("Dplus_piplus_or_Kplus_One_ProbNNk","Dplus_piplus_or_Kplus_One_ProbNNk",0,1);
   RooRealVar        varPiOneplus_ProbNNpi("Dplus_piplus_or_Kplus_One_ProbNNpi","Dplus_piplus_or_Kplus_One_ProbNNpi",0,1);
   RooRealVar        varPiOneplus_ProbNNe("Dplus_piplus_or_Kplus_One_ProbNNe","Dplus_piplus_or_Kplus_One_ProbNNe",0,1);
-  RooRealVar        varPiTwominus_ProbNNk("Dminus_piminus_or_Kminus_Two_ProbNNk","Dminus_piminus_or_Kminus_Two_ProbNNk",0,1);
   RooRealVar        varPiTwominus_ProbNNpi("Dminus_piminus_or_Kminus_Two_ProbNNpi","Dminus_piminus_or_Kminus_Two_ProbNNpi",0,1);
   RooRealVar        varPiTwominus_ProbNNe("Dminus_piminus_or_Kminus_Two_ProbNNe","Dminus_piminus_or_Kminus_Two_ProbNNe",0,1);
-  RooRealVar        varPiTwoplus_ProbNNk("Dplus_piplus_or_Kplus_Two_ProbNNk","Dplus_piplus_or_Kplus_Two_ProbNNk",0,1);
   RooRealVar        varPiTwoplus_ProbNNpi("Dplus_piplus_or_Kplus_Two_ProbNNpi","Dplus_piplus_or_Kplus_Two_ProbNNpi",0,1);
   RooRealVar        varPiTwoplus_ProbNNe("Dplus_piplus_or_Kplus_Two_ProbNNe","Dplus_piplus_or_Kplus_Two_ProbNNe",0,1);
 
@@ -115,34 +120,26 @@ int main(int argc, char * argv[]){
   // variables.add(MassHypos);
   RooArgSet         DLLs(varPiOneplus_DLLk,varPiOneminus_DLLk,varPiTwoplus_DLLk,varPiTwominus_DLLk,"DLLs");
   // variables.add(DLLs);
-  RooArgSet         varKaonProbNNs(varKminus_ProbNNk,varKminus_ProbNNpi,varKplus_ProbNNk,varKplus_ProbNNpi,"varKaonProbNNs");
-  RooArgSet         varPiOneProbNNs(varPiOneminus_ProbNNk,varPiOneminus_ProbNNpi,varPiOneplus_ProbNNk,varPiOneplus_ProbNNpi,varPiOneminus_ProbNNe,varPiOneplus_ProbNNe,"varPionProbNNs");
-  RooArgSet         varPiTwoProbNNs(varPiTwominus_ProbNNk,varPiTwominus_ProbNNpi,varPiTwoplus_ProbNNk,varPiTwoplus_ProbNNpi,varPiTwominus_ProbNNe,varPiTwoplus_ProbNNe,"varPiTwoProbNNs");
+  RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varKaonProbNNs");
+  RooArgSet         varPiOneProbNNs(varPiOneminus_ProbNNpi,varPiOneplus_ProbNNpi,varPiOneminus_ProbNNe,varPiOneplus_ProbNNe,"varPionProbNNs");
+  RooArgSet         varPiTwoProbNNs(varPiTwominus_ProbNNpi,varPiTwoplus_ProbNNpi,varPiTwominus_ProbNNe,varPiTwoplus_ProbNNe,"varPiTwoProbNNs");
   RooArgSet         realvars(observables,variables,"realvars");
-  realvars.add(varKaonProbNNs);
+  realvars.add(varPIDs);
   realvars.add(varPiOneProbNNs);
   realvars.add(varPiTwoProbNNs);
-  RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,"categories");
+  RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
   // Get data set
-  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150504_fmeier_BDT_TupleB_BDT99applied.root","B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_BDT_TupleB_BDT99applied_relevantfinalstates.root","B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet&       data = tuple.ConvertToDataSet();//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
   
   data.Print();
-
-  RooFormulaVar     varKminus_PID("varKminus_PID","varKminus_PID","@0/(@0+@1)",RooArgList(varKminus_ProbNNk,varKminus_ProbNNpi));
-  RooFormulaVar     varKplus_PID("varKplus_PID","varKplus_PID","@0/(@0+@1)",RooArgList(varKplus_ProbNNk,varKplus_ProbNNpi));
-  RooFormulaVar     varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID","@0/(@0+@1)",RooArgList(varPiOneminus_ProbNNk,varPiOneminus_ProbNNpi));
+  
   RooFormulaVar     varPiOneminus_PIDe("varPiOneminus_PIDe","varPiOneminus_PIDe","@0/(@0+@1)",RooArgList(varPiOneminus_ProbNNe,varPiOneminus_ProbNNpi));
-  RooFormulaVar     varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID","@0/(@0+@1)",RooArgList(varPiOneplus_ProbNNk,varPiOneplus_ProbNNpi));
   RooFormulaVar     varPiOneplus_PIDe("varPiOneplus_PIDe","varPiOneplus_PIDe","@0/(@0+@1)",RooArgList(varPiOneplus_ProbNNe,varPiOneplus_ProbNNpi));
-  RooFormulaVar     varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID","@0/(@0+@1)",RooArgList(varPiTwominus_ProbNNk,varPiTwominus_ProbNNpi));
   RooFormulaVar     varPiTwominus_PIDe("varPiTwominus_PIDe","varPiTwominus_PIDe","@0/(@0+@1)",RooArgList(varPiTwominus_ProbNNe,varPiTwominus_ProbNNpi));
-  RooFormulaVar     varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID","@0/(@0+@1)",RooArgList(varPiTwoplus_ProbNNk,varPiTwoplus_ProbNNpi));
   RooFormulaVar     varPiTwoplus_PIDe("varPiTwoplus_PIDe","varPiTwoplus_PIDe","@0/(@0+@1)",RooArgList(varPiTwoplus_ProbNNe,varPiTwoplus_ProbNNpi));
-  RooArgList        PID_formulas(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID);
-  data.addColumns(PID_formulas);
   RooArgList        PIDe_formulas(varPiOneminus_PIDe,varPiOneplus_PIDe,varPiTwominus_PIDe,varPiTwoplus_PIDe);
   data.addColumns(PIDe_formulas);
 
@@ -212,19 +209,50 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
 
+  RooRealVar        parSigYield_11("parSigYield_11","parSigYield_11",500,0,1000);
+  RooRealVar        parSigYield_12("parSigYield_12","parSigYield_12",500,0,1000);
   RooRealVar        parSigYield("parSigYield","parSigYield",500,0,1000);
+  RooRealVar        parBkgDsDYield_11("parBkgDsDYield_11","parBkgDsDYield_11",1000,0,2000);
+  RooRealVar        parBkgDsDYield_12("parBkgDsDYield_12","parBkgDsDYield_12",1000,0,2000);
   RooRealVar        parBkgDsDYield("parBkgDsDYield","parBkgDsDYield",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_11("parBkgBsDsDYield_11","parBkgBsDsDYield_11",20,0,100);
+  RooRealVar        parBkgBsDsDYield_12("parBkgBsDsDYield_12","parBkgBsDsDYield_12",20,0,100);
   RooRealVar        parBkgBsDsDYield("parBkgBsDsDYield","parBkgBsDsDYield",20,0,100);
+  RooRealVar        parSigBsYield_11("parSigBsYield_11","parSigBsYield_11",100,0,1000);
+  RooRealVar        parSigBsYield_12("parSigBsYield_12","parSigBsYield_12",100,0,1000);
   RooRealVar        parSigBsYield("parSigBsYield","parSigBsYield",100,0,1000);
+  RooRealVar        parBkgYield_11("parBkgYield_11","parBkgYield_11",5000,0,10000);
+  RooRealVar        parBkgYield_12("parBkgYield_12","parBkgYield_12",5000,0,10000);
   RooRealVar        parBkgYield("parBkgYield","parBkgYield",5000,0,10000);
 
+  RooExtendPdf      pdfSigExtend_11("pdfSigExtend_11","pdfSigExtend_11",*pdfSigMass,parSigYield_11);
+  RooExtendPdf      pdfSigExtend_12("pdfSigExtend_12","pdfSigExtend_12",*pdfSigMass,parSigYield_12);
   RooExtendPdf      pdfSigExtend("pdfSigExtend","pdfSigExtend",*pdfSigMass,parSigYield);
+  RooExtendPdf      pdfBkgDsDExtend_11("pdfBkgDsDExtend_11","pdfBkgDsDExtend_11",pdfBkgDsDMass,parBkgDsDYield_11);
+  RooExtendPdf      pdfBkgDsDExtend_12("pdfBkgDsDExtend_12","pdfBkgDsDExtend_12",pdfBkgDsDMass,parBkgDsDYield_12);
   RooExtendPdf      pdfBkgDsDExtend("pdfBkgDsDExtend","pdfBkgDsDExtend",pdfBkgDsDMass,parBkgDsDYield);
+  RooExtendPdf      pdfBkgBsDsDExtend_11("pdfBkgBsDsDExtend_11","pdfBkgBsDsDExtend_11",pdfBkgBsDsDMass,parBkgBsDsDYield_11);
+  RooExtendPdf      pdfBkgBsDsDExtend_12("pdfBkgBsDsDExtend_12","pdfBkgBsDsDExtend_12",pdfBkgBsDsDMass,parBkgBsDsDYield_12);
   RooExtendPdf      pdfBkgBsDsDExtend("pdfBkgBsDsDExtend","pdfBkgBsDsDExtend",pdfBkgBsDsDMass,parBkgBsDsDYield);
+  RooExtendPdf      pdfSigBsExtend_11("pdfSigBsExtend_11","pdfSigBsExtend_11",*pdfSigBsMass,parSigBsYield_11);
+  RooExtendPdf      pdfSigBsExtend_12("pdfSigBsExtend_12","pdfSigBsExtend_12",*pdfSigBsMass,parSigBsYield_12);
   RooExtendPdf      pdfSigBsExtend("pdfSigBsExtend","pdfSigBsExtend",*pdfSigBsMass,parSigBsYield);
+  RooExtendPdf      pdfBkgExtend_11("pdfBkgExtend_11","pdfBkgExtend_11",pdfBkgMass,parBkgYield_11);
+  RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
-  RooAddPdf         pdfMass("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend/*,pdfBkgBsDsDExtend*/));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11/*,pdfBkgBsDsDExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12/*,pdfBkgBsDsDExtend_12*/));
+
+  RooAbsPdf*        pdfMass;
+
+  if (split_years) {
+    RooSimultaneous* pdfSimMass = new RooSimultaneous("pdfSimMass","pdfSimMass",catYear);
+    pdfSimMass->addPdf(pdfMass_11,"2011");
+    pdfSimMass->addPdf(pdfMass_12,"2012");
+    pdfMass = pdfSimMass;
+  }
+  else pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend/*,pdfBkgBsDsDExtend*/));
 
   RooRealVar        parSigDMassMean("parSigDMassMean","Bd Mean Mass",1870,1860,1880,"MeV/c^{2}");
   RooRealVar        parSigDMassSigma("parSigDMassSigma","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
@@ -238,12 +266,12 @@ int main(int argc, char * argv[]){
 
   RooExtendPdf      pdfSigDExtend("pdfSigDExtend","pdfSigDExtend",pdfSigDMass,parSigDYield);
   RooExtendPdf      pdfBkgDExtend("pdfBkgDExtend","pdfBkgDExtend",pdfBkgDMass,parBkgDYield);
-  RooAddPdf         pdfDMass("pdfDMass","Mass PDF",RooArgList(pdfSigDExtend,pdfBkgDExtend));  
+  RooAddPdf         pdfDMass("pdfDMass","Mass PDF",RooArgList(pdfSigDExtend,pdfBkgDExtend));
 
   // Get Starting Values and Fit PDF to data
-  pdfMass.Print();
-  pdfMass.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
-  pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/PID-Optimization/StartingValues_Mass.new");
+  pdfMass->Print();
+  pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
+  pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/PID-Optimization/StartingValues_Mass.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
@@ -255,45 +283,15 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
-  // KaonPID_Optimization(&pdfMass, &pdfDMass, &data, fitting_args);
+  // KaonPID_Optimization(pdfMass, &pdfDMass, &data, fitting_args);
   RooDataSet* optimized_kaon_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2"));
-  // PionPID_Optimization(&pdfMass, &pdfDMass, optimized_kaon_data, fitting_args, "One");
+  // PionPID_Optimization(pdfMass, &pdfDMass, optimized_kaon_data, fitting_args, "One");
   RooDataSet* optimized_pionone_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5"));
-  // PionPID_Optimization(&pdfMass, &pdfDMass, optimized_pionone_data, fitting_args, "Two");
+  // PionPID_Optimization(pdfMass, &pdfDMass, optimized_pionone_data, fitting_args, "Two");
   RooDataSet* optimized_piontwo_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
-  // ElectronPID_Optimization(&pdfMass, &pdfDMass, &data, fitting_args, "One");
+  // ElectronPID_Optimization(pdfMass, &pdfDMass, &data, fitting_args, "One");
   // RooDataSet* optimized_electronone_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65&&varPiOneminus_PIDe<0.5&&varPiOneplus_PIDe<0.5"));
-  // ElectronPID_Optimization(&pdfMass, &pdfDMass, optimized_electronone_data, fitting_args, "Two");
-
-  RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
-  optimized_data->Print();
-  RooFitResult* fit_result = pdfMass.fitTo(*optimized_data, fitting_args);
-  fit_result->Print("v");
-  if (massmodel_ipatia) pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_Ipatia.txt");
-  else pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults.txt");
-
-  PlotConfig cfg_plot_mass("cfg_plot_mass");
-  cfg_plot_mass.InitializeOptions();
-  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots");
-  std::vector<std::string> components_mass;
-  components_mass += "pdfSigExtend", "pdfBkgDsDExtend", "pdfSigBsExtend", "pdfBkgExtend", "pdfBkgBsDsDExtend";
-  if (massmodel_ipatia) {
-    Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfMass, components_mass, "Ipatia_obsMass_optimized");
-    Mass.PlotItLogNoLogY();
-  }
-  else {
-    Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfMass, components_mass, "obsMass_optimized");
-    Mass.PlotItLogNoLogY();
-  }
-  
-  // Plot MassDsD(cfg_plot_mass, obsMass, *data_DsD_MC_optimized, RooArgList(), "DsDMassTemplate");
-  // MassDsD.PlotItLogNoLogY();
-
-  // fit_result = pdfDMass.fitTo(*optimized_data, fitting_args);
-  // std::vector<std::string> components_Dmass;
-  // components_Dmass += "pdfSigDExtend", "pdfBkgDExtend";
-  // Plot MassD(cfg_plot_mass, obsMassDauOne, *optimized_data, pdfDMass, components_Dmass, "obsMassDauOne_optimized");
-  // MassD.PlotIt();
+  // ElectronPID_Optimization(pdfMass, &pdfDMass, optimized_electronone_data, fitting_args, "Two");
 
   return 0;
 }
