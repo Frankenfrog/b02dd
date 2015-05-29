@@ -1,5 +1,4 @@
-# E5 CMake Template
-This template provides everything neccesary to start coding within the E5 LHCb environment. 
+# Measurement of CP violation in B -> D+D-
 
 ### Structure
 - **build**: you want to compile your code in here.
