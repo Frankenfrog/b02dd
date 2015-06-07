@@ -75,6 +75,32 @@ int main(int argc, char * argv[]){
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
   RooRealVar        DD_weight("parSigDDYield_sw","parSigDDYield_sw",-10,10);
 
+  RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
+  RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
+  RooRealVar        varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID",0,1);
+  RooRealVar        varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID",0,1);
+  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
+  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
+  RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
+
+  RooRealVar        varDminusMassHypo_KKpi("varDminusMassHypo_KKpi","varDminusMassHypo_KKpi",0,5000);
+  RooRealVar        varDminusMassHypo_KpiK("varDminusMassHypo_KpiK","varDminusMassHypo_KpiK",0,5000);
+  RooRealVar        varDplusMassHypo_KKpi("varDplusMassHypo_KKpi","varDplusMassHypo_KKpi",0,5000);
+  RooRealVar        varDplusMassHypo_KpiK("varDplusMassHypo_KpiK","varDplusMassHypo_KpiK",0,5000);
+  RooArgSet         varDMassHypos(varDminusMassHypo_KKpi,varDminusMassHypo_KpiK,varDplusMassHypo_KKpi,varDplusMassHypo_KpiK,"varDMassHypos");
+
+  RooRealVar        varPhiMassHypo_DminusOne("varPhiMassHypo_DminusOne","varPhiMassHypo_DminusOne",0,2000);
+  RooRealVar        varPhiMassHypo_DminusTwo("varPhiMassHypo_DminusTwo","varPhiMassHypo_DminusTwo",0,2000);
+  RooRealVar        varPhiMassHypo_DplusOne("varPhiMassHypo_DplusOne","varPhiMassHypo_DplusOne",0,2000);
+  RooRealVar        varPhiMassHypo_DplusTwo("varPhiMassHypo_DplusTwo","varPhiMassHypo_DplusTwo",0,2000);
+  RooArgSet         varPhiMassHypos(varPhiMassHypo_DminusOne,varPhiMassHypo_DminusTwo,varPhiMassHypo_DplusOne,varPhiMassHypo_DplusTwo,"varPhiMassHypos");
+
+  RooRealVar        Dminus_piminus_or_Kminus_One_PIDK("Dminus_piminus_or_Kminus_One_PIDK","Dminus_piminus_or_Kminus_One_PIDK",-100,100);
+  RooRealVar        Dminus_piminus_or_Kminus_Two_PIDK("Dminus_piminus_or_Kminus_Two_PIDK","Dminus_piminus_or_Kminus_Two_PIDK",-100,100);
+  RooRealVar        Dplus_piplus_or_Kplus_One_PIDK("Dplus_piplus_or_Kplus_One_PIDK","Dplus_piplus_or_Kplus_One_PIDK",-100,100);
+  RooRealVar        Dplus_piplus_or_Kplus_Two_PIDK("Dplus_piplus_or_Kplus_Two_PIDK","Dplus_piplus_or_Kplus_Two_PIDK",-100,100);
+  RooArgSet         varPIDKs(Dminus_piminus_or_Kminus_One_PIDK,Dminus_piminus_or_Kminus_Two_PIDK,Dplus_piplus_or_Kplus_One_PIDK,Dplus_piplus_or_Kplus_Two_PIDK,"varPIDKs");
+
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",1);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
@@ -86,13 +112,18 @@ int main(int argc, char * argv[]){
 
   RooArgSet         observables(obsMass,"observables");
   RooArgSet         variables(varBDT,DD_weight,"variables");
+  variables.add(varPIDs);
+  variables.add(varDMassHypos);
+  variables.add(varPhiMassHypos);
+  variables.add(varPIDKs);
   RooArgSet         realvars(observables,variables,"realvars");
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
   // Get data set
-  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_BDT_TupleB_BDT99applied_relevantfinalstates_Dsweights.root","B02DD",RooArgSet(realvars,categories));
+  // EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_BDT_TupleB_BDT99applied_relevantfinalstates_Dsweights.root","B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple(argv[1],"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"));//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
+  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"),Cut("!((abs(varDminusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DminusOne-1019.461)<25||Dminus_piminus_or_Kminus_One_PIDK>-10.))||(abs(varDminusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DminusTwo-1019.461)<25||Dminus_piminus_or_Kminus_Two_PIDK>-10.))||(abs(varDplusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DplusOne-1019.461)<25||Dplus_piplus_or_Kplus_One_PIDK>-10.))||(abs(varDplusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DplusTwo-1019.461)<25||Dplus_piplus_or_Kplus_Two_PIDK>-10.)))"));
   
   data.Print();
 
@@ -186,8 +217,8 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDstDHighExtend_12("pdfBkgDstDHighExtend_12","pdfBkgDstDHighExtend_12",pdfBkgDstDHighMass,parBkgDstDHighYield_12);
   RooExtendPdf      pdfBkgDstDHighExtend("pdfBkgDstDHighExtend","pdfBkgDstDHighExtend",pdfBkgDstDHighMass,parBkgDstDHighYield);
 
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11,pdfBkgExtend_11));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12,pdfBkgExtend_12));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11/*,pdfBkgExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12/*,pdfBkgExtend_12*/));
   
   RooAbsPdf*        pdfMass;
 
@@ -202,10 +233,10 @@ int main(int argc, char * argv[]){
   // Get Starting Values and Fit PDF to data
   pdfMass->Print();
   pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_DDweightsMass.txt");
-  pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/StartingValues_Mass.new");
+  pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/StartingValues_Mass.new");
   RooLinkedList fitting_args;
-  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Minos(true))));
+  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(8))));
+  fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
@@ -218,23 +249,23 @@ int main(int argc, char * argv[]){
   doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
 
-  if (massmodel_ipatia) pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_Ipatia_DDweights.txt");
-  else pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_DDweights.txt");
+  if (massmodel_ipatia) pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_Ipatia_DDweights_"+TString(argv[2])+".txt");
+  else pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_DDweights_"+TString(argv[2])+".txt");
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
   cfg_plot_mass.InitializeOptions();
-  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots");
+  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots/"+string(argv[2]));
   cfg_plot_mass.set_simultaneous_plot_all_categories(true);
   std::vector<std::string> components_mass;
   components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgDstDLowExtend.*", "pdfBkgDstDHighExtend.*", "pdfBkgExtend.*";
   Plot* Mass;
   if (massmodel_ipatia) {
-    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_Ipatia_obsMass");
-    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_Ipatia_obsMass");
+    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_Ipatia_obsMass_"+string(argv[2]));
+    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_Ipatia_obsMass_"+string(argv[2]));
   }
   else {
-    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_obsMass");
-    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_obsMass");
+    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_obsMass_"+string(argv[2]));
+    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_obsMass_"+string(argv[2]));
   }
   Mass->PlotItLogNoLogY();
 

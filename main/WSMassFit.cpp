@@ -107,7 +107,12 @@ int main(int argc, char * argv[]){
   // FitandPlot(&data, "varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65", "PIDcuts");
   // FitandPlot(&data, "BDTG2_classifier>-0.784", "BDT99");
   // FitandPlot(&data, "varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "Kpipi_PID");
-  FitandPlot(&data, "BDTG2_classifier>-0.784&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "BDT99_Kpipi");
+  // FitandPlot(&data, "BDTG2_classifier>-0.784&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "BDT99_Kpipi");
+  // FitandPlot(&data, "BDTG2_classifier>-0.784&&varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65", "BDT99_PID");
+  // FitandPlot(&data, "abs(Dplus1_Kminus_or_piminus_ID)==321&&((abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211)||(abs(Dplus1_piplus_or_Kplus_One_ID)==321&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211)||(abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==321))&&abs(Dplus2_Kminus_or_piminus_ID)==321&&((abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211)||(abs(Dplus2_piplus_or_Kplus_One_ID)==321&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211)||(abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==321))", "Kpipi_or_KKpi");
+  FitandPlot(&data, "obsMassDDPVConst>5000", "all");
+  FitandPlot(&data, "BDTG2_classifier>-0.784&&varKminus1_PID>0.2&&varKminus2_PID>0.2&&varPiOne1plus_PID<0.5&&varPiOne2plus_PID<0.5&&varPiTwo1plus_PID<0.65&&varPiTwo2plus_PID<0.65&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211", "nominal");
+
 
   return 0;
 }

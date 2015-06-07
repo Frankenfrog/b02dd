@@ -11,6 +11,8 @@ add_executable(B02DsDMCFit B02DsDMCFit.cpp)
 add_executable(MassFit MassFit.cpp)
 add_executable(DMassFit DMassFit.cpp)
 add_executable(MassFit_DDweights MassFit_DDweights.cpp)
+add_executable(WSDMassFit WSDMassFit.cpp)
+add_executable(B0DDMassFit B0DDMassFit.cpp)
 
 # Aliases for module libs
 
@@ -25,3 +27,5 @@ target_link_libraries(B02DsDMCFit ${ALL_LIBRARIES})
 target_link_libraries(MassFit ${ALL_LIBRARIES})
 target_link_libraries(DMassFit ${ALL_LIBRARIES})
 target_link_libraries(MassFit_DDweights ${ALL_LIBRARIES})
+target_link_libraries(WSDMassFit ${ALL_LIBRARIES})
+target_link_libraries(B0DDMassFit ${ALL_LIBRARIES})

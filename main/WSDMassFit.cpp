@@ -78,8 +78,23 @@ int main(int argc, char * argv[]){
 
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
 
-  RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
-  catDDFinalState.defineType("KpipiKpipi",1);
+  //RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
+  //catDDFinalState.defineType("KpipiKpipi",1);
+  RooCategory        Dplus1_Kminus_or_piminus_ID("Dplus1_Kminus_or_piminus_ID","Dplus1_Kminus_or_piminus_ID");
+  RooCategory        Dplus1_piplus_or_Kplus_One_ID("Dplus1_piplus_or_Kplus_One_ID","Dplus1_piplus_or_Kplus_One_ID");
+  RooCategory        Dplus1_piplus_or_Kplus_Two_ID("Dplus1_piplus_or_Kplus_Two_ID","Dplus1_piplus_or_Kplus_Two_ID");
+  RooCategory        Dplus2_Kminus_or_piminus_ID("Dplus2_Kminus_or_piminus_ID","Dplus2_Kminus_or_piminus_ID");
+  RooCategory        Dplus2_piplus_or_Kplus_One_ID("Dplus2_piplus_or_Kplus_One_ID","Dplus2_piplus_or_Kplus_One_ID");
+  RooCategory        Dplus2_piplus_or_Kplus_Two_ID("Dplus2_piplus_or_Kplus_Two_ID","Dplus2_piplus_or_Kplus_Two_ID");
+  RooArgSet          IDs(Dplus1_Kminus_or_piminus_ID,Dplus1_piplus_or_Kplus_One_ID,Dplus1_piplus_or_Kplus_Two_ID,Dplus2_Kminus_or_piminus_ID,Dplus2_piplus_or_Kplus_One_ID,Dplus2_piplus_or_Kplus_Two_ID,"IDs");
+  int IDvalues [4] = {-321,-211,211,321};
+  TIterator*         iterator = IDs.createIterator();
+  RooCategory*       IDcategory;
+  while ((IDcategory = dynamic_cast<RooCategory*>(iterator->Next()))){
+    for (int i = 0; i < 4; ++i){
+      IDcategory->defineType(to_string(i).c_str(),IDvalues[i]);
+    }
+  }
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
 
@@ -95,12 +110,13 @@ int main(int argc, char * argv[]){
   RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
   RooArgSet         realvars(observables,variables,"realvars");
   realvars.add(varPIDs);
-  RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,"categories");
+  realvars.add(IDs);
+  RooArgSet         categories(/*catDDFinalState,*/catTriggerSetTopo234BodyBBDT,"categories");
   
   // Get data set
   EasyTuple         tuple(argv[1],argv[2],RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet();//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
+  RooDataSet&       data = tuple.ConvertToDataSet(Cut("abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211"));//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
   
   data.Print();
 
@@ -108,10 +124,12 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigDMassMean("parSigDMassMean","D Mean Mass",1870,1860,1880,"MeV/c^{2}");
   RooRealVar        parSigDMassSigma("parSigDMassSigma","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
   RooGaussian       pdfSigDplusMass("pdfSigDplusMass","Signal Mass PDF",obsMassDauOne,parSigDMassMean,parSigDMassSigma);
-  RooGaussian       pdfSigDminusMass("pdfSigDminusMass","Signal Mass PDF",obsMassDauTwo,parSigDMassMean,parSigDMassSigma);
-
+  
   RooRealVar        parBkgDExponent("parBkgDExponent","parBkgDExponent",-0.005,-1,1);
   RooExponential    pdfBkgDplusMass("pdfBkgDplusMass","pdfBkgDplusMass",obsMassDauOne,parBkgDExponent);
+
+  RooGaussian       pdfSigDminusMass("pdfSigDminusMass","Signal Mass PDF",obsMassDauTwo,parSigDMassMean,parSigDMassSigma);
+  
   RooExponential    pdfBkgDminusMass("pdfBkgDminusMass","pdfBkgDminusMass",obsMassDauTwo,parBkgDExponent);
 
   RooProdPdf        pdfSigDDMass("pdfSigDDMass","pdfSigDDMass",pdfSigDplusMass,pdfSigDminusMass);
@@ -178,7 +196,7 @@ int main(int argc, char * argv[]){
   spr.set_output_file_path(argv[3]);
 
   spr.set_output_tree_path("B02DD");
-  spr.set_cut_string("obsMassDauOne>=1845&&obsMassDauOne<=1895&&obsMassDauTwo>=1845&&obsMassDauTwo<=1895&&catDDFinalState==1&&catTriggerSetTopo234BodyBBDT==1&&"+string(argv[4]));
+  spr.set_cut_string("obsMassDauOne>=1845&&obsMassDauOne<=1895&&obsMassDauTwo>=1845&&obsMassDauTwo<=1895&&catTriggerSetTopo234BodyBBDT==1&&"+string(argv[4])+"&&abs(Dplus1_Kminus_or_piminus_ID)==321&&abs(Dplus1_piplus_or_Kplus_One_ID)==211&&abs(Dplus1_piplus_or_Kplus_Two_ID)==211&&abs(Dplus2_Kminus_or_piminus_ID)==321&&abs(Dplus2_piplus_or_Kplus_One_ID)==211&&abs(Dplus2_piplus_or_Kplus_Two_ID)==211");
   spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
   spr.Initialize();
   spr.Run();
