@@ -115,7 +115,7 @@ int main(int argc, char * argv[]){
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
   // Get data set
-  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_BDT_TupleB_BDT99applied_relevantfinalstates.root","B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple(argv[1],"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet&       data = tuple.ConvertToDataSet();//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
   

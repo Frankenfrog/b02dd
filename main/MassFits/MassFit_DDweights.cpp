@@ -123,7 +123,7 @@ int main(int argc, char * argv[]){
   // EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_BDT_TupleB_BDT99applied_relevantfinalstates_Dsweights.root","B02DD",RooArgSet(realvars,categories));
   EasyTuple         tuple(argv[1],"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"),Cut("!((abs(varDminusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DminusOne-1019.461)<25||Dminus_piminus_or_Kminus_One_PIDK>-10.))||(abs(varDminusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DminusTwo-1019.461)<25||Dminus_piminus_or_Kminus_Two_PIDK>-10.))||(abs(varDplusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DplusOne-1019.461)<25||Dplus_piplus_or_Kplus_One_PIDK>-10.))||(abs(varDplusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DplusTwo-1019.461)<25||Dplus_piplus_or_Kplus_Two_PIDK>-10.)))"));
+  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"));//,Cut("!((abs(varDminusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DminusOne-1019.461)<25||Dminus_piminus_or_Kminus_One_PIDK>-10.))||(abs(varDminusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DminusTwo-1019.461)<25||Dminus_piminus_or_Kminus_Two_PIDK>-10.))||(abs(varDplusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DplusOne-1019.461)<25||Dplus_piplus_or_Kplus_One_PIDK>-10.))||(abs(varDplusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DplusTwo-1019.461)<25||Dplus_piplus_or_Kplus_Two_PIDK>-10.)))"));
   
   data.Print();
 
@@ -217,8 +217,8 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDstDHighExtend_12("pdfBkgDstDHighExtend_12","pdfBkgDstDHighExtend_12",pdfBkgDstDHighMass,parBkgDstDHighYield_12);
   RooExtendPdf      pdfBkgDstDHighExtend("pdfBkgDstDHighExtend","pdfBkgDstDHighExtend",pdfBkgDstDHighMass,parBkgDstDHighYield);
 
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11/*,pdfBkgExtend_11*/));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12/*,pdfBkgExtend_12*/));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11,pdfBkgExtend_11));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12,pdfBkgExtend_12));
   
   RooAbsPdf*        pdfMass;
 
