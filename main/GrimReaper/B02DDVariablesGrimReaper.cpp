@@ -38,6 +38,198 @@ void TriggerLeaves(Reducer* _rdcr);
 void VetoLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 
+class B02DDVariablesReducer : public Reducer {
+
+  ReducerLeaf<Int_t>* catDplusFinalState;
+  ReducerLeaf<Int_t>* catDminusFinalState;
+  ReducerLeaf<Int_t>* catDDFinalState;
+
+  Int_t* DplusFinalState;
+  Int_t* DminusFinalState;
+  Int_t* DDFinalState;
+
+  Float_t* Dplus_P0_ID;
+  Float_t* Dplus_P1_ID;
+  Float_t* Dplus_P2_ID;
+  Float_t* Dminus_P0_ID;
+  Float_t* Dminus_P1_ID;
+  Float_t* Dminus_P2_ID;
+
+  ReducerLeaf<Double_t>* varPiOneminus_ProbNNk;
+  ReducerLeaf<Double_t>* varPiOneminus_ProbNNpi;
+  ReducerLeaf<Double_t>* varPiOneminus_SumProbNNkpi;
+  ReducerLeaf<Double_t>* varPiOneminus_PID;
+  ReducerLeaf<Double_t>* varPiOneplus_ProbNNk;
+  ReducerLeaf<Double_t>* varPiOneplus_ProbNNpi;
+  ReducerLeaf<Double_t>* varPiOneplus_SumProbNNkpi;
+  ReducerLeaf<Double_t>* varPiOneplus_PID;
+  ReducerLeaf<Double_t>* varPiTwominus_ProbNNk;
+  ReducerLeaf<Double_t>* varPiTwominus_ProbNNpi;
+  ReducerLeaf<Double_t>* varPiTwominus_SumProbNNkpi;
+  ReducerLeaf<Double_t>* varPiTwominus_PID;
+  ReducerLeaf<Double_t>* varPiTwoplus_ProbNNk;
+  ReducerLeaf<Double_t>* varPiTwoplus_ProbNNpi;
+  ReducerLeaf<Double_t>* varPiTwoplus_SumProbNNkpi;
+  ReducerLeaf<Double_t>* varPiTwoplus_PID;
+
+  Double_t* varPiOneminus_ProbNNk_value;
+  Double_t* varPiOneminus_ProbNNpi_value;
+  Double_t* varPiOneminus_SumProbNNkpi_value;
+  Double_t* varPiOneminus_PID_value;
+  Double_t* varPiOneplus_ProbNNk_value;
+  Double_t* varPiOneplus_ProbNNpi_value;
+  Double_t* varPiOneplus_SumProbNNkpi_value;
+  Double_t* varPiOneplus_PID_value;
+  Double_t* varPiTwominus_ProbNNk_value;
+  Double_t* varPiTwominus_ProbNNpi_value;
+  Double_t* varPiTwominus_SumProbNNkpi_value;
+  Double_t* varPiTwominus_PID_value;
+  Double_t* varPiTwoplus_ProbNNk_value;
+  Double_t* varPiTwoplus_ProbNNpi_value;
+  Double_t* varPiTwoplus_SumProbNNkpi_value;
+  Double_t* varPiTwoplus_PID_value;
+
+  Double_t* Dminus_piminus_or_Kminus_One_PT;
+  Double_t* Dminus_piminus_or_Kminus_Two_PT;
+  Double_t* Dplus_piplus_or_Kplus_One_PT;
+  Double_t* Dplus_piplus_or_Kplus_Two_PT;
+
+  Double_t* Dminus_piminus_or_Kminus_One_ProbNNk;
+  Double_t* Dminus_piminus_or_Kminus_One_ProbNNpi;
+  Double_t* Dminus_piminus_or_Kminus_Two_ProbNNk;
+  Double_t* Dminus_piminus_or_Kminus_Two_ProbNNpi;
+  Double_t* Dplus_piplus_or_Kplus_One_ProbNNk;
+  Double_t* Dplus_piplus_or_Kplus_One_ProbNNpi;
+  Double_t* Dplus_piplus_or_Kplus_Two_ProbNNk;
+  Double_t* Dplus_piplus_or_Kplus_Two_ProbNNpi;
+
+  void CreateSpecialBranches() {
+    Dplus_P0_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P0_ID").branch_address();
+    Dplus_P1_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P1_ID").branch_address();
+    Dplus_P2_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P2_ID").branch_address();
+    Dminus_P0_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dminus_P0_ID").branch_address();
+    Dminus_P1_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dminus_P1_ID").branch_address();
+    Dminus_P2_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dminus_P2_ID").branch_address();
+
+    catDplusFinalState = &(CreateIntLeaf("catDplusFinalState", -10));
+    catDminusFinalState = &(CreateIntLeaf("catDminusFinalState", -10));
+    catDDFinalState = &(CreateIntLeaf("catDDFinalState", -10));
+
+    DplusFinalState = (Int_t*)catDplusFinalState->branch_address();
+    DminusFinalState = (Int_t*)catDminusFinalState->branch_address();
+    DDFinalState = (Int_t*)catDDFinalState->branch_address();
+
+    Dminus_piminus_or_Kminus_One_PT = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_PT").branch_address();
+    Dminus_piminus_or_Kminus_Two_PT = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_PT").branch_address();
+    Dplus_piplus_or_Kplus_One_PT = (Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_One_PT").branch_address();
+    Dplus_piplus_or_Kplus_Two_PT = (Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_PT").branch_address();
+    Dminus_piminus_or_Kminus_One_ProbNNk =(Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_ProbNNk").branch_address();
+    Dminus_piminus_or_Kminus_One_ProbNNpi =(Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_ProbNNpi").branch_address();
+    Dminus_piminus_or_Kminus_Two_ProbNNk =(Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_ProbNNk").branch_address();
+    Dminus_piminus_or_Kminus_Two_ProbNNpi =(Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_ProbNNpi").branch_address();
+    Dplus_piplus_or_Kplus_One_ProbNNk =(Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_One_ProbNNk").branch_address();
+    Dplus_piplus_or_Kplus_One_ProbNNpi =(Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_One_ProbNNpi").branch_address();
+    Dplus_piplus_or_Kplus_Two_ProbNNk =(Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_ProbNNk").branch_address();
+    Dplus_piplus_or_Kplus_Two_ProbNNpi =(Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_ProbNNpi").branch_address();
+
+    varPiOneminus_ProbNNk = &(CreateDoubleLeaf("varPiOneminus_ProbNNk", -999999));
+    varPiOneminus_ProbNNpi = &(CreateDoubleLeaf("varPiOneminus_ProbNNpi", -999999));
+    varPiOneminus_SumProbNNkpi = &(CreateDoubleLeaf("varPiOneminus_SumProbNNkpi", -999999));
+    varPiOneminus_PID = &(CreateDoubleLeaf("varPiOneminus_PID", -999999));
+    varPiOneplus_ProbNNk = &(CreateDoubleLeaf("varPiOneplus_ProbNNk", -999999));
+    varPiOneplus_ProbNNpi = &(CreateDoubleLeaf("varPiOneplus_ProbNNpi", -999999));
+    varPiOneplus_SumProbNNkpi = &(CreateDoubleLeaf("varPiOneplus_SumProbNNkpi", -999999));
+    varPiOneplus_PID = &(CreateDoubleLeaf("varPiOneplus_PID", -999999));
+    varPiTwominus_ProbNNk = &(CreateDoubleLeaf("varPiTwominus_ProbNNk", -999999));
+    varPiTwominus_ProbNNpi = &(CreateDoubleLeaf("varPiTwominus_ProbNNpi", -999999));
+    varPiTwominus_SumProbNNkpi = &(CreateDoubleLeaf("varPiTwominus_SumProbNNkpi", -999999));
+    varPiTwominus_PID = &(CreateDoubleLeaf("varPiTwominus_PID", -999999));
+    varPiTwoplus_ProbNNk = &(CreateDoubleLeaf("varPiTwoplus_ProbNNk", -999999));
+    varPiTwoplus_ProbNNpi = &(CreateDoubleLeaf("varPiTwoplus_ProbNNpi", -999999));
+    varPiTwoplus_SumProbNNkpi = &(CreateDoubleLeaf("varPiTwoplus_SumProbNNkpi", -999999));
+    varPiTwoplus_PID = &(CreateDoubleLeaf("varPiTwoplus_PID", -999999));
+
+    varPiOneminus_ProbNNk_value = (Double_t*)varPiOneminus_ProbNNk->branch_address();
+    varPiOneminus_ProbNNpi_value = (Double_t*)varPiOneminus_ProbNNpi->branch_address();
+    varPiOneminus_SumProbNNkpi_value = (Double_t*)varPiOneminus_SumProbNNkpi->branch_address();
+    varPiOneminus_PID_value = (Double_t*)varPiOneminus_PID->branch_address();
+    varPiOneplus_ProbNNk_value = (Double_t*)varPiOneplus_ProbNNk->branch_address();
+    varPiOneplus_ProbNNpi_value = (Double_t*)varPiOneplus_ProbNNpi->branch_address();
+    varPiOneplus_SumProbNNkpi_value = (Double_t*)varPiOneplus_SumProbNNkpi->branch_address();
+    varPiOneplus_PID_value = (Double_t*)varPiOneplus_PID->branch_address();
+    varPiTwominus_ProbNNk_value = (Double_t*)varPiTwominus_ProbNNk->branch_address();
+    varPiTwominus_ProbNNpi_value = (Double_t*)varPiTwominus_ProbNNpi->branch_address();
+    varPiTwominus_SumProbNNkpi_value = (Double_t*)varPiTwominus_SumProbNNkpi->branch_address();
+    varPiTwominus_PID_value = (Double_t*)varPiTwominus_PID->branch_address();
+    varPiTwoplus_ProbNNk_value = (Double_t*)varPiTwoplus_ProbNNk->branch_address();
+    varPiTwoplus_ProbNNpi_value = (Double_t*)varPiTwoplus_ProbNNpi->branch_address();
+    varPiTwoplus_SumProbNNkpi_value = (Double_t*)varPiTwoplus_SumProbNNkpi->branch_address();
+    varPiTwoplus_PID_value = (Double_t*)varPiTwoplus_PID->branch_address();
+  }
+
+  void UpdateSpecialLeaves() {
+    if (*Dplus_P0_ID == 211 && *Dplus_P1_ID == 211 && *Dplus_P2_ID == -321) *DplusFinalState = 1;
+    if (*Dplus_P0_ID == 211 && *Dplus_P1_ID == 211 && *Dplus_P2_ID == -211) *DplusFinalState = 2;
+    if (*Dplus_P0_ID == 321 && *Dplus_P1_ID == 211 && *Dplus_P2_ID == -321) *DplusFinalState = 3;
+    if (*Dplus_P0_ID == 211 && *Dplus_P1_ID == 321 && *Dplus_P2_ID == -321) *DplusFinalState = 4;
+
+    if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 321) *DminusFinalState = 1;
+    if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 211) *DminusFinalState = 2;
+    if (*Dminus_P0_ID == -321 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 321) *DminusFinalState = 3;
+    if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -321 && *Dminus_P2_ID == 321) *DminusFinalState = 4;
+
+    if (*DplusFinalState == 1 && *DminusFinalState == 1) *DDFinalState = 11;
+    if (*DplusFinalState == 1 && *DminusFinalState == 3) *DDFinalState = 13;
+    if (*DplusFinalState == 1 && *DminusFinalState == 4) *DDFinalState = 14;
+    if (*DplusFinalState == 3 && *DminusFinalState == 1) *DDFinalState = 31;
+    if (*DplusFinalState == 4 && *DminusFinalState == 1) *DDFinalState = 41;
+    if (*DplusFinalState == 3 && *DminusFinalState == 3) *DDFinalState = 33;
+    if (*DplusFinalState == 3 && *DminusFinalState == 4) *DDFinalState = 34;
+    if (*DplusFinalState == 4 && *DminusFinalState == 3) *DDFinalState = 43;
+    if (*DplusFinalState == 4 && *DminusFinalState == 4) *DDFinalState = 44;
+
+    if (*Dminus_piminus_or_Kminus_One_PT > *Dminus_piminus_or_Kminus_Two_PT) {
+      *varPiOneminus_ProbNNk_value = *Dminus_piminus_or_Kminus_Two_ProbNNk;
+      *varPiOneminus_ProbNNpi_value = *Dminus_piminus_or_Kminus_Two_ProbNNpi;
+      *varPiTwominus_ProbNNk_value = *Dminus_piminus_or_Kminus_One_ProbNNk;
+      *varPiTwominus_ProbNNpi_value = *Dminus_piminus_or_Kminus_One_ProbNNpi;
+    }
+    else {
+      *varPiOneminus_ProbNNk_value = *Dminus_piminus_or_Kminus_One_ProbNNk;
+      *varPiOneminus_ProbNNpi_value = *Dminus_piminus_or_Kminus_One_ProbNNpi;
+      *varPiTwominus_ProbNNk_value = *Dminus_piminus_or_Kminus_Two_ProbNNk;
+      *varPiTwominus_ProbNNpi_value = *Dminus_piminus_or_Kminus_Two_ProbNNpi; 
+    }
+    
+    if (*Dplus_piplus_or_Kplus_One_PT > *Dplus_piplus_or_Kplus_Two_PT) {
+      *varPiOneplus_ProbNNk_value = *Dplus_piplus_or_Kplus_Two_ProbNNk;
+      *varPiOneplus_ProbNNpi_value = *Dplus_piplus_or_Kplus_Two_ProbNNpi;
+      *varPiTwoplus_ProbNNk_value = *Dplus_piplus_or_Kplus_One_ProbNNk;
+      *varPiTwoplus_ProbNNpi_value = *Dplus_piplus_or_Kplus_One_ProbNNpi;
+    }
+    else {
+      *varPiOneplus_ProbNNk_value = *Dplus_piplus_or_Kplus_One_ProbNNk;
+      *varPiOneplus_ProbNNpi_value = *Dplus_piplus_or_Kplus_One_ProbNNpi;
+      *varPiTwoplus_ProbNNk_value = *Dplus_piplus_or_Kplus_Two_ProbNNk;
+      *varPiTwoplus_ProbNNpi_value = *Dplus_piplus_or_Kplus_Two_ProbNNpi;
+    }
+
+    *varPiOneminus_SumProbNNkpi_value = *varPiOneminus_ProbNNk_value + *varPiOneminus_ProbNNpi_value;
+    *varPiOneminus_PID_value = *varPiOneminus_ProbNNk_value / *varPiOneminus_SumProbNNkpi_value;
+    *varPiOneplus_SumProbNNkpi_value = *varPiOneplus_ProbNNk_value + *varPiOneplus_ProbNNpi_value;
+    *varPiOneplus_PID_value = *varPiOneplus_ProbNNk_value / *varPiOneplus_SumProbNNkpi_value;
+    *varPiTwominus_SumProbNNkpi_value = *varPiTwominus_ProbNNk_value + *varPiTwominus_ProbNNpi_value;
+    *varPiTwominus_PID_value = *varPiTwominus_ProbNNk_value / *varPiTwominus_SumProbNNkpi_value;
+    *varPiTwoplus_SumProbNNkpi_value = *varPiTwoplus_ProbNNk_value + *varPiTwoplus_ProbNNpi_value;
+    *varPiTwoplus_PID_value = *varPiTwoplus_ProbNNk_value / *varPiTwoplus_SumProbNNkpi_value;
+  }
+
+  bool EntryPassesSpecialCuts() {
+    return (*DDFinalState > 0);
+  }
+
+};
+
 int main(int argc, char * argv[]){
   sinfo << "-info-  \t" << "B02DDVariablesGrimReaper \t" << "Welcome!" << endmsg;
   std::string inputfile, inputtree, outputfile, outputtree, decay_channel;
@@ -54,7 +246,7 @@ int main(int argc, char * argv[]){
     return 1;
   }
 
-  Reducer* reducer = new Reducer();
+  Reducer* reducer = new B02DDVariablesReducer();
   doocore::config::Summary& summary = doocore::config::Summary::GetInstance();
   summary.AddSection("I/O");
   summary.Add("Input file", inputfile);
@@ -67,6 +259,7 @@ int main(int argc, char * argv[]){
   reducer->set_input_tree_path(inputtree);
   reducer->set_output_file_path(outputfile);
   reducer->set_output_tree_path(outputtree);
+  // reducer->set_num_events_process(100000);
 
   reducer->Initialize();
 
@@ -249,13 +442,13 @@ void VetoLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   std::string Kminus_px, Kminus_py, Kminus_pz;
 
   std::string mass_hypo_constraints = "";
-  if (_rdcr->LeafExists(std::get<0>(cfg)+"_FitPVConst_Dplus_PX")){
-    Dplus_px    = std::get<0>(cfg)+"_FitPVConst_Dplus_PX"+flat_suffix;
-    Dplus_py    = std::get<0>(cfg)+"_FitPVConst_Dplus_PY"+flat_suffix;
-    Dplus_pz    = std::get<0>(cfg)+"_FitPVConst_Dplus_PZ"+flat_suffix;
-    Dminus_px   = std::get<0>(cfg)+"_FitPVConst_Dminus_PX"+flat_suffix;
-    Dminus_py   = std::get<0>(cfg)+"_FitPVConst_Dminus_PY"+flat_suffix;
-    Dminus_pz   = std::get<0>(cfg)+"_FitPVConst_Dminus_PZ"+flat_suffix;
+  if (_rdcr->LeafExists(std::get<0>(cfg)+"_FitDDPVConst_Dplus_PX")){
+    Dplus_px    = std::get<0>(cfg)+"_FitDDPVConst_Dplus_PX"+flat_suffix;
+    Dplus_py    = std::get<0>(cfg)+"_FitDDPVConst_Dplus_PY"+flat_suffix;
+    Dplus_pz    = std::get<0>(cfg)+"_FitDDPVConst_Dplus_PZ"+flat_suffix;
+    Dminus_px   = std::get<0>(cfg)+"_FitDDPVConst_Dminus_PX"+flat_suffix;
+    Dminus_py   = std::get<0>(cfg)+"_FitDDPVConst_Dminus_PY"+flat_suffix;
+    Dminus_pz   = std::get<0>(cfg)+"_FitDDPVConst_Dminus_PZ"+flat_suffix;
   }
   else if (_rdcr->LeafExists("Dplus_PX")){
     Dplus_px    = "Dplus_PX";
@@ -1066,36 +1259,6 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   if (std::get<3>(cfg)){
     _rdcr->CreateIntCopyLeaf("catBkg", _rdcr->GetInterimLeafByName("B0_BKGCAT"));
   }
-  // final state
-  ReducerLeaf<Int_t>& catDplusFinalState = _rdcr->CreateIntLeaf("catDplusFinalState", -10);
-      TCut  Dplus_Kpipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
-      TCut  Dplus_pipipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
-      TCut  Dplus_KKpi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==211"));
-      TCut  Dplus_KpiK = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dplus_P2_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P0_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dplus_P1_ID"+flat_suffix+"==321"));
-      catDplusFinalState.AddCondition("Kpipi",Dplus_Kpipi.GetTitle(),1);
-      catDplusFinalState.AddCondition("pipipi",Dplus_pipipi.GetTitle(),2);
-      catDplusFinalState.AddCondition("KKpi",Dplus_KKpi.GetTitle(),3);
-      catDplusFinalState.AddCondition("KpiK",Dplus_KpiK.GetTitle(),4);
-
-  ReducerLeaf<Int_t>& catDminusFinalState = _rdcr->CreateIntLeaf("catDminusFinalState", -10);
-      TCut  Dminus_Kpipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
-      TCut  Dminus_pipipi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
-      TCut  Dminus_KKpi = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-211"));
-      TCut  Dminus_KpiK = TCut(TString(std::get<0>(cfg)+"_FitDDPVConst_Dminus_P2_ID"+flat_suffix+"==321&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P0_ID"+flat_suffix+"==-211&&"+std::get<0>(cfg)+"_FitDDPVConst_Dminus_P1_ID"+flat_suffix+"==-321"));
-      catDminusFinalState.AddCondition("Kpipi",Dminus_Kpipi.GetTitle(),1);
-      catDminusFinalState.AddCondition("pipipi",Dminus_pipipi.GetTitle(),2);
-      catDminusFinalState.AddCondition("KKpi",Dminus_KKpi.GetTitle(),3);
-      catDminusFinalState.AddCondition("KpiK",Dminus_KpiK.GetTitle(),4);
-
-  ReducerLeaf<Int_t>& catDDFinalState = _rdcr->CreateIntLeaf("catDDFinalState", -10);
-      catDDFinalState.AddCondition("KpipiKpipi", TString(Dplus_Kpipi && Dminus_Kpipi), 1);
-      catDDFinalState.AddCondition("KpipiKKpi", TString((Dplus_Kpipi && Dminus_KKpi) || (Dplus_Kpipi && Dminus_KpiK) || (Dplus_KKpi && Dminus_Kpipi) || (Dplus_KpiK && Dminus_Kpipi)), 2);
-      catDDFinalState.AddCondition("KKpiKKpi", TString((Dplus_KKpi && Dminus_KKpi) || (Dplus_KKpi && Dminus_KpiK) || (Dplus_KpiK && Dminus_KKpi) || (Dplus_KpiK && Dminus_KpiK)), 3);
-      catDDFinalState.AddCondition("Kpipipipipi", TString((Dplus_Kpipi && Dminus_pipipi) || (Dplus_pipipi && Dminus_Kpipi)), 4);
-      catDDFinalState.AddCondition("KKpipipipi", TString((Dplus_KKpi && Dminus_pipipi) || (Dplus_KpiK && Dminus_pipipi) || (Dplus_pipipi && Dminus_KKpi) || (Dplus_pipipi && Dminus_KpiK)), 5);
-      catDDFinalState.AddCondition("pipipipipipi", TString(Dplus_pipipi && Dminus_pipipi), 6);
-      
-      
 
   // event and run number
   _rdcr->CreateIntCopyLeaf("idxEventNumber", _rdcr->GetInterimLeafByName("eventNumber"));
@@ -1254,21 +1417,21 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   _rdcr->CreateDoubleCopyLeaf("obsMomentumZ", _rdcr->GetInterimLeafByName("B0_PZ"));
   _rdcr->CreateDoubleCopyLeaf("obsTransverseMomentum", _rdcr->GetInterimLeafByName("B0_PT"));
   // DTF leaves
-  if (_rdcr->LeafExists("B0_FitPVConst_P"+flat_suffix)){
-    _rdcr->CreateDoubleCopyLeaf("obsDTFMomentum", _rdcr->GetInterimLeafByName("B0_FitPVConst_P"+flat_suffix));
-    _rdcr->CreateDoubleCopyLeaf("obsDTFMomentumError", _rdcr->GetInterimLeafByName("B0_FitPVConst_PERR"+flat_suffix));
-    _rdcr->CreateDoubleCopyLeaf("obsDTFTransverseMomentum", _rdcr->GetInterimLeafByName("B0_FitPVConst_PT"+flat_suffix));
-    _rdcr->CreateDoubleCopyLeaf("obsDTFTransverseMomentumError", _rdcr->GetInterimLeafByName("B0_FitPVConst_PTERR"+flat_suffix));
+  if (_rdcr->LeafExists("B0_FitDDPVConst_P"+flat_suffix)){
+    _rdcr->CreateDoubleCopyLeaf("obsDTFMomentum", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_P"+flat_suffix));
+    _rdcr->CreateDoubleCopyLeaf("obsDTFMomentumError", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_PERR"+flat_suffix));
+    _rdcr->CreateDoubleCopyLeaf("obsDTFTransverseMomentum", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_PT"+flat_suffix));
+    _rdcr->CreateDoubleCopyLeaf("obsDTFTransverseMomentumError", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_PTERR"+flat_suffix));
   }
   // daughters
-  _rdcr->CreateDoubleCopyLeaf("varDplusP", _rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_P"+flat_suffix));
-  _rdcr->CreateDoubleCopyLeaf("varDplusPT", _rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_PT"+flat_suffix));
-  _rdcr->CreateDoubleCopyLeaf("varDminusP", _rdcr->GetInterimLeafByName("B0_FitPVConst_Dminus_P"+flat_suffix));
-  _rdcr->CreateDoubleCopyLeaf("varDminusPT", _rdcr->GetInterimLeafByName("B0_FitPVConst_Dminus_PT"+flat_suffix));
-  _rdcr->CreateDoubleLeaf("varDMinP", -999999.).Minimum(_rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_P"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitPVConst_Dminus_P"+flat_suffix));
-  _rdcr->CreateDoubleLeaf("varDMinPT", -999999.).Minimum(_rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_PT"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitPVConst_Dminus_PT"+flat_suffix));
-  _rdcr->CreateDoubleLeaf("varDMaxP", -999999.).Maximum(_rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_P"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitPVConst_Dminus_P"+flat_suffix));
-  _rdcr->CreateDoubleLeaf("varDMaxPT", -999999.).Maximum(_rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_PT"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitPVConst_Dminus_PT"+flat_suffix));
+  _rdcr->CreateDoubleCopyLeaf("varDplusP", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dplus_P"+flat_suffix));
+  _rdcr->CreateDoubleCopyLeaf("varDplusPT", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dplus_PT"+flat_suffix));
+  _rdcr->CreateDoubleCopyLeaf("varDminusP", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dminus_P"+flat_suffix));
+  _rdcr->CreateDoubleCopyLeaf("varDminusPT", _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dminus_PT"+flat_suffix));
+  _rdcr->CreateDoubleLeaf("varDMinP", -999999.).Minimum(_rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dplus_P"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dminus_P"+flat_suffix));
+  _rdcr->CreateDoubleLeaf("varDMinPT", -999999.).Minimum(_rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dplus_PT"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dminus_PT"+flat_suffix));
+  _rdcr->CreateDoubleLeaf("varDMaxP", -999999.).Maximum(_rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dplus_P"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dminus_P"+flat_suffix));
+  _rdcr->CreateDoubleLeaf("varDMaxPT", -999999.).Maximum(_rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dplus_PT"+flat_suffix), _rdcr->GetInterimLeafByName("B0_FitDDPVConst_Dminus_PT"+flat_suffix));
   // grand-daughters
   _rdcr->CreateDoubleCopyLeaf("varPiplusOneP", _rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_P0_P"+flat_suffix));
   _rdcr->CreateDoubleCopyLeaf("varPiplusOnePT", _rdcr->GetInterimLeafByName("B0_FitPVConst_Dplus_P0_PT"+flat_suffix));
@@ -1420,24 +1583,4 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   ReducerLeaf<Double_t>& varKplus_SumProbNNkpi = _rdcr->CreateDoubleLeaf("varKplus_SumProbNNkpi", -999999.);
   varKplus_SumProbNNkpi.Add(varKplus_ProbNNk, varKplus_ProbNNpi);
   _rdcr->CreateDoubleLeaf("varKplus_PID", -999999.).Divide(varKplus_ProbNNk, varKplus_SumProbNNkpi);
-  ReducerLeaf<Double_t>& varPiOneminus_ProbNNk = _rdcr->CreateDoubleCopyLeaf("varPiOneminus_ProbNNk", _rdcr->GetInterimLeafByName("Dminus_piminus_or_Kminus_One_ProbNNk"));
-  ReducerLeaf<Double_t>& varPiOneminus_ProbNNpi = _rdcr->CreateDoubleCopyLeaf("varPiOneminus_ProbNNpi", _rdcr->GetInterimLeafByName("Dminus_piminus_or_Kminus_One_ProbNNpi"));
-  ReducerLeaf<Double_t>& varPiOneminus_SumProbNNkpi = _rdcr->CreateDoubleLeaf("varPiOneminus_SumProbNNkpi", -999999.);
-  varPiOneminus_SumProbNNkpi.Add(varPiOneminus_ProbNNk, varPiOneminus_ProbNNpi);
-  _rdcr->CreateDoubleLeaf("varPiOneminus_PID", -999999.).Divide(varPiOneminus_ProbNNk, varPiOneminus_SumProbNNkpi);
-  ReducerLeaf<Double_t>& varPiOneplus_ProbNNk = _rdcr->CreateDoubleCopyLeaf("varPiOneplus_ProbNNk", _rdcr->GetInterimLeafByName("Dplus_piplus_or_Kplus_One_ProbNNk"));
-  ReducerLeaf<Double_t>& varPiOneplus_ProbNNpi = _rdcr->CreateDoubleCopyLeaf("varPiOneplus_ProbNNpi", _rdcr->GetInterimLeafByName("Dplus_piplus_or_Kplus_One_ProbNNpi"));
-  ReducerLeaf<Double_t>& varPiOneplus_SumProbNNkpi = _rdcr->CreateDoubleLeaf("varPiOneplus_SumProbNNkpi", -999999.);
-  varPiOneplus_SumProbNNkpi.Add(varPiOneplus_ProbNNk, varPiOneplus_ProbNNpi);
-  _rdcr->CreateDoubleLeaf("varPiOneplus_PID", -999999.).Divide(varPiOneplus_ProbNNk, varPiOneplus_SumProbNNkpi);
-  ReducerLeaf<Double_t>& varPiTwominus_ProbNNk = _rdcr->CreateDoubleCopyLeaf("varPiTwominus_ProbNNk", _rdcr->GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_ProbNNk"));
-  ReducerLeaf<Double_t>& varPiTwominus_ProbNNpi = _rdcr->CreateDoubleCopyLeaf("varPiTwominus_ProbNNpi", _rdcr->GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_ProbNNpi"));
-  ReducerLeaf<Double_t>& varPiTwominus_SumProbNNkpi = _rdcr->CreateDoubleLeaf("varPiTwominus_SumProbNNkpi", -999999.);
-  varPiTwominus_SumProbNNkpi.Add(varPiTwominus_ProbNNk, varPiTwominus_ProbNNpi);
-  _rdcr->CreateDoubleLeaf("varPiTwominus_PID", -999999.).Divide(varPiTwominus_ProbNNk, varPiTwominus_SumProbNNkpi);
-  ReducerLeaf<Double_t>& varPiTwoplus_ProbNNk = _rdcr->CreateDoubleCopyLeaf("varPiTwoplus_ProbNNk", _rdcr->GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_ProbNNk"));
-  ReducerLeaf<Double_t>& varPiTwoplus_ProbNNpi = _rdcr->CreateDoubleCopyLeaf("varPiTwoplus_ProbNNpi", _rdcr->GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_ProbNNpi"));
-  ReducerLeaf<Double_t>& varPiTwoplus_SumProbNNkpi = _rdcr->CreateDoubleLeaf("varPiTwoplus_SumProbNNkpi", -999999.);
-  varPiTwoplus_SumProbNNkpi.Add(varPiTwoplus_ProbNNk, varPiTwoplus_ProbNNpi);
-  _rdcr->CreateDoubleLeaf("varPiTwoplus_PID", -999999.).Divide(varPiTwoplus_ProbNNk, varPiTwoplus_SumProbNNkpi);
 }
