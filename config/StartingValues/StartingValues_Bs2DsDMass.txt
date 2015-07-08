@@ -1,0 +1,8 @@
+parMassCB1Alpha     =  0.5  L(0.1 - 2) 
+parMassCB1Expo      =  10   C L(-INF - +INF) 
+parMassCB2Alpha     = -1.5  L(-2 - -0.1) 
+parMassCB2Expo      =  10   C L(-INF - +INF) 
+parMassCBFraction   =  0.5  L(0 - 1) 
+parMassMean         =  5310 L(5280 - 5350) // [MeV/c^{2}]
+parMassSigma1       =  20   L(5 - 50) // [MeV/c^{2}]
+parMassSigma2       =  20   L(5 - 50) // [MeV/c^{2}]
