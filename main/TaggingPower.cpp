@@ -34,23 +34,23 @@ int main(int argc, const char * argv[]){
   obsTagSSPion.defineType("no Tag",0);
   RooRealVar        obsEtaOS("obsEtaOS","#eta_{OS}",0,0.5);
   RooRealVar        obsEtaSSPion("obsEtaSSPion","#eta_{SS#pi}",0,0.5);
-  RooRealVar        weight("parSigYield_sw","Signal weight",-10,10);
+  RooRealVar        weight("SigWeight","Signal weight",-10,10);
   
   RooArgSet         observables(obsTagOS,obsTagSSPion,weight,obsEtaOS,obsEtaSSPion,"observables");
    
-  EasyTuple         sweighted_tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/2012/DT2012_B02DD_Stripping21_DVv36r1_20150322_fmeier_combined_20150323_fmeier_BDT4_TupleB_Kpipi_sweight_FT.root","B02DD",observables);
+  EasyTuple         sweighted_tuple("/home/fmeier/storage03/Tuple/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_FT_TupleD.root","B02DD",observables);
   sweighted_tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar("parSigYield_sw"));
+  RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar("SigWeight"));
   signaldata.Print();
   
-  RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs(obsTagOS)==1&&abs(obsTagSSPion)==0"),WeightVar("parSigYield_sw"));
+  RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs(obsTagOS)==1&&abs(obsTagSSPion)==0"),WeightVar("SigWeight"));
   signaldata_OS.Print();
-  RooDataSet        signaldata_SS("signaldata_SS","signaldata_SS",observables,Import(signaldata),Cut("abs(obsTagOS)==0&&abs(obsTagSSPion)==1"),WeightVar("parSigYield_sw"));
+  RooDataSet        signaldata_SS("signaldata_SS","signaldata_SS",observables,Import(signaldata),Cut("abs(obsTagOS)==0&&abs(obsTagSSPion)==1"),WeightVar("SigWeight"));
   signaldata_SS.Print();
-  RooDataSet        signaldata_BS("signaldata_BS","signaldata_BS",observables,Import(signaldata),Cut("abs(obsTagOS)==1&&abs(obsTagSSPion)==1"),WeightVar("parSigYield_sw"));
+  RooDataSet        signaldata_BS("signaldata_BS","signaldata_BS",observables,Import(signaldata),Cut("abs(obsTagOS)==1&&abs(obsTagSSPion)==1"),WeightVar("SigWeight"));
   signaldata_BS.Print();
-  RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs(obsTagOS)==1"),WeightVar("parSigYield_sw"));
-  RooDataSet        signaldata_allSS("signaldata_allSS","signaldata_allSS",observables,Import(signaldata),Cut("abs(obsTagSSPion)==1"),WeightVar("parSigYield_sw"));
+  RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs(obsTagOS)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_allSS("signaldata_allSS","signaldata_allSS",observables,Import(signaldata),Cut("abs(obsTagSSPion)==1"),WeightVar("SigWeight"));
 
   double            mean_mistag_OS = signaldata_allOS.mean(obsEtaOS);
   double            mean_mistag_OS_error = 1./sqrt(signaldata_allOS.sumEntries());

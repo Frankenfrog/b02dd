@@ -73,8 +73,8 @@ using namespace doofit::fitter::splot;
 
 int main(int argc, char * argv[]){
 
-  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1830,1910,"MeV/c^{2}");
-  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1830,1910,"MeV/c^{2}");
+  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1830,2000,"MeV/c^{2}");
+  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1830,2000,"MeV/c^{2}");
 
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
 

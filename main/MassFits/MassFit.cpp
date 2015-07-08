@@ -55,6 +55,10 @@
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
 #include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/splot/SPlotFit2.h"
+
+// from DooSelection
+#include "dooselection/reducer/SPlotterReducer.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -65,11 +69,15 @@ using namespace std;
 using namespace doocore::io;
 using namespace doocore::lutils;
 using namespace doofit::plotting;
+using namespace doofit::fitter::splot;
+
+void ChangeHistogramSettings(TH1* histogram);
 
 int main(int argc, char * argv[]){
 
   bool massmodel_ipatia = false;
   bool split_years      = true;
+  bool calculate_sweights = true;
 
   RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
   RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
@@ -117,9 +125,38 @@ int main(int argc, char * argv[]){
   // Get data set
   EasyTuple         tuple(argv[1],"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet();//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
+  RooDataSet&       data = tuple.ConvertToDataSet(Cut(argv[2]));
   
   data.Print();
+
+  RooDataSet*       data_2011 = dynamic_cast<RooDataSet*>(data.reduce("catYear==2011"));
+  RooDataSet*       data_2012 = dynamic_cast<RooDataSet*>(data.reduce("catYear==2012"));
+  RooDataSet*       data_2011_BDT = dynamic_cast<RooDataSet*>(data_2011->reduce("BDTG2_classifier>-0.843"));
+  RooDataSet*       data_2012_BDT = dynamic_cast<RooDataSet*>(data_2012->reduce("BDTG2_classifier>-0.843"));
+  RooDataSet*       data_BDT = dynamic_cast<RooDataSet*>(data.reduce("BDTG2_classifier>-0.843"));
+
+  TH1*              hist_2011 = data_2011->createHistogram("hist_2011",obsMass);
+  TH1*              hist_2012 = data_2012->createHistogram("hist_2012",obsMass);
+  TH1*              hist_2011_BDT = data_2011_BDT->createHistogram("hist_2011_BDT",obsMass);
+  TH1*              hist_2012_BDT = data_2012_BDT->createHistogram("hist_2012_BDT",obsMass);
+  TH1*              hist = data.createHistogram("hist",obsMass);
+  TH1*              hist_BDT = data_BDT->createHistogram("hist_BDT",obsMass);
+
+  hist_2011->Divide(hist_2011_BDT);
+  hist_2012->Divide(hist_2012_BDT);
+  hist->Divide(hist_BDT);
+  gROOT->SetStyle("Plain");
+  setStyle("LHCb");
+  // TCanvas c("c","c",800,600);
+  // ChangeHistogramSettings(hist_2011);
+  // hist_2011->Draw();
+  // c.SaveAs("/home/fmeier/storage03/b02dd/run/BDTinvEffect_11.pdf");
+  // ChangeHistogramSettings(hist_2012);
+  // hist_2012->Draw();
+  // c.SaveAs("/home/fmeier/storage03/b02dd/run/BDTinvEffect_12.pdf");
+  // ChangeHistogramSettings(hist);
+  // hist->Draw();
+  // c.SaveAs("/home/fmeier/storage03/b02dd/run/BDTinvEffect.pdf");
 
   // Mass PDF
   RooAbsPdf*        pdfSigMass;
@@ -149,14 +186,6 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigMassn2("parSigMassn2","parSigMassn2",10);
   if (massmodel_ipatia) pdfSigMass = new RooIpatia2("pdfSigMass","pdfSigMass",obsMass,parSigMassL,parSigMassZeta,parSigMassBeta,parSigMassSigma,parSigMassMean,parSigMassAlpha1,parSigMassn1,parSigMassAlpha2,parSigMassn2);
 
-  // EasyTuple         tuple_DsD_MC("/fhgfs/groups/e5/lhcb/NTuples/B02DD/MC/Sim08/2012/MC_Sim08a_2012_Pythia8_B02DsD_Stripping20_DVv36r5_20150428_pseyfert_20150430_fmeier_BDT_TupleB.root","B02DD",RooArgSet(realvars,categories));
-  // tuple_DsD_MC.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  // RooDataSet&       data_DsD_MC = tuple_DsD_MC.ConvertToDataSet(Cut(TString(varBDT.GetName())+">-0.784"));//&&(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
-  // data_DsD_MC.addColumns(PID_formulas);
-  // data_DsD_MC.Print();
-  // RooDataSet*       data_DsD_MC_optimized = dynamic_cast<RooDataSet*>(data_DsD_MC.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
-  // RooKeysPdf        pdfBkgDsDMass("pdfBkgDsDMass","pdfBkgDsDMass", obsMass, *data_DsD_MC_optimized);
-
   RooRealVar        parBkgDsDMean("parBkgDsDMean","Mean Mass",5220,5210,5230,"MeV/c^{2}");
 
   RooRealVar        parBkgDsDMassSigma1("parBkgDsDMassSigma1","Sigma of Gaussian Mass",7.0,1.0,9.0,"MeV/c^{2}");
@@ -172,10 +201,9 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgDsDMassCBFraction("parBkgDsDMassCBFraction","parBkgDsDMassCBFraction",0.5);
   RooAddPdf         pdfBkgDsDMass("pdfBkgDsDMass","pdfBkgDsDMass",RooArgList(pdfBkgDsDMassCB1,pdfBkgDsDMassCB2),parBkgDsDMassCBFraction);
 
-  RooFormulaVar     parBkgBsDsDMassMean("parBkgBsDsDMassMean","Bs->DsD Mean Mass","@0+87.52",RooArgList(parBkgDsDMean));  
-  RooCBShape        pdfBkgBsDsDMassCB1("pdfBkgBsDsDMassCB1","Mass PDF",obsMass,parBkgBsDsDMassMean,parBkgDsDMassSigma1,parBkgDsDMassCB1Alpha,parBkgDsDMassCB1Expo);
-  RooCBShape        pdfBkgBsDsDMassCB2("pdfBkgBsDsDMassCB2","Mass PDF",obsMass,parBkgBsDsDMassMean,parBkgDsDMassSigma2,parBkgDsDMassCB2Alpha,parBkgDsDMassCB2Expo);
-  RooAddPdf         pdfBkgBsDsDMass("pdfBkgBsDsDMass","pdfBkgBsDsDMass",RooArgList(pdfBkgBsDsDMassCB1,pdfBkgBsDsDMassCB2),parBkgDsDMassCBFraction);      
+  RooRealVar        parBkgBsDsDMassMean("parBkgBsDsDMassMean","Bs->DsD Mean Mass",5320,5310,5350,"MeV/c^{2}");
+  RooRealVar        parBkgBsDsDMassSigma("parBkgBsDsDMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
+  RooGaussian       pdfBkgBsDsDMass("pdfBkgBsDsDMass","pdfBkgBsDsDMass",obsMass,parBkgBsDsDMassMean,parBkgBsDsDMassSigma);
 
   RooFormulaVar     parSigBsMassMean("parSigBsMassMean","Bs Mean Mass","@0+87.52",RooArgList(parSigMassMean));
   RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
@@ -219,8 +247,8 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11/*,pdfBkgBsDsDExtend_11*/));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12/*,pdfBkgBsDsDExtend_12*/));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,pdfBkgBsDsDExtend_11));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,pdfBkgBsDsDExtend_12));
   
   RooAbsPdf*        pdfMass;
 
@@ -230,21 +258,7 @@ int main(int argc, char * argv[]){
     pdfSimMass->addPdf(pdfMass_12,"2012");
     pdfMass = pdfSimMass;
   }
-  else pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend/*,pdfBkgBsDsDExtend*/));
-
-  RooRealVar        parSigDMassMean("parSigDMassMean","D Mean Mass",1870,1860,1880,"MeV/c^{2}");
-  RooRealVar        parSigDMassSigma("parSigDMassSigma","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
-  RooGaussian       pdfSigDMass("pdfSigDMass","Signal Mass PDF",obsMassDauOne,parSigDMassMean,parSigDMassSigma);
-
-  RooRealVar        parBkgDExponent("parBkgDExponent","parBkgDExponent",-0.005,-1,1);
-  RooExponential    pdfBkgDMass("pdfBkgDMass","pdfBkgDMass",obsMassDauOne,parBkgDExponent);
-
-  RooRealVar        parSigDYield("parSigDYield","parSigDYield",4000,0,10000);
-  RooRealVar        parBkgDYield("parBkgDYield","parBkgDYield",3000,0,10000);
-
-  RooExtendPdf      pdfSigDExtend("pdfSigDExtend","pdfSigDExtend",pdfSigDMass,parSigDYield);
-  RooExtendPdf      pdfBkgDExtend("pdfBkgDExtend","pdfBkgDExtend",pdfBkgDMass,parBkgDYield);
-  RooAddPdf         pdfDMass("pdfDMass","Mass PDF",RooArgList(pdfSigDExtend,pdfBkgDExtend));  
+  else pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,pdfBkgBsDsDExtend));
 
   // Get Starting Values and Fit PDF to data
   pdfMass->Print();
@@ -262,6 +276,7 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
   RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
+  // RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0."));
   optimized_data->Print();
   RooFitResult* fit_result = pdfMass->fitTo(*optimized_data, fitting_args);
   doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
@@ -287,14 +302,31 @@ int main(int argc, char * argv[]){
   }
   Mass->PlotItLogNoLogY();
 
-  // Plot MassDsD(cfg_plot_mass, obsMass, *data_DsD_MC_optimized, RooArgList(), "DsDMassTemplate");
-  // MassDsD.PlotItLogNoLogY();
-
-  // fit_result = pdfDMass.fitTo(*optimized_data, fitting_args);
-  // std::vector<std::string> components_Dmass;
-  // components_Dmass += "pdfSigDExtend", "pdfBkgDExtend";
-  // Plot MassD(cfg_plot_mass, obsMassDauOne, *optimized_data, pdfDMass, components_Dmass, "obsMassDauOne_optimized");
-  // MassD.PlotIt();
-
+  if (calculate_sweights && split_years){
+    RooArgSet set_of_yields_11(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgBsDsDYield_11);
+    RooArgSet set_of_yields_12(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgBsDsDYield_12);
+    SPlotFit2 splotfit(*pdfMass,*optimized_data,RooArgSet(set_of_yields_11,set_of_yields_12));
+    splotfit.set_use_minos(false);
+    splotfit.set_num_cpu(4);
+    
+    dooselection::reducer::SPlotterReducer spr(splotfit, RooArgSet(obsMass,catYear));
+    spr.set_input_file_path(argv[1]);
+    spr.set_input_tree_path("B02DD");
+    spr.set_output_file_path(argv[3]);
+  
+    spr.set_output_tree_path("B02DD");
+    spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&catDDFinalState==1&&catTriggerSetTopo234BodyBBDT==1&&"+string(argv[2]));
+    spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
+    spr.Initialize();
+    spr.Run();
+    spr.Finalize();
+  }
+  
   return 0;
+}
+
+void ChangeHistogramSettings(TH1* histogram){
+  histogram->GetYaxis()->SetTitle("");
+  histogram->SetMinimum(0);
+  histogram->SetMaximum(10);
 }
