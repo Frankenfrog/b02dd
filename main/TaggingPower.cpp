@@ -38,7 +38,7 @@ int main(int argc, const char * argv[]){
   
   RooArgSet         observables(obsTagOS,obsTagSSPion,weight,obsEtaOS,obsEtaSSPion,"observables");
    
-  EasyTuple         sweighted_tuple("/home/fmeier/storage03/Tuple/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_FT_TupleD.root","B02DD",observables);
+  EasyTuple         sweighted_tuple("/home/fmeier/storage03/Tuple/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150706_TupleB_BDT_MassVetos_sweights_FT.root","B02DD",observables);
   sweighted_tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar("SigWeight"));
   signaldata.Print();
@@ -56,12 +56,12 @@ int main(int argc, const char * argv[]){
   double            mean_mistag_OS_error = 1./sqrt(signaldata_allOS.sumEntries());
   cout  <<  "Mean mistag OS: "  <<  mean_mistag_OS  <<  " pm "  <<  mean_mistag_OS_error <<  endl;
 
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_OS,    0.3657, 0.982, 0.3595, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "OS exclusively");
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_SS,    0.3657, 0.982, 0.3595, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "SSPion exclusively");
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_BS,    0.3657, 0.982, 0.3595, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "exclusive overlap");
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allOS, 0.3657, 0.982, 0.3595, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "all OS");
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allSS, 0.3657, 0.982, 0.3595, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "all SSPion");
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata,       0.3657, 0.982, 0.3595, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "all");
+  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_OS,    mean_mistag_OS+0.0062, 0.982, mean_mistag_OS, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "OS exclusively");
+  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_SS,    mean_mistag_OS+0.0062, 0.982, mean_mistag_OS, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "SSPion exclusively");
+  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_BS,    mean_mistag_OS+0.0062, 0.982, mean_mistag_OS, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "exclusive overlap");
+  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allOS, mean_mistag_OS+0.0062, 0.982, mean_mistag_OS, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "all OS");
+  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allSS, mean_mistag_OS+0.0062, 0.982, mean_mistag_OS, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "all SSPion");
+  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata,       mean_mistag_OS+0.0062, 0.982, mean_mistag_OS, 0.0140, 0.066, 0.4232, 1.011, 0.425, -0.0026, -0.18, 0.0019, 0.007, 0.0044, 0.10, "all");
   
   return 0;
 }
