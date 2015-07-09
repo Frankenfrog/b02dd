@@ -126,7 +126,7 @@ int main(int argc, char * argv[]){
   RooArgSet         categories(catYear,catTag,SigWeight,"categories");
   
   // Get data set
-  EasyTuple         tuple("/home/fmeier/storage03/Tuple/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_FT_TupleD.root","B02DD",RooArgSet(observables,categories));
+  EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet*       data = &(tuple.ConvertToDataSet(WeightVar(SigWeight)));
   data->Print();
