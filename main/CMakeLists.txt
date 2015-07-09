@@ -1,7 +1,5 @@
 add_subdirectory(GrimReaper)
 add_subdirectory(MassFits)
-add_subdirectory(Reducer)
-
 
 # Executables
 add_executable(PID_cut_optimization PID_cut_optimization.cpp)
