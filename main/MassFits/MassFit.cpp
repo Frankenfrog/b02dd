@@ -95,8 +95,13 @@ int main(int argc, char * argv[]){
 
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
+  catDDFinalState.defineType("KpipiKKpi",13);
+  catDDFinalState.defineType("KpipiKpiK",14);
+  catDDFinalState.defineType("KKpiKpipi",31);
+  catDDFinalState.defineType("KpiKKpipi",41);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
 
   RooCategory       catYear("catYear","catYear");
   catYear.defineType("2011",2011);
@@ -299,9 +304,7 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
-  RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.12&&varKplus_PID>0.12&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.7&&varPiTwoplus_PID<0.7"));
-  optimized_data->Print();
-  RooFitResult* fit_result = pdfMass->fitTo(*optimized_data, fitting_args);
+  RooFitResult* fit_result = pdfMass->fitTo(data, fitting_args);
   doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
 
@@ -316,19 +319,19 @@ int main(int argc, char * argv[]){
   components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgBdBsExtend.*", "pdfBkgBsDsDExtend.*";
   Plot* Mass;
   if (massmodel_ipatia) {
-    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *optimized_data, *((RooSimultaneous*)pdfMass), components_mass, "Ipatia_obsMass");
-    else Mass = new Plot(cfg_plot_mass, obsMass, *optimized_data, *pdfMass, components_mass, "Ipatia_obsMass");
+    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "Ipatia_obsMass");
+    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "Ipatia_obsMass");
   }
   else {
-    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *optimized_data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
-    else Mass = new Plot(cfg_plot_mass, obsMass, *optimized_data, *pdfMass, components_mass, "obsMass");
+    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
+    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "obsMass");
   }
   Mass->PlotItLogNoLogY();
 
   if (calculate_sweights && split_years){
     RooArgSet set_of_yields_11(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgBdBsYield_11/*,parBkgBsDsDYield_11*/);
     RooArgSet set_of_yields_12(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgBdBsYield_12/*,parBkgBsDsDYield_12*/);
-    SPlotFit2 splotfit(*pdfMass,*optimized_data,RooArgSet(set_of_yields_11,set_of_yields_12));
+    SPlotFit2 splotfit(*pdfMass,data,RooArgSet(set_of_yields_11,set_of_yields_12));
     splotfit.set_use_minos(false);
     splotfit.set_num_cpu(config.getInt("num_cpu"));
     
