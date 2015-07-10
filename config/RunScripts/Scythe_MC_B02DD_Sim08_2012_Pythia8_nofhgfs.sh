@@ -1,11 +1,11 @@
 #!/bin/bash
 
 RUN_NAME=MCProduction
-INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/MC/Sim08/2012/
+INPUT_PATH=/net/storage/TANK/fhgfs/groups/e5/lhcb/NTuples/B02DD/MC/Sim08/2012/
 INPUT_FILE_NAME=MC_Sim08g_2012_Pythia8_B02DD_CPV_Stripping21_DVv36r6_20150529_fmeier_combined_TupleA.root
 BASE_FILE_NAME=MC_Sim08g_2012_Pythia8_B02DD_CPV_Stripping21_DVv36r6_20150529_fmeier
 OUTPUT_PATH=/home/fmeier/storage03/Tuple/
-DATE=20150529
+DATE=20150710
 PRODUCER=fmeier
 echo "Starting Scythe ${RUN_NAME}..."
 
@@ -33,14 +33,14 @@ MultiCutGrimReaper "${OUTPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleAPl
 
 echo ""
 echo "**Tuple B** (common variables, pre-selected, BDT selection)"
-echo "${OUTPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_BDT_TupleB.root"
+echo "${OUTPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB_BDT.root"
 TMVAGrimReaper /home/fmeier/git/b02dd/config/Reducer/TMVAGrimReaper_MC_2012_P8_BDT.cfg > scythe_${RUN_NAME}_${DATE}_Sim08g_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt.log
 
-#echo ""
-#echo "**Tuple B** (flat, common variables, mass and time cuts, only used trigger lines, offline selection applied)"
-#echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_combined_selected_TupleB.root"
-#MultiCutGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_combined_TupleB.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_combined_selected_TupleB.root" B02DD /home/fmeier/git/b02dd/config/Reducer/DetachedFlatCombinedSelection.cfg > scythe_${RUN_NAME}_${DATE}_Sim08g_2012_Pythia8_B02DD_Detached_vars_tupleb_cuts_selection.log
-#
+echo ""
+echo "**Tuple B** (common variables, pre-selected, BDT selection, MassVetos, PID cuts)"
+echo "${OUTPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB_BDT_MassVetos.root"
+MultiCutGrimReaper "${OUTPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB_BDT.root" B02DD "${OUTPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleB_BDT_MassVetos.root" B02DD /home/fmeier/git/b02dd/config/Reducer/MassVetos.cfg > scythe_${RUN_NAME}_${DATE}_Sim08g_2012_Pythia8_B02DD_vars_tupleb_cuts_bdt_massvetos.log
+
 #echo ""
 #echo "**Tuple B** (flat, common variables, mass and time cuts, only used trigger lines, offline selection applied, Pythia category, FT variables)"
 #echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_combined_selected_FT_TupleB.root"
