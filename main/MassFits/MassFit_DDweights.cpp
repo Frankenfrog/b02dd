@@ -48,9 +48,10 @@
 #include "doocore/io/MsgStream.h"
 #include "doocore/io/EasyTuple.h"
 #include "doocore/lutils/lutils.h"
+#include "doocore/config/EasyConfig.h"
 
 // from DooFit
-#include "URANIA/RooIpatia2.h"
+#include "Urania/RooIpatia2.h"
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
@@ -67,12 +68,17 @@ using namespace doocore::lutils;
 using namespace doofit::plotting;
 
 int main(int argc, char * argv[]){
-
-  bool massmodel_ipatia = false;
-  bool split_years      = true;
+  if (argc != 2) {
+    std::cout << "Usage:   " << argv[0] << " 'config_file_name'" << std::endl;
+    return 0;
+  }
+  doocore::config::EasyConfig config(argv[1]);
+  bool massmodel_ipatia = config.getBool("ipatia");
+  bool split_years      = config.getBool("split_years");
 
   RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5400,"MeV/c^{2}");
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
+  RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
   RooRealVar        DD_weight("parSigDDYield_sw","parSigDDYield_sw",-10,10);
 
   RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
@@ -83,26 +89,12 @@ int main(int argc, char * argv[]){
   RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
   RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
 
-  RooRealVar        varDminusMassHypo_KKpi("varDminusMassHypo_KKpi","varDminusMassHypo_KKpi",0,5000);
-  RooRealVar        varDminusMassHypo_KpiK("varDminusMassHypo_KpiK","varDminusMassHypo_KpiK",0,5000);
-  RooRealVar        varDplusMassHypo_KKpi("varDplusMassHypo_KKpi","varDplusMassHypo_KKpi",0,5000);
-  RooRealVar        varDplusMassHypo_KpiK("varDplusMassHypo_KpiK","varDplusMassHypo_KpiK",0,5000);
-  RooArgSet         varDMassHypos(varDminusMassHypo_KKpi,varDminusMassHypo_KpiK,varDplusMassHypo_KKpi,varDplusMassHypo_KpiK,"varDMassHypos");
-
-  RooRealVar        varPhiMassHypo_DminusOne("varPhiMassHypo_DminusOne","varPhiMassHypo_DminusOne",0,2000);
-  RooRealVar        varPhiMassHypo_DminusTwo("varPhiMassHypo_DminusTwo","varPhiMassHypo_DminusTwo",0,2000);
-  RooRealVar        varPhiMassHypo_DplusOne("varPhiMassHypo_DplusOne","varPhiMassHypo_DplusOne",0,2000);
-  RooRealVar        varPhiMassHypo_DplusTwo("varPhiMassHypo_DplusTwo","varPhiMassHypo_DplusTwo",0,2000);
-  RooArgSet         varPhiMassHypos(varPhiMassHypo_DminusOne,varPhiMassHypo_DminusTwo,varPhiMassHypo_DplusOne,varPhiMassHypo_DplusTwo,"varPhiMassHypos");
-
-  RooRealVar        Dminus_piminus_or_Kminus_One_PIDK("Dminus_piminus_or_Kminus_One_PIDK","Dminus_piminus_or_Kminus_One_PIDK",-100,100);
-  RooRealVar        Dminus_piminus_or_Kminus_Two_PIDK("Dminus_piminus_or_Kminus_Two_PIDK","Dminus_piminus_or_Kminus_Two_PIDK",-100,100);
-  RooRealVar        Dplus_piplus_or_Kplus_One_PIDK("Dplus_piplus_or_Kplus_One_PIDK","Dplus_piplus_or_Kplus_One_PIDK",-100,100);
-  RooRealVar        Dplus_piplus_or_Kplus_Two_PIDK("Dplus_piplus_or_Kplus_Two_PIDK","Dplus_piplus_or_Kplus_Two_PIDK",-100,100);
-  RooArgSet         varPIDKs(Dminus_piminus_or_Kminus_One_PIDK,Dminus_piminus_or_Kminus_Two_PIDK,Dplus_piplus_or_Kplus_One_PIDK,Dplus_piplus_or_Kplus_Two_PIDK,"varPIDKs");
-
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
-  catDDFinalState.defineType("KpipiKpipi",1);
+  catDDFinalState.defineType("KpipiKpipi",11);
+  catDDFinalState.defineType("KpipiKKpi",13);
+  catDDFinalState.defineType("KpipiKpiK",14);
+  catDDFinalState.defineType("KKpiKpipi",31);
+  catDDFinalState.defineType("KpiKKpipi",41);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
 
@@ -111,19 +103,15 @@ int main(int argc, char * argv[]){
   catYear.defineType("2012",2012);
 
   RooArgSet         observables(obsMass,"observables");
-  RooArgSet         variables(varBDT,DD_weight,"variables");
+  RooArgSet         variables(varBDT,varDMinTauSignificance,DD_weight,"variables");
   variables.add(varPIDs);
-  variables.add(varDMassHypos);
-  variables.add(varPhiMassHypos);
-  variables.add(varPIDKs);
   RooArgSet         realvars(observables,variables,"realvars");
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
   // Get data set
-  // EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/Combined_2011_2012/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150520_fmeier_BDT_TupleB_BDT99applied_relevantfinalstates_Dsweights.root","B02DD",RooArgSet(realvars,categories));
-  EasyTuple         tuple(argv[1],"B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"));//,Cut("!((abs(varDminusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DminusOne-1019.461)<25||Dminus_piminus_or_Kminus_One_PIDK>-10.))||(abs(varDminusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DminusTwo-1019.461)<25||Dminus_piminus_or_Kminus_Two_PIDK>-10.))||(abs(varDplusMassHypo_KKpi-1968.3)<25&&(abs(varPhiMassHypo_DplusOne-1019.461)<25||Dplus_piplus_or_Kplus_One_PIDK>-10.))||(abs(varDplusMassHypo_KpiK-1968.3)<25&&(abs(varPhiMassHypo_DplusTwo-1019.461)<25||Dplus_piplus_or_Kplus_Two_PIDK>-10.)))"));
+  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"));
   
   data.Print();
 
@@ -235,7 +223,7 @@ int main(int argc, char * argv[]){
   pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_DDweightsMass.txt");
   pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/StartingValues_Mass.new");
   RooLinkedList fitting_args;
-  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(8))));
+  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(config.getInt("num_cpu")))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
@@ -249,23 +237,23 @@ int main(int argc, char * argv[]){
   doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
 
-  if (massmodel_ipatia) pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_Ipatia_DDweights_"+TString(argv[2])+".txt");
-  else pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_DDweights_"+TString(argv[2])+".txt");
+  if (massmodel_ipatia) pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_Ipatia_DDweights_"+TString(config.getString("identifier"))+".txt");
+  else pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_DDweights_"+TString(config.getString("identifier"))+".txt");
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
   cfg_plot_mass.InitializeOptions();
-  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots/"+string(argv[2]));
+  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots/"+string(config.getString("identifier")));
   cfg_plot_mass.set_simultaneous_plot_all_categories(true);
   std::vector<std::string> components_mass;
   components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgDstDLowExtend.*", "pdfBkgDstDHighExtend.*", "pdfBkgExtend.*";
   Plot* Mass;
   if (massmodel_ipatia) {
-    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_Ipatia_obsMass_"+string(argv[2]));
-    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_Ipatia_obsMass_"+string(argv[2]));
+    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_Ipatia_obsMass_"+string(config.getString("identifier")));
+    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_Ipatia_obsMass_"+string(config.getString("identifier")));
   }
   else {
-    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_obsMass_"+string(argv[2]));
-    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_obsMass_"+string(argv[2]));
+    if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_obsMass_"+string(config.getString("identifier")));
+    else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_obsMass_"+string(config.getString("identifier")));
   }
   Mass->PlotItLogNoLogY();
 

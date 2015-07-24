@@ -48,9 +48,10 @@
 #include "doocore/io/MsgStream.h"
 #include "doocore/io/EasyTuple.h"
 #include "doocore/lutils/lutils.h"
+#include "doocore/config/EasyConfig.h"
 
 // from DooFit
-#include "URANIA/RooIpatia2.h"
+#include "Urania/RooIpatia2.h"
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
@@ -72,16 +73,27 @@ using namespace doofit::plotting;
 using namespace doofit::fitter::splot;
 
 int main(int argc, char * argv[]){
+  if (argc != 2) {
+    std::cout << "Usage:   " << argv[0] << " 'config_file_name'" << std::endl;
+    return 0;
+  }
+  doocore::config::EasyConfig config(argv[1]);
 
-  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1830,1910,"MeV/c^{2}");
-  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1830,1910,"MeV/c^{2}");
+  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
 
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
+  RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
 
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
-  catDDFinalState.defineType("KpipiKpipi",1);
+  catDDFinalState.defineType("KpipiKpipi",11);
+  catDDFinalState.defineType("KpipiKKpi",13);
+  catDDFinalState.defineType("KpipiKpiK",14);
+  catDDFinalState.defineType("KKpiKpipi",31);
+  catDDFinalState.defineType("KpiKKpipi",41);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
 
   RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
   RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
@@ -91,16 +103,16 @@ int main(int argc, char * argv[]){
   RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
 
   RooArgSet         observables(obsMassDauOne,obsMassDauTwo,"observables");
-  RooArgSet         variables(varBDT,"variables");
+  RooArgSet         variables(varBDT,varDMinTauSignificance,"variables");
   RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
   RooArgSet         realvars(observables,variables,"realvars");
   realvars.add(varPIDs);
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,"categories");
   
   // Get data set
-  EasyTuple         tuple(argv[1],argv[2],RooArgSet(realvars,categories));
+  EasyTuple         tuple(config.getString("input_tuple"),config.getString("input_tree"),RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet();//Cut("(abs(varDplusMassHypo_KKpi-1968.3)>25||Dplus_piplus_or_Kplus_One_RichDLLk<-10)&&(abs(varDplusMassHypo_KpiK-1968.3)>25||Dplus_piplus_or_Kplus_Two_RichDLLk<-10)&&(abs(varDminusMassHypo_KKpi-1968.3)>25||Dminus_piminus_or_Kminus_One_RichDLLk<-10)&&(abs(varDminusMassHypo_KpiK-1968.3)>25||Dminus_piminus_or_Kminus_Two_RichDLLk<-10)"));
+  RooDataSet&       data = tuple.ConvertToDataSet(Cut(TString(config.getString("cut"))));
   
   data.Print();
 
@@ -136,7 +148,7 @@ int main(int argc, char * argv[]){
   pdfMass.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
   pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/StartingValues_Mass.new");
   RooLinkedList fitting_args;
-  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
+  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(config.getInt("num_cpu")))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
@@ -146,44 +158,89 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
-  //RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
-  RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce(argv[4]));
-  optimized_data->Print();
-  RooFitResult* fit_result = pdfMass.fitTo(*optimized_data, fitting_args);
-  pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResult_"+TString(argv[5])+".txt");
-  doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
-  fitresultprinter.Print();
+  if (config.getBool("optimize_DtauSignificance")){
+    RooDataSet* reduced_data;
+    int nsteps = config.getInt("nsteps");
+    double cutvalue = 0.;
+    double FOM = 0.;
+    double FOM_max = 0.;
+    std::vector<double> x_vals;
+    std::vector<double> y_vals;
+    std::vector<double> y_errors;
+    double FOM_error_Ntot = 0.;
+    double FOM_error_Nbkg = 0.;
+    double FOM_error_expo = 0.;
+    RooFitResult* fit_result;
+    for (int i = 0; i < nsteps; ++i){
+      cutvalue = -5 + i;
+      reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString("varDMinTauSignificance>"+to_string(cutvalue))));
+      reduced_data->Print();
+      fit_result = pdfMass.fitTo(*reduced_data, fitting_args);
+      x_vals += cutvalue;
+      FOM = pow(parSigDDYield.getVal(),config.getDouble("FOM_expo"))/sqrt(reduced_data->sumEntries());
+      y_vals += FOM;
+      if (FOM > FOM_max)  FOM_max = FOM;
+      y_errors += 0;
+    }
+    double gr_x_vals[x_vals.size()];
+    double gr_y_vals[x_vals.size()];
+    double gr_y_errors[x_vals.size()];
+    for (int i = 0; i < x_vals.size(); ++i) {
+      gr_x_vals[i] = x_vals.at(i);
+      gr_y_vals[i] = y_vals.at(i)/FOM_max;
+      gr_y_errors[i] = y_errors.at(i);
+    }
+    gROOT->SetStyle("Plain");
+    setStyle("LHCb");
+    TCanvas c("c","c",800,600);
+    TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+    gr.GetXaxis()->SetTitle("D tau significance");
+    if (config.getDouble("FOM_expo") == 1.) gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
+    if (config.getDouble("FOM_expo") == 2.) gr.GetYaxis()->SetTitle("FOM = S^{2}/#sqrt{S+B}");
+    if (config.getDouble("FOM_expo") == 3.) gr.GetYaxis()->SetTitle("FOM = S^{3}/#sqrt{S+B}");
+    gr.Draw("AP");
+    c.SaveAs("/home/fmeier/storage03/b02dd/run/sWeights/DTauSignificance_Optimization_"+TString(to_string(config.getDouble("FOM_expo")))+".pdf");
 
-  PlotConfig cfg_plot_mass("cfg_plot_mass");
-  cfg_plot_mass.InitializeOptions();
-  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots");
+    for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
+  }
+  else {
+    RooFitResult* fit_result = pdfMass.fitTo(data, fitting_args);
+    pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResult_"+TString(config.getString("identifier"))+".txt");
+    doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+    fitresultprinter.Print();
   
-  std::vector<std::string> components_Dplus;
-  components_Dplus += "pdfSigDplusMass", "pdfBkgDplusMass";
-  Plot MassDplus(cfg_plot_mass, obsMassDauOne, *optimized_data, pdfMass, components_Dplus, "obsMassDauOne_"+string(argv[5]));
-  MassDplus.PlotIt();
+    PlotConfig cfg_plot_mass("cfg_plot_mass");
+    cfg_plot_mass.InitializeOptions();
+    cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots");
 
-  std::vector<std::string> components_Dminus;
-  components_Dminus += "pdfSigDminusMass", "pdfBkgDminusMass";
-  Plot MassDminus(cfg_plot_mass, obsMassDauTwo, *optimized_data, pdfMass, components_Dminus, "obsMassDauTwo_"+string(argv[5]));
-  MassDminus.PlotIt();
-
-  SPlotFit2 splotfit(pdfMass,*optimized_data,RooArgSet(parSigDDYield,parBkgDCombYield,parBkgCombDYield,parBkgCombYield));
-  splotfit.set_use_minos(false);
-  splotfit.set_num_cpu(4);
+    std::vector<std::string> components_Dplus;
+    components_Dplus += "pdfSigDplusMass", "pdfBkgDplusMass";
+    Plot MassDplus(cfg_plot_mass, obsMassDauOne, data, pdfMass, components_Dplus, "obsMassDauOne_"+string(config.getString("identifier")));
+    MassDplus.PlotIt();
   
-  dooselection::reducer::SPlotterReducer spr(splotfit, RooArgSet(obsMassDauOne,obsMassDauTwo));
-  spr.set_input_file_path(argv[1]);
-  spr.set_input_tree_path(argv[2]);
-  spr.set_output_file_path(argv[3]);
+    std::vector<std::string> components_Dminus;
+    components_Dminus += "pdfSigDminusMass", "pdfBkgDminusMass";
+    Plot MassDminus(cfg_plot_mass, obsMassDauTwo, data, pdfMass, components_Dminus, "obsMassDauTwo_"+string(config.getString("identifier")));
+    MassDminus.PlotIt();
+  }
 
-  spr.set_output_tree_path("B02DD");
-  spr.set_cut_string("obsMassDauOne>="+to_string(obsMassDauOne.getMin())+"&&obsMassDauOne<="+to_string(obsMassDauOne.getMax())+"&&obsMassDauTwo>="+to_string(obsMassDauTwo.getMin())+"&&obsMassDauTwo<="+to_string(obsMassDauTwo.getMax())+"&&catDDFinalState==1&&catTriggerSetTopo234BodyBBDT==1&&"+string(argv[4]));
-  spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
-  spr.Initialize();
-  spr.Run();
-  spr.Finalize();
+  if (config.getBool("calculate_sweights")){
+    SPlotFit2 splotfit(pdfMass,data,RooArgSet(parSigDDYield,parBkgDCombYield,parBkgCombDYield,parBkgCombYield));
+    splotfit.set_use_minos(false);
+    splotfit.set_num_cpu(config.getInt("num_cpu"));
 
+    dooselection::reducer::SPlotterReducer spr(splotfit, RooArgSet(obsMassDauOne,obsMassDauTwo));
+    spr.set_input_file_path(config.getString("input_tuple"));
+    spr.set_input_tree_path(config.getString("input_tree"));
+    spr.set_output_file_path(config.getString("sweights_tuple"));
+
+    spr.set_output_tree_path("B02DD");
+    spr.set_cut_string("obsMassDauOne>="+to_string(obsMassDauOne.getMin())+"&&obsMassDauOne<="+to_string(obsMassDauOne.getMax())+"&&obsMassDauTwo>="+to_string(obsMassDauTwo.getMin())+"&&obsMassDauTwo<="+to_string(obsMassDauTwo.getMax())+"&&"+string(config.getString("cut")));
+    spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
+    spr.Initialize();
+    spr.Run();
+    spr.Finalize();
+  }
 
   return 0;
 }

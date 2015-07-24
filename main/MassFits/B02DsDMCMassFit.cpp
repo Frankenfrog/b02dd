@@ -48,7 +48,7 @@
 #include "doocore/lutils/lutils.h"
 
 // from DooFit
-#include "URANIA/RooIpatia2.h"
+#include "Urania/RooIpatia2.h"
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
 
