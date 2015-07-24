@@ -1,0 +1,23 @@
+parSigTimeC		      		  =  0  L(-1 - 1) 
+parSigEtaDeltaG    	  		  =  0.000 C
+parSigTimeDeltaM   	  		  =  0.510 L(0.4 - 0.6) 
+parSigTimeDeltaMMean  		  =  0.510 C
+parSigTimeDeltaMSigma 		  =  0.004 C
+parSigTimeSin2b       		  =  0.7  L(0 - 1) 
+parSigTimeTau         		  =  1.520 L(1.4 - 1.6) 
+parSigTimeTauMean     		  =  1.519 C
+parSigTimeTauSigma    		  =  0.005 C
+
+parResMean			  		  =  0.000 C
+parResCorrectionOffset1		  =  0.000 C
+parResCorrectionOffset2		  =  0.000 C
+parResSigmaCorrectionFactor1  =  1.000 C
+parResSigmaCorrectionFactor2  =  1.000 C
+parResFraction2				  =  0.500 C
+
+parSigTimeAccCSpline1 =  0.5 L(0 - 2) 
+parSigTimeAccCSpline2 =  0.6 L(0 - 2) 
+parSigTimeAccCSpline3 =  0.8 L(0 - 2) 
+parSigTimeAccCSpline4 =  1 C L(0 - 2) 
+parSigTimeAccCSpline5 =  0.8 L(0 - 2) 
+parSigTimeAccCSpline6 =  0.7 L(0 - 2) 
