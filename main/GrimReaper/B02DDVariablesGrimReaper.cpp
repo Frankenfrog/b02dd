@@ -55,6 +55,15 @@ class B02DDVariablesReducer : public Reducer {
   Float_t* Dminus_P1_ID;
   Float_t* Dminus_P2_ID;
 
+  ReducerLeaf<Double_t>* obsMassDau_Kpipi;
+  ReducerLeaf<Double_t>* obsMassDau_KKpi;
+
+  Double_t* obsMassDau_Kpipi_value;
+  Double_t* obsMassDau_KKpi_value;
+
+  Float_t* B0_FitPVConst_Dplus_M;
+  Float_t* B0_FitPVConst_Dminus_M;
+
   ReducerLeaf<Double_t>* varPiOneminus_ProbNNk;
   ReducerLeaf<Double_t>* varPiOneminus_ProbNNpi;
   ReducerLeaf<Double_t>* varPiOneminus_ProbNNp;
@@ -146,6 +155,15 @@ class B02DDVariablesReducer : public Reducer {
     DplusFinalState = (Int_t*)catDplusFinalState->branch_address();
     DminusFinalState = (Int_t*)catDminusFinalState->branch_address();
     DDFinalState = (Int_t*)catDDFinalState->branch_address();
+
+    obsMassDau_Kpipi = &(CreateDoubleLeaf("obsMassDau_Kpipi", -1000.));
+    obsMassDau_KKpi  = &(CreateDoubleLeaf("obsMassDau_KKpi", -1000.));
+
+    obsMassDau_Kpipi_value = (Double_t*)obsMassDau_Kpipi->branch_address();
+    obsMassDau_KKpi_value  = (Double_t*)obsMassDau_KKpi->branch_address();
+
+    B0_FitPVConst_Dplus_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus_M").branch_address();
+    B0_FitPVConst_Dminus_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dminus_M").branch_address();
 
     Dminus_piminus_or_Kminus_One_PT = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_PT").branch_address();
     Dminus_piminus_or_Kminus_Two_PT = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_PT").branch_address();
@@ -243,6 +261,15 @@ class B02DDVariablesReducer : public Reducer {
     if (*DplusFinalState == 3 && *DminusFinalState == 4) *DDFinalState = 34;
     if (*DplusFinalState == 4 && *DminusFinalState == 3) *DDFinalState = 43;
     if (*DplusFinalState == 4 && *DminusFinalState == 4) *DDFinalState = 44;
+
+    if (*DDFinalState == 13 || *DDFinalState == 14) {
+      *obsMassDau_Kpipi_value = *B0_FitPVConst_Dplus_M;
+      *obsMassDau_KKpi_value  = *B0_FitPVConst_Dminus_M;
+    }
+    if (*DDFinalState == 31 || *DDFinalState == 41) {
+      *obsMassDau_Kpipi_value = *B0_FitPVConst_Dminus_M;
+      *obsMassDau_KKpi_value  = *B0_FitPVConst_Dplus_M;
+    }
 
     if (*Dminus_piminus_or_Kminus_One_PT > *Dminus_piminus_or_Kminus_Two_PT) {
       *varPiOneminus_ProbNNk_value = *Dminus_piminus_or_Kminus_Two_ProbNNk;
@@ -430,7 +457,7 @@ void MassLeaves(Reducer* _rdcr, cfg_tuple& cfg){
     _rdcr->CreateDoubleCopyLeaf("obsMassErrLokiDauOne", _rdcr->GetInterimLeafByName("Dplus_MMERR"));
     _rdcr->CreateDoubleCopyLeaf("obsMassLokiDauTwo", _rdcr->GetInterimLeafByName("Dminus_MM"));
     _rdcr->CreateDoubleCopyLeaf("obsMassErrLokiDauTwo", _rdcr->GetInterimLeafByName("Dminus_MMERR"));
-  } 
+  }
   _rdcr->CreateDoubleCopyLeaf("obsMass", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_"+main_observable_constraint+flat_suffix));
   _rdcr->CreateDoubleCopyLeaf("obsMassErr", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_"+main_observable_constraint_error+flat_suffix));
   summary.Add("obsMass fit constraints", main_observable_constraint);
@@ -471,7 +498,7 @@ void TimeLeaves(Reducer* _rdcr, cfg_tuple& cfg){
     // the "true" time error is defined as "reconstructed decay time" - "true decay time"
     tau_true_err_leaf_ptr = &_rdcr->CreateDoubleLeaf("obsTimeErr_True", 1000.0);
     if (_rdcr->LeafExists(std::get<0>(cfg)+"_FitPVConst_tau")) {
-      tau_true_err_leaf_ptr->Add(_rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_FitPVConst_tau"+flat_suffix), _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1.0, -1.0);
+      tau_true_err_leaf_ptr->Add(_rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_FitPVConst_tau"+flat_suffix), _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1000.0, -1000.0);
     }
     else if (_rdcr->LeafExists(std::get<0>(cfg)+"_LOKI_DTF_CTAU")){
       tau_true_err_leaf_ptr->Add(_rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_LOKI_DTF_CTAU"), _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1.0/0.299792458, -1.0);      
@@ -1215,6 +1242,70 @@ void VetoLeaves(Reducer* _rdcr, cfg_tuple& cfg){
         938.272046);
     _rdcr->RegisterDoubleLeaf(varDminusMassHypo_pipip);
 
+    KinematicReducerLeaf<Double_t>* varDplusMassHypo_Kpimu = new KinematicReducerLeaf<Double_t>("varDplusMassHypo_Kpimu", "varDplusMassHypo_Kpimu", "Double_t", NULL);
+    varDplusMassHypo_Kpimu->FixedMassDaughtersThreeBodyDecayMotherMass(
+        _rdcr->GetInterimLeafByName(Kminus_px),
+        _rdcr->GetInterimLeafByName(Kminus_py),
+        _rdcr->GetInterimLeafByName(Kminus_pz),
+        493.677,
+        _rdcr->GetInterimLeafByName(piplus_px),
+        _rdcr->GetInterimLeafByName(piplus_py),
+        _rdcr->GetInterimLeafByName(piplus_pz),
+        139.57018,
+        _rdcr->GetInterimLeafByName(piplus0_px),
+        _rdcr->GetInterimLeafByName(piplus0_py),
+        _rdcr->GetInterimLeafByName(piplus0_pz),
+        105.6584);
+    _rdcr->RegisterDoubleLeaf(varDplusMassHypo_Kpimu);
+
+    KinematicReducerLeaf<Double_t>* varDminusMassHypo_Kpimu = new KinematicReducerLeaf<Double_t>("varDminusMassHypo_Kpimu", "varDminusMassHypo_Kpimu", "Double_t", NULL);
+    varDminusMassHypo_Kpimu->FixedMassDaughtersThreeBodyDecayMotherMass(
+        _rdcr->GetInterimLeafByName(Kplus_px),
+        _rdcr->GetInterimLeafByName(Kplus_py),
+        _rdcr->GetInterimLeafByName(Kplus_pz),
+        493.677,
+        _rdcr->GetInterimLeafByName(piminus_px),
+        _rdcr->GetInterimLeafByName(piminus_py),
+        _rdcr->GetInterimLeafByName(piminus_pz),
+        139.57018,
+        _rdcr->GetInterimLeafByName(piminus0_px),
+        _rdcr->GetInterimLeafByName(piminus0_py),
+        _rdcr->GetInterimLeafByName(piminus0_pz),
+        105.6584);
+    _rdcr->RegisterDoubleLeaf(varDminusMassHypo_Kpimu);
+
+    KinematicReducerLeaf<Double_t>* varDplusMassHypo_Kmupi = new KinematicReducerLeaf<Double_t>("varDplusMassHypo_Kmupi", "varDplusMassHypo_Kmupi", "Double_t", NULL);
+    varDplusMassHypo_Kmupi->FixedMassDaughtersThreeBodyDecayMotherMass(
+        _rdcr->GetInterimLeafByName(Kminus_px),
+        _rdcr->GetInterimLeafByName(Kminus_py),
+        _rdcr->GetInterimLeafByName(Kminus_pz),
+        493.677,
+        _rdcr->GetInterimLeafByName(piplus_px),
+        _rdcr->GetInterimLeafByName(piplus_py),
+        _rdcr->GetInterimLeafByName(piplus_pz),
+        105.6584,
+        _rdcr->GetInterimLeafByName(piplus0_px),
+        _rdcr->GetInterimLeafByName(piplus0_py),
+        _rdcr->GetInterimLeafByName(piplus0_pz),
+        139.57018);
+    _rdcr->RegisterDoubleLeaf(varDplusMassHypo_Kmupi);
+
+    KinematicReducerLeaf<Double_t>* varDminusMassHypo_Kmupi = new KinematicReducerLeaf<Double_t>("varDminusMassHypo_Kmupi", "varDminusMassHypo_Kmupi", "Double_t", NULL);
+    varDminusMassHypo_Kmupi->FixedMassDaughtersThreeBodyDecayMotherMass(
+        _rdcr->GetInterimLeafByName(Kplus_px),
+        _rdcr->GetInterimLeafByName(Kplus_py),
+        _rdcr->GetInterimLeafByName(Kplus_pz),
+        493.677,
+        _rdcr->GetInterimLeafByName(piminus_px),
+        _rdcr->GetInterimLeafByName(piminus_py),
+        _rdcr->GetInterimLeafByName(piminus_pz),
+        105.6584,
+        _rdcr->GetInterimLeafByName(piminus0_px),
+        _rdcr->GetInterimLeafByName(piminus0_py),
+        _rdcr->GetInterimLeafByName(piminus0_pz),
+        139.57018);
+    _rdcr->RegisterDoubleLeaf(varDminusMassHypo_Kmupi);
+
     KinematicReducerLeaf<Double_t>* varBMassHypo_Dpluspipi = new KinematicReducerLeaf<Double_t>("varBMassHypo_Dpluspipi", "varBMassHypo_Dpluspipi", "Double_t", NULL);
     varBMassHypo_Dpluspipi->FixedMassDaughtersThreeBodyDecayMotherMass(
         _rdcr->GetInterimLeafByName(Dplus_px),
@@ -1362,6 +1453,10 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   // Separation from PV
   _rdcr->CreateDoubleLeaf("varDMinVtxSepChi2", -99999999.).Minimum(_rdcr->GetInterimLeafByName("Dplus_LOKI_VertexSeparation_CHI2"), _rdcr->GetInterimLeafByName("Dminus_LOKI_VertexSeparation_CHI2"));
   _rdcr->CreateDoubleLeaf("varDMaxVtxSepChi2", -99999999.).Maximum(_rdcr->GetInterimLeafByName("Dplus_LOKI_VertexSeparation_CHI2"), _rdcr->GetInterimLeafByName("Dminus_LOKI_VertexSeparation_CHI2"));
+  // Separation from SV
+  _rdcr->CreateDoubleCopyLeaf("varDplusBVtxSepChi2", _rdcr->GetInterimLeafByName("Dplus_FDCHI2_ORIVX"));
+  _rdcr->CreateDoubleCopyLeaf("varDminusBVtxSepChi2", _rdcr->GetInterimLeafByName("Dminus_FDCHI2_ORIVX"));
+  _rdcr->CreateDoubleLeaf("varDMinBVtxSepChi2", -99999999.).Minimum(_rdcr->GetInterimLeafByName("Dplus_FDCHI2_ORIVX"), _rdcr->GetInterimLeafByName("Dminus_FDCHI2_ORIVX"));
   // End vertex chi2/ndof
   ReducerLeaf<Double_t>& varBEndVtxChi2ndof = _rdcr->CreateDoubleLeaf("varBEndVtxChi2ndof", -99999999.);
   varBEndVtxChi2ndof.Divide(_rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_ENDVERTEX_CHI2"), _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_ENDVERTEX_NDOF"));
