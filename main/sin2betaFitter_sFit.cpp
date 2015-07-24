@@ -190,9 +190,10 @@ int main(int argc, char * argv[]){
   RooRealVar                parResSigmaCorrectionFactor2("parResSigmaCorrectionFactor2","Correctionfactor of Proper Time Errors 2",1.);
   LinearFunctionWithOffset  parResSigmaCorrection1("parResSigmaCorrection1",obsTimeErr,parResSigmaCorrectionFactor1,parResCorrectionOffset1);
   LinearFunctionWithOffset  parResSigmaCorrection2("parResSigmaCorrection2",obsTimeErr,parResSigmaCorrectionFactor2,parResCorrectionOffset2);
-  RooGaussModel             respereventGauss1("respereventGauss1","per event resolution model 1",obsTime,parResMean,parResSigmaCorrection1);
-  RooGaussModel             respereventGauss2("respereventGauss2","per event resolution model 2",obsTime,parResMean,parResSigmaCorrection2);
+  RooRealVar                parResSigma_wrongPV("parResSigma_wrongPV","Width of wrong PV component",1,0,5);
+
   RooRealVar                parResFraction2("parResFraction2","Fraction of second per event Gauss model",0.5);
+  RooRealVar                parResFraction_wrongPV("parResFraction_wrongPV","Fraction of wrong PV Gauss model",0.1);
 
 //=========================================================================================================================================================================================================================
   
@@ -215,8 +216,9 @@ int main(int argc, char * argv[]){
   RooResolutionModel*     efficiencymodel;
   RooGaussEfficiencyModel efficiencymodel1("efficiencymodel1","Gaussefficiencymodel 1",obsTime,accspline,parResMean,parResSigmaCorrection1);
   RooGaussEfficiencyModel efficiencymodel2("efficiencymodel2","Gaussefficiencymodel 2",obsTime,accspline,parResMean,parResSigmaCorrection2);
+  RooGaussEfficiencyModel efficiencymodel3("efficiencymodel3","Gaussefficiencymodel 3",obsTime,accspline,parResMean,parResSigma_wrongPV);
   if (!pereventresolution) efficiencymodel = new RooGaussEfficiencyModel("efficiencymodel","Gaussefficiencymodel",obsTime,accspline,parResMean,RooConst(0.05));
-  else efficiencymodel = new RooEffResAddModel("efficiencymodel","Per event resolution efficiency model",RooArgList(efficiencymodel2,efficiencymodel1),parResFraction2);
+  else efficiencymodel = new RooEffResAddModel("efficiencymodel","Per event resolution efficiency model",RooArgList(efficiencymodel3,efficiencymodel2,efficiencymodel1),RooArgList(parResFraction_wrongPV,parResFraction2));
 
 //=========================================================================================================================================================================================================================
 
@@ -408,7 +410,7 @@ int main(int argc, char * argv[]){
   RooArgSet projargset(obsTimeErr,obsTagOS,obsTagSSPion,obsEtaOS,obsEtaSSPion);
   Time.AddPlotArg(NumCPU(1));
 //  Time.AddPlotArg(Normalization(1./data->numEntries()));
-  Time.AddPlotArg(ProjWData(projargset,*data,false));
+  Time.AddPlotArg(ProjWData(projargset,*data,true));
   if (!cp_fit)  Time.PlotItLogY();
   
   return 0;
@@ -442,14 +444,14 @@ void PlotAcceptance(RooAbsReal* acceptance){
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
-  c.SetLogx(true);
-  
+
   RooRealVar        obsTime("obsTime","#it{t}",0.25,15.25,"ps");
 
   RooPlot* plot = obsTime.frame();
+  c.SetLogx(true);
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
-  plot->SetMaximum(1.);
+  // plot->SetMaximum(1.);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline.pdf");
@@ -458,18 +460,18 @@ void PlotAcceptance(RooAbsReal* acceptance){
   plot = obsTime.frame();
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
-  plot->SetMaximum(1.);
+  // plot->SetMaximum(1.);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_nolog.pdf");
   
-  c.SetLogx(true);
-  plot = obsTime.frame();
-  acceptance->plotOn(plot);
-  plot->SetMinimum(0.);
-  plot->SetMaximum(0.7);
-  plot->GetYaxis()->SetTitle("acceptance");
-  plot->Draw();
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_zoomed.pdf");
+  // c.SetLogx(true);
+  // plot = obsTime.frame();
+  // acceptance->plotOn(plot);
+  // plot->SetMinimum(0.);
+  // plot->SetMaximum(0.7);
+  // plot->GetYaxis()->SetTitle("acceptance");
+  // plot->Draw();
+  // c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_zoomed.pdf");
 }
 
