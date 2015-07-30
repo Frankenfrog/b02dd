@@ -455,7 +455,7 @@ int main(int argc, char * argv[]){
       TRandom3 random(0);
       TStopwatch  stopwatch;
 
-      for (int i = 0; i < 250 ; ++i) {
+      for (int i = 0; i < 20 ; ++i) {
         cout  <<  i <<  endl;
         try {
           data_bootstrapped = new RooDataSet("data_bootstrapped","data_bootstrapped",RooArgSet(observables,categories));
