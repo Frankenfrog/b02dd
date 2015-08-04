@@ -374,7 +374,7 @@ int main(int argc, char * argv[]){
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
-  fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
+  fitting_args.Add((TObject*)(new RooCmdArg(Minos(config.getBool("minos")))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
