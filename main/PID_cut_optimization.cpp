@@ -48,6 +48,7 @@
 #include "doocore/io/MsgStream.h"
 #include "doocore/io/EasyTuple.h"
 #include "doocore/lutils/lutils.h"
+#include "doocore/config/EasyConfig.h"
 
 // from DooFit
 #include "Urania/RooIpatia2.h"
@@ -64,22 +65,31 @@ using namespace doocore::io;
 using namespace doocore::lutils;
 using namespace doofit::plotting;
 
-void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args);
-void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString pionnumber = "One");
+void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString final_state = "Kpipi");
+void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString pionnumber = "One", TString final_state = "Kpipi");
+void KKPiPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString particle);
 void ElectronPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString pionnumber = "One");
 
 int main(int argc, char * argv[]){
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
-  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
+  if (argc != 2) {
+    std::cout << "Usage:   " << argv[0] << " 'config_file_name'" << std::endl;
+    return 0;
+  }
+  doocore::config::EasyConfig config(argv[1]);
 
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
 
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
+  catDDFinalState.defineType("KpipiKKpi",13);
+  catDDFinalState.defineType("KpipiKpiK",14);
+  catDDFinalState.defineType("KKpiKpipi",31);
+  catDDFinalState.defineType("KpiKKpipi",41);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
 
   RooCategory       catYear("catYear","catYear");
   catYear.defineType("2011",2011);
@@ -101,7 +111,7 @@ int main(int argc, char * argv[]){
   RooRealVar        varPiTwoplus_ProbNNpi("Dplus_piplus_or_Kplus_Two_ProbNNpi","Dplus_piplus_or_Kplus_Two_ProbNNpi",0,1);
   RooRealVar        varPiTwoplus_ProbNNe("Dplus_piplus_or_Kplus_Two_ProbNNe","Dplus_piplus_or_Kplus_Two_ProbNNe",0,1);
 
-  RooArgSet         observables(obsMass/*,obsMassDauOne,obsMassDauTwo*/,"observables");
+  RooArgSet         observables(obsMass,"observables");
   RooArgSet         variables(varBDT,"variables");
   RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varKaonProbNNs");
   RooArgSet         varPiOneProbNNs(varPiOneminus_ProbNNpi,varPiOneplus_ProbNNpi,varPiOneminus_ProbNNe,varPiOneplus_ProbNNe,"varPionProbNNs");
@@ -113,9 +123,9 @@ int main(int argc, char * argv[]){
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
   // Get data set
-  EasyTuple         tuple("/home/fmeier/storage03/Tuple/DT20112012_B02DD_Stripping21r0r1_DVv36r1_20150322_fmeier_combined_20150706_TupleB_BDT_wideDMass_MassVetos.root","B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet();
+  RooDataSet&       data = tuple.ConvertToDataSet(Cut(TString(config.getString("cut"))));
   
   data.Print();
   
@@ -141,7 +151,7 @@ int main(int argc, char * argv[]){
   pdfBkgExtend.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
   pdfBkgExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/PID-Optimization/StartingValues_Mass.new");
   RooLinkedList fitting_args;
-  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
+  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(config.getInt("num_cpu")))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
@@ -152,13 +162,10 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
   fitting_args.Add((TObject*)(new RooCmdArg(Range(5400,5600))));
 
-  RooDataSet* optimized_pion_data = dynamic_cast<RooDataSet*>(data.reduce("varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.7&&varPiTwoplus_PID<0.7"));
-  KaonPID_Optimization(&pdfBkgExtend, optimized_pion_data, fitting_args);
-  RooDataSet* optimized_kaon_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.12&&varKplus_PID>0.12"));
-  // PionPID_Optimization(&pdfBkgExtend, optimized_kaon_data, fitting_args, "One");
-  RooDataSet* optimized_pionone_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.12&&varKplus_PID>0.12&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5"));
-  // PionPID_Optimization(&pdfBkgExtend, optimized_pionone_data, fitting_args, "Two");
-  RooDataSet* optimized_piontwo_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.12&&varKplus_PID>0.12&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.7&&varPiTwoplus_PID<0.7"));
+  if (config.getString("PID") == "Kaon") KaonPID_Optimization(&pdfBkgExtend, &data, fitting_args, config.getString("final_state"));
+  else if (config.getString("PID") == "PionOne") PionPID_Optimization(&pdfBkgExtend, &data, fitting_args, "One", config.getString("final_state"));
+  else if (config.getString("PID") == "PionTwo") PionPID_Optimization(&pdfBkgExtend, &data, fitting_args, "Two", config.getString("final_state"));
+  else if (config.getString("PID") == "KKpi") KKPiPID_Optimization(&pdfBkgExtend, &data, fitting_args, config.getString("particle"));
   // ElectronPID_Optimization(&pdfBkgExtend, &data, fitting_args, "One");
   // RooDataSet* optimized_electronone_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65&&varPiOneminus_PIDe<0.5&&varPiOneplus_PIDe<0.5"));
   // ElectronPID_Optimization(&pdfBkgExtend, optimized_electronone_data, fitting_args, "Two");
@@ -166,20 +173,16 @@ int main(int argc, char * argv[]){
   return 0;
 }
 
-void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args){
+void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString final_state){
   RooRealVar  obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
-  RooRealVar  obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  RooRealVar  obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
   RooDataSet* reduced_data;
-  int nsteps = 10;
+  int nsteps = 100;
   double cutvalue = 0.;
   double num_of_events_in_signal_region = 0.;
+  double num_of_bkg_in_signal_region = 0.;
   std::vector<double> x_vals;
   std::vector<double> y_vals;
   std::vector<double> y_errors;
-  double FOM_error_Ntot = 0.;
-  double FOM_error_Nbkg = 0.;
-  double FOM_error_expo = 0.;
   RooFitResult* fit_result;
   RooRealVar* parBkgExponent;
 
@@ -191,40 +194,13 @@ void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
     fit_result = pdf->fitTo(*reduced_data, fitting_args);
     parBkgExponent = dynamic_cast<RooRealVar*>(fit_result->floatParsFinal().find("parBkgExponent"));
     x_vals += cutvalue;
-    y_vals += pow((num_of_events_in_signal_region - pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))),2)/sqrt(num_of_events_in_signal_region);
+    num_of_bkg_in_signal_region = pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()));
+    y_vals += pow(num_of_events_in_signal_region - num_of_bkg_in_signal_region,1)/sqrt(num_of_events_in_signal_region);
     cout << "cutvalue: "  <<  cutvalue  <<  endl;
     cout << "Number of events in signal region: " <<  num_of_events_in_signal_region  <<  endl;
-    cout << "Number of signal candidates in signal region: "  <<  num_of_events_in_signal_region - pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))  <<  endl;
-    FOM_error_Ntot = 2*sqrt(y_vals.at(i))*pow(num_of_events_in_signal_region,0.25)-0.5*y_vals.at(i)/sqrt(num_of_events_in_signal_region);
-    FOM_error_Nbkg = 2*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))*sqrt(y_vals.at(i))*sqrt(pdf->expectedEvents(obsMass))/pow(num_of_events_in_signal_region,0.25);
-    y_errors += sqrt(pow(FOM_error_Ntot,2)+pow(FOM_error_Nbkg,2)+pow(FOM_error_expo,2));
+    cout << "Number of signal candidates in signal region: "  <<  num_of_events_in_signal_region - num_of_bkg_in_signal_region  <<  endl;
+    y_errors += sqrt(0.25*pow(num_of_events_in_signal_region + num_of_bkg_in_signal_region,2)+pow(num_of_bkg_in_signal_region,2))/num_of_events_in_signal_region;
     cout  << "FOM: "  <<  y_vals.at(i)  <<  " pm "  <<  y_errors.at(i)  <<  endl;
-    cout  << "Uncertainty on FOM due to total number of candidates in signal region: "  <<  FOM_error_Ntot  <<  endl;
-    cout  << "Uncertainty on FOM due to expected number of background candidates in signal region: "  <<  FOM_error_Nbkg  <<  endl;
-  }
-
-  pdf->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
-  for (int i = 1; i < nsteps; ++i) {
-    cutvalue = i*0.4/nsteps;
-    reduced_data = dynamic_cast<RooDataSet*>(data->reduce(TString("varKminus_PID>"+to_string(cutvalue)+"&&varKplus_PID>"+to_string(cutvalue))));
-    reduced_data->Print();
-    num_of_events_in_signal_region = reduced_data->sumEntries(TString(obsMass.GetName())+">5260&&"+TString(obsMass.GetName())+"<5300");
-    fit_result = pdf->fitTo(*reduced_data, fitting_args);
-    parBkgExponent = dynamic_cast<RooRealVar*>(fit_result->floatParsFinal().find("parBkgExponent"));
-    // pdf->getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/PID-Optimization/Kaon/FitResults_Mass_detailed_"+to_string(i)+".txt"));
-    x_vals += cutvalue;
-    y_vals += pow((num_of_events_in_signal_region - pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))),2)/sqrt(num_of_events_in_signal_region);
-    cout << "cutvalue: "  <<  cutvalue  <<  endl;
-    cout << "Number of events in signal region: " <<  num_of_events_in_signal_region  <<  endl;
-    cout << "Number of signal candidates in signal region: "  <<  num_of_events_in_signal_region - pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))  <<  endl;
-    FOM_error_Ntot = 2*sqrt(y_vals.at(i))*pow(num_of_events_in_signal_region,0.25)-0.5*y_vals.at(i)/sqrt(num_of_events_in_signal_region);
-    FOM_error_Nbkg = 2*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))*sqrt(y_vals.at(i))*sqrt(pdf->expectedEvents(obsMass))/pow(num_of_events_in_signal_region,0.25);
-    y_errors += sqrt(pow(FOM_error_Ntot,2)+pow(FOM_error_Nbkg,2)+pow(FOM_error_expo,2));
-    cout  << "FOM: "  <<  y_vals.at(nsteps+i-1)  <<  " pm "  <<  y_errors.at(nsteps+i-1)  <<  endl;
-    cout  << "Uncertainty on FOM due to total number of candidates in signal region: "  <<  FOM_error_Ntot  <<  endl;
-    cout  << "Uncertainty on FOM due to expected number of background candidates in signal region: "  <<  FOM_error_Nbkg  <<  endl;
-    // Plot Mass(cfg_plot_mass, obsMass, *reduced_data, *pdf, components_mass, "obsMass_detailed_"+to_string(i));
-    // Mass.PlotIt();
   }
 
   double gr_x_vals[x_vals.size()];
@@ -240,27 +216,23 @@ void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
   TCanvas c("c","c",800,600);
   TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
   gr.GetXaxis()->SetTitle("cut value");
-  gr.GetYaxis()->SetTitle("FOM = S^{2}/#sqrt{S+B}");
+  gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Kaon/KaonPID.pdf");
+  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Kaon/FOM_KaonPID_"+final_state+".pdf");
 
   for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
 }
 
-void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString pionnumber){
+void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString pionnumber, TString final_state){
   RooRealVar  obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
-  RooRealVar  obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  RooRealVar  obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
   RooDataSet* reduced_data;
-  int nsteps = 20;
+  int nsteps = 100;
   double cutvalue = 0.;
   double num_of_events_in_signal_region = 0.;
+  double num_of_bkg_in_signal_region = 0.;
   std::vector<double> x_vals;
   std::vector<double> y_vals;
   std::vector<double> y_errors;
-  double FOM_error_Ntot = 0.;
-  double FOM_error_Nbkg = 0.;
-  double FOM_error_expo = 0.;
   RooFitResult* fit_result;
   RooRealVar* parBkgExponent;
 
@@ -273,16 +245,13 @@ void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
     fit_result = pdf->fitTo(*reduced_data, fitting_args);
     parBkgExponent = dynamic_cast<RooRealVar*>(fit_result->floatParsFinal().find("parBkgExponent"));
     x_vals += cutvalue;
-    y_vals += pow((num_of_events_in_signal_region - pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))),2)/sqrt(num_of_events_in_signal_region);
+    num_of_bkg_in_signal_region = pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()));
+    y_vals += pow(num_of_events_in_signal_region - num_of_bkg_in_signal_region,1)/sqrt(num_of_events_in_signal_region);
     cout << "cutvalue: "  <<  cutvalue  <<  endl;
     cout << "Number of events in signal region: " <<  num_of_events_in_signal_region  <<  endl;
-    cout << "Number of signal candidates in signal region: "  <<  num_of_events_in_signal_region - pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))  <<  endl;
-    FOM_error_Ntot = 2*sqrt(y_vals.at(i))*pow(num_of_events_in_signal_region,0.25)-0.5*y_vals.at(i)/sqrt(num_of_events_in_signal_region);
-    FOM_error_Nbkg = 2*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()))*sqrt(y_vals.at(i))*sqrt(pdf->expectedEvents(obsMass))/pow(num_of_events_in_signal_region,0.25);
-    y_errors += sqrt(pow(FOM_error_Ntot,2)+pow(FOM_error_Nbkg,2)+pow(FOM_error_expo,2));
+    cout << "Number of signal candidates in signal region: "  <<  num_of_events_in_signal_region - num_of_bkg_in_signal_region  <<  endl;
+    y_errors += sqrt(0.25*pow(num_of_events_in_signal_region + num_of_bkg_in_signal_region,2)+pow(num_of_bkg_in_signal_region,2))/num_of_events_in_signal_region;
     cout  << "FOM: "  <<  y_vals.at(i)  <<  " pm "  <<  y_errors.at(i)  <<  endl;
-    cout  << "Uncertainty on FOM due to total number of candidates in signal region: "  <<  FOM_error_Ntot  <<  endl;
-    cout  << "Uncertainty on FOM due to expected number of background candidates in signal region: "  <<  FOM_error_Nbkg  <<  endl;
   }
 
   double gr_x_vals[x_vals.size()];
@@ -299,9 +268,63 @@ void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
   TCanvas c("c","c",800,600);
   TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
   gr.GetXaxis()->SetTitle("cut value");
-  gr.GetYaxis()->SetTitle("FOM = S^{2}/#sqrt{S+B}");
+  gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Pion"+pionnumber+"/PionPID.pdf");
+  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Pion"+pionnumber+"/FOM_PionPID_"+final_state+".pdf");
+
+  for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
+}
+
+void KKPiPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitting_args, TString particle){
+  RooRealVar  obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
+  RooDataSet* reduced_data;
+  int nsteps = 100;
+  double cutvalue = 0.;
+  double num_of_events_in_signal_region = 0.;
+  double num_of_bkg_in_signal_region = 0.;
+  std::vector<double> x_vals;
+  std::vector<double> y_vals;
+  std::vector<double> y_errors;
+  RooFitResult* fit_result;
+  RooRealVar* parBkgExponent;
+
+  for (int i = 0; i < nsteps; ++i) {
+    if (particle.Contains("Pion")) cutvalue = 1.-i*1./nsteps;
+    else cutvalue = i*1./nsteps;
+    if (particle.EqualTo("KaonTwo"))  reduced_data = dynamic_cast<RooDataSet*>(data->reduce(TString("(catDDFinalState!=13||varPiOneminus_PID>"+to_string(cutvalue)+")&&(catDDFinalState!=14||varPiTwominus_PID>"+to_string(cutvalue)+")&&(catDDFinalState!=31||varPiOneplus_PID>"+to_string(cutvalue)+")&&(catDDFinalState!=41||varPiTwoplus_PID>"+to_string(cutvalue)+")")));
+    else if (particle.EqualTo("PionSingle"))  reduced_data = dynamic_cast<RooDataSet*>(data->reduce(TString("(catDDFinalState!=13||varPiTwominus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=14||varPiOneminus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=31||varPiTwoplus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=41||varPiOneplus_PID<"+to_string(cutvalue)+")")));
+    else if (particle.EqualTo("PionOne")) reduced_data = dynamic_cast<RooDataSet*>(data->reduce(TString("(catDDFinalState!=13||varPiOneplus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=14||varPiOneplus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=31||varPiOneminus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=41||varPiOneminus_PID<"+to_string(cutvalue)+")")));
+    else if (particle.EqualTo("PionTwo")) reduced_data = dynamic_cast<RooDataSet*>(data->reduce(TString("(catDDFinalState!=13||varPiTwoplus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=14||varPiTwoplus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=31||varPiTwominus_PID<"+to_string(cutvalue)+")&&(catDDFinalState!=41||varPiTwominus_PID<"+to_string(cutvalue)+")")));
+    reduced_data->Print();
+    num_of_events_in_signal_region = reduced_data->sumEntries(TString(obsMass.GetName())+">5260&&"+TString(obsMass.GetName())+"<5300");
+    fit_result = pdf->fitTo(*reduced_data, fitting_args);
+    parBkgExponent = dynamic_cast<RooRealVar*>(fit_result->floatParsFinal().find("parBkgExponent"));
+    x_vals += cutvalue;
+    num_of_bkg_in_signal_region = pdf->expectedEvents(obsMass)*(exp(5260*parBkgExponent->getVal())-exp(5300*parBkgExponent->getVal()))/(exp(5400*parBkgExponent->getVal())-exp(5600*parBkgExponent->getVal()));
+    y_vals += pow(num_of_events_in_signal_region - num_of_bkg_in_signal_region,1)/sqrt(num_of_events_in_signal_region);
+    cout << "cutvalue: "  <<  cutvalue  <<  endl;
+    cout << "Number of events in signal region: " <<  num_of_events_in_signal_region  <<  endl;
+    cout << "Number of signal candidates in signal region: "  <<  num_of_events_in_signal_region - num_of_bkg_in_signal_region  <<  endl;
+    y_errors += sqrt(0.25*pow(num_of_events_in_signal_region + num_of_bkg_in_signal_region,2)+pow(num_of_bkg_in_signal_region,2))/num_of_events_in_signal_region;
+    cout  << "FOM: "  <<  y_vals.at(i)  <<  " pm "  <<  y_errors.at(i)  <<  endl;
+  }
+
+  double gr_x_vals[x_vals.size()];
+  double gr_y_vals[x_vals.size()];
+  double gr_y_errors[x_vals.size()];
+  for (int i = 0; i < x_vals.size(); ++i) {
+    gr_x_vals[i] = x_vals.at(i);
+    gr_y_vals[i] = y_vals.at(i);
+    gr_y_errors[i] = y_errors.at(i);
+  }
+  gROOT->SetStyle("Plain");
+  setStyle("LHCb");
+  TCanvas c("c","c",800,600);
+  TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+  gr.GetXaxis()->SetTitle("cut value");
+  gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
+  gr.Draw("AP");
+  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/KKpi/FOM_"+particle+"PID_KKpi.pdf");
 
   for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
 }
@@ -311,8 +334,6 @@ void ElectronPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& f
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
   RooRealVar  obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
-  RooRealVar  obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  RooRealVar  obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
   RooDataSet* reduced_data;
   int nsteps = 20;
   double cutvalue = 0.;
