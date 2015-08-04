@@ -43,10 +43,12 @@ class B02DDVariablesReducer : public Reducer {
   ReducerLeaf<Int_t>* catDplusFinalState;
   ReducerLeaf<Int_t>* catDminusFinalState;
   ReducerLeaf<Int_t>* catDDFinalState;
+  ReducerLeaf<Int_t>* catDDFinalStateParticles;
 
   Int_t* DplusFinalState;
   Int_t* DminusFinalState;
   Int_t* DDFinalState;
+  Int_t* DDFinalStateParticles;
 
   Float_t* Dplus_P0_ID;
   Float_t* Dplus_P1_ID;
@@ -151,10 +153,12 @@ class B02DDVariablesReducer : public Reducer {
     catDplusFinalState = &(CreateIntLeaf("catDplusFinalState", -10));
     catDminusFinalState = &(CreateIntLeaf("catDminusFinalState", -10));
     catDDFinalState = &(CreateIntLeaf("catDDFinalState", -10));
+    catDDFinalStateParticles = &(CreateIntLeaf("catDDFinalStateParticles", -10));
 
     DplusFinalState = (Int_t*)catDplusFinalState->branch_address();
     DminusFinalState = (Int_t*)catDminusFinalState->branch_address();
     DDFinalState = (Int_t*)catDDFinalState->branch_address();
+    DDFinalStateParticles = (Int_t*)catDDFinalStateParticles->branch_address();
 
     obsMassDau_Kpipi = &(CreateDoubleLeaf("obsMassDau_Kpipi", -1000.));
     obsMassDau_KKpi  = &(CreateDoubleLeaf("obsMassDau_KKpi", -1000.));
@@ -252,7 +256,10 @@ class B02DDVariablesReducer : public Reducer {
     if (*Dminus_P0_ID == -321 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 321) *DminusFinalState = 3;
     if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -321 && *Dminus_P2_ID == 321) *DminusFinalState = 4;
 
-    if (*DplusFinalState == 1 && *DminusFinalState == 1) *DDFinalState = 11;
+    if (*DplusFinalState == 1 && *DminusFinalState == 1) {
+      *DDFinalState = 11;
+      *DDFinalStateParticles = 1;
+    }
     if (*DplusFinalState == 1 && *DminusFinalState == 3) *DDFinalState = 13;
     if (*DplusFinalState == 1 && *DminusFinalState == 4) *DDFinalState = 14;
     if (*DplusFinalState == 3 && *DminusFinalState == 1) *DDFinalState = 31;
@@ -265,10 +272,12 @@ class B02DDVariablesReducer : public Reducer {
     if (*DDFinalState == 13 || *DDFinalState == 14) {
       *obsMassDau_Kpipi_value = *B0_FitPVConst_Dplus_M;
       *obsMassDau_KKpi_value  = *B0_FitPVConst_Dminus_M;
+      *DDFinalStateParticles = 0;
     }
     if (*DDFinalState == 31 || *DDFinalState == 41) {
       *obsMassDau_Kpipi_value = *B0_FitPVConst_Dminus_M;
       *obsMassDau_KKpi_value  = *B0_FitPVConst_Dplus_M;
+      *DDFinalStateParticles = 0;
     }
 
     if (*Dminus_piminus_or_Kminus_One_PT > *Dminus_piminus_or_Kminus_Two_PT) {
