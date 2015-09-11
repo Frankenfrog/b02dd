@@ -61,7 +61,7 @@ int main(int argc, char * argv[]){
   int num_cpu = config.getInt("num_cpu");
   bool pereventresolution = config.getBool("pereventresolution");
 
-  RooRealVar        obsTimeErr_True("obsTimeErr_True_ps","#it{t}",-0.4,0.4,"ps");
+  RooRealVar        obsTimeErr_True("obsTimeErr_True_ps","#it{t-t}_{true}",-0.4,0.4,"ps");
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
   
   RooCategory       catYear("catYear","year of data taking");
@@ -141,6 +141,17 @@ int main(int argc, char * argv[]){
   TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".root"),"recreate");
   fit_result->Write("fit_result");
   fitresultwritetofile.Close();
+
+  int entriesintree = data->numEntries();
+  double Dilution = 0., proptimeerror = 0.;
+  for (int i = 0; i < entriesintree; i++) {
+    data->get(i);
+    proptimeerror = data->get()->getRealValue("obsTimeErr");
+    Dilution+=parResFraction_wrongPV.getVal()*exp(-pow(0.510*parResSigma_wrongPV.getVal(),2)/2);
+    Dilution+=parResFraction2.getVal()*exp(-pow(0.510*(parResCorrectionOffset2.getVal() + parResSigmaCorrectionFactor2.getVal()*proptimeerror),2)/2);
+    Dilution+=(1 - parResFraction_wrongPV.getVal() - parResFraction2.getVal())*exp(-pow(0.510*(parResCorrectionOffset1.getVal() + parResSigmaCorrectionFactor1.getVal()*proptimeerror),2)/2);
+  }
+  cout << Dilution/entriesintree  <<  endl;
 
   // Plots
   pdf.getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".txt"));
