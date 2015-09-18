@@ -25,6 +25,7 @@
 #include "RooConstVar.h"
 #include "RooBinning.h"
 #include "RooProduct.h"
+#include "RooMsgService.h"
 
 // from RooFit PDFs
 #include "RooGaussModel.h"
@@ -93,7 +94,7 @@ int main(int argc, char * argv[]){
   RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1800,1950,"MeV/c^{2}");
   RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1800,1950,"MeV/c^{2}");
 
-  RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
+  RooRealVar        varBDT("BDT2_classifier","BDT2_classifier",-1,1);
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",0);
   RooRealVar        Dminus_FDCHI2_ORIVX("Dminus_FDCHI2_ORIVX","Dminus_FDCHI2_ORIVX",0);
   RooRealVar        Dplus_FDCHI2_ORIVX("Dplus_FDCHI2_ORIVX","Dplus_FDCHI2_ORIVX",0);
@@ -137,22 +138,22 @@ int main(int argc, char * argv[]){
   
   data.Print();
 
-  RooDataSet*       data_2011 = dynamic_cast<RooDataSet*>(data.reduce("catYear==2011"));
-  RooDataSet*       data_2012 = dynamic_cast<RooDataSet*>(data.reduce("catYear==2012"));
-  RooDataSet*       data_2011_BDT = dynamic_cast<RooDataSet*>(data_2011->reduce("BDTG2_classifier>-0.843"));
-  RooDataSet*       data_2012_BDT = dynamic_cast<RooDataSet*>(data_2012->reduce("BDTG2_classifier>-0.843"));
-  RooDataSet*       data_BDT = dynamic_cast<RooDataSet*>(data.reduce("BDTG2_classifier>-0.843"));
+  // RooDataSet*       data_2011 = dynamic_cast<RooDataSet*>(data.reduce("catYear==2011"));
+  // RooDataSet*       data_2012 = dynamic_cast<RooDataSet*>(data.reduce("catYear==2012"));
+  // RooDataSet*       data_2011_BDT = dynamic_cast<RooDataSet*>(data_2011->reduce("BDTG2_classifier>-0.843"));
+  // RooDataSet*       data_2012_BDT = dynamic_cast<RooDataSet*>(data_2012->reduce("BDTG2_classifier>-0.843"));
+  // RooDataSet*       data_BDT = dynamic_cast<RooDataSet*>(data.reduce("BDTG2_classifier>-0.843"));
 
-  TH1*              hist_2011 = data_2011->createHistogram("hist_2011",obsMass);
-  TH1*              hist_2012 = data_2012->createHistogram("hist_2012",obsMass);
-  TH1*              hist_2011_BDT = data_2011_BDT->createHistogram("hist_2011_BDT",obsMass);
-  TH1*              hist_2012_BDT = data_2012_BDT->createHistogram("hist_2012_BDT",obsMass);
-  TH1*              hist = data.createHistogram("hist",obsMass);
-  TH1*              hist_BDT = data_BDT->createHistogram("hist_BDT",obsMass);
+  // TH1*              hist_2011 = data_2011->createHistogram("hist_2011",obsMass);
+  // TH1*              hist_2012 = data_2012->createHistogram("hist_2012",obsMass);
+  // TH1*              hist_2011_BDT = data_2011_BDT->createHistogram("hist_2011_BDT",obsMass);
+  // TH1*              hist_2012_BDT = data_2012_BDT->createHistogram("hist_2012_BDT",obsMass);
+  // TH1*              hist = data.createHistogram("hist",obsMass);
+  // TH1*              hist_BDT = data_BDT->createHistogram("hist_BDT",obsMass);
 
-  hist_2011->Divide(hist_2011_BDT);
-  hist_2012->Divide(hist_2012_BDT);
-  hist->Divide(hist_BDT);
+  // hist_2011->Divide(hist_2011_BDT);
+  // hist_2012->Divide(hist_2012_BDT);
+  // hist->Divide(hist_BDT);
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   // TCanvas c("c","c",800,600);
@@ -450,7 +451,11 @@ int main(int argc, char * argv[]){
     spr.set_output_tree_path("B02DD");
     spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&"+string(config.getString("cut")));
     spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
+    RooMsgService::instance().setStreamStatus(0, false);
+    RooMsgService::instance().setStreamStatus(1, false);
     spr.Initialize();
+    RooMsgService::instance().setStreamStatus(0, true);
+    RooMsgService::instance().setStreamStatus(1, true);
     spr.Run();
     spr.Finalize();
 
