@@ -101,10 +101,8 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
     cat_tagged_exclusive_os_std_comb_ss_leaf_(nullptr),
     cat_tagged_os_with_nnet_kaon_or_ss_pion_leaf_(nullptr),
     cat_tagged_os_with_nnet_kaon_xor_ss_pion_leaf_(nullptr),
-    cat_tagged_os_with_nnet_kaon_ss_pion_leaf_(nullptr),
     cat_tagged_os_with_nnet_kaon_or_ss_leaf_(nullptr),
     cat_tagged_os_with_nnet_kaon_xor_ss_leaf_(nullptr),
-    cat_tagged_os_with_nnet_kaon_ss_leaf_(nullptr),
     cat_tagged_ss_pion_calibrated_leaf_(nullptr),
     cat_tagged_os_std_comb_ss_pion_calibrated_leaf_(nullptr),
     // ______________________________________________________________________________________
@@ -212,10 +210,8 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
     cat_tagged_exclusive_os_std_comb_ss_value_(nullptr),
     cat_tagged_os_with_nnet_kaon_or_ss_pion_value_(nullptr),
     cat_tagged_os_with_nnet_kaon_xor_ss_pion_value_(nullptr),
-    cat_tagged_os_with_nnet_kaon_ss_pion_value_(nullptr),
     cat_tagged_os_with_nnet_kaon_or_ss_value_(nullptr),
     cat_tagged_os_with_nnet_kaon_xor_ss_value_(nullptr),
-    cat_tagged_os_with_nnet_kaon_ss_value_(nullptr),
     cat_tagged_ss_pion_calibrated_value_(nullptr),
     cat_tagged_os_std_comb_ss_pion_calibrated_value_(nullptr),
     os_cutoff_(false),
@@ -306,10 +302,8 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_exclusive_os_std_comb_ss_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_with_nnet_kaon_or_ss_pion_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_with_nnet_kaon_xor_ss_pion_leaf_;
-  dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_with_nnet_kaon_ss_pion_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_with_nnet_kaon_or_ss_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_with_nnet_kaon_xor_ss_leaf_;
-  dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_with_nnet_kaon_ss_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_ss_pion_calibrated_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*  cat_tagged_os_std_comb_ss_pion_calibrated_leaf_;
   // ______________________________________________________________________________________
@@ -418,10 +412,8 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
   Int_t* cat_tagged_exclusive_os_std_comb_ss_value_;
   Int_t* cat_tagged_os_with_nnet_kaon_or_ss_pion_value_;
   Int_t* cat_tagged_os_with_nnet_kaon_xor_ss_pion_value_;
-  Int_t* cat_tagged_os_with_nnet_kaon_ss_pion_value_;
   Int_t* cat_tagged_os_with_nnet_kaon_or_ss_value_;
   Int_t* cat_tagged_os_with_nnet_kaon_xor_ss_value_;
-  Int_t* cat_tagged_os_with_nnet_kaon_ss_value_;
   Int_t* cat_tagged_ss_pion_calibrated_value_;
   Int_t* cat_tagged_os_std_comb_ss_pion_calibrated_value_;
 
@@ -633,10 +625,8 @@ void TaggingRdcr::CreateSpecialBranches(){
     cat_tagged_os_comb_with_nnet_kaon_value_        = (Int_t*)cat_tagged_os_comb_with_nnet_kaon_leaf_->branch_address();
     cat_tagged_os_with_nnet_kaon_or_ss_pion_value_  = (Int_t*)cat_tagged_os_with_nnet_kaon_or_ss_pion_leaf_->branch_address();
     cat_tagged_os_with_nnet_kaon_xor_ss_pion_value_ = (Int_t*)cat_tagged_os_with_nnet_kaon_xor_ss_pion_leaf_->branch_address();
-    cat_tagged_os_with_nnet_kaon_ss_pion_value_     = (Int_t*)cat_tagged_os_with_nnet_kaon_ss_pion_leaf_->branch_address();
     cat_tagged_os_with_nnet_kaon_or_ss_value_       = (Int_t*)cat_tagged_os_with_nnet_kaon_or_ss_leaf_->branch_address();
     cat_tagged_os_with_nnet_kaon_xor_ss_value_      = (Int_t*)cat_tagged_os_with_nnet_kaon_xor_ss_leaf_->branch_address();
-    cat_tagged_os_with_nnet_kaon_ss_value_          = (Int_t*)cat_tagged_os_with_nnet_kaon_ss_leaf_->branch_address();
   }
 }
 
