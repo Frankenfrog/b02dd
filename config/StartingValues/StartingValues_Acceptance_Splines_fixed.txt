@@ -1,0 +1,6 @@
+parSigTimeAccCSpline1 =  0.53 C L(0.1 - 2)
+parSigTimeAccCSpline2 =  0.72 C L(0.1 - 2)
+parSigTimeAccCSpline3 =  1.01 C L(0.1 - 2)
+parSigTimeAccCSpline4 =  0.94 C L(0.1 - 2)
+parSigTimeAccCSpline5 =  0.91 C L(0.1 - 2)
+parSigTimeAccCSpline6 =  1    C L(0.1 - 2)

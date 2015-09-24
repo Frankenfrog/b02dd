@@ -1,6 +1,8 @@
 parBkgBsDsDYield     =  100    L(0 - 1000)
 parBkgDsDYield       =  1700   L(0 - 5000)
 parBkgExponent       = -0.003  L(-0.1 - 0.1)
+parBkgExponent_KKpi  = -0.002  L(-0.1 - 0.1)
+parBkgExponent_Kpipi = -0.002  L(-0.1 - 0.1)
 parBkgYield          =  3300   L(0 - 100000)
 parSigBsYield        =  462    L(0 - 2000)
 parSigMassCB1Alpha   =  1.28   C L(-INF - +INF)
