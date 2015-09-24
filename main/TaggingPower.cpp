@@ -28,7 +28,7 @@ int main(int argc, const char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
-  RooCategory       obsTagOS("obsTagOSwCharm","Flavour Tag");
+  RooCategory       obsTagOS("obsTagOS_StdComb","Flavour Tag");
   obsTagOS.defineType("B0",1);
   obsTagOS.defineType("B0bar",-1);
   obsTagOS.defineType("no Tag",0);
@@ -36,7 +36,7 @@ int main(int argc, const char * argv[]){
   obsTagSS.defineType("B0",1);
   obsTagSS.defineType("B0bar",-1);
   obsTagSS.defineType("no Tag",0);
-  RooRealVar        obsEtaOS("obsEtaOSwCharm","#eta_{OS}",0,0.5);
+  RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0,0.5);
   RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0,0.5);
   RooRealVar        weight("SigWeight","Signal weight",-10,10);
   
@@ -47,13 +47,13 @@ int main(int argc, const char * argv[]){
   RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar("SigWeight"));
   signaldata.Print();
   
-  RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs(obsTagOSwCharm)==1&&abs(obsTagSS)==0"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==1&&abs(obsTagSS)==0"),WeightVar("SigWeight"));
   signaldata_OS.Print();
-  RooDataSet        signaldata_SS("signaldata_SS","signaldata_SS",observables,Import(signaldata),Cut("abs(obsTagOSwCharm)==0&&abs(obsTagSS)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_SS("signaldata_SS","signaldata_SS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==0&&abs(obsTagSS)==1"),WeightVar("SigWeight"));
   signaldata_SS.Print();
-  RooDataSet        signaldata_BS("signaldata_BS","signaldata_BS",observables,Import(signaldata),Cut("abs(obsTagOSwCharm)==1&&abs(obsTagSS)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_BS("signaldata_BS","signaldata_BS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==1&&abs(obsTagSS)==1"),WeightVar("SigWeight"));
   signaldata_BS.Print();
-  RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs(obsTagOSwCharm)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==1"),WeightVar("SigWeight"));
   RooDataSet        signaldata_allSS("signaldata_allSS","signaldata_allSS",observables,Import(signaldata),Cut("abs(obsTagSS)==1"),WeightVar("SigWeight"));
 
   double            mean_mistag_OS = signaldata_allOS.mean(obsEtaOS);
@@ -78,9 +78,9 @@ void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, do
   for (int i = 0; i < data->numEntries(); i++) {
     data->get(i);
     weight = data->weight();
-    etaOS = data->get()->getRealValue("obsEtaOSwCharm");
+    etaOS = data->get()->getRealValue("obsEtaOS_StdComb");
     etaSS = data->get()->getRealValue("obsEtaSS");
-    tagOS = data->get()->getCatIndex("obsTagOSwCharm");
+    tagOS = data->get()->getCatIndex("obsTagOS_StdComb");
     tagSS = data->get()->getCatIndex("obsTagSS");
     omegaOS = 0.5;
     omegaOS_B0 = 0.5;

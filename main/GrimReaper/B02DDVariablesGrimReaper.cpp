@@ -142,6 +142,11 @@ class B02DDVariablesReducer : public Reducer {
   Double_t* Dplus_piplus_or_Kplus_Two_ProbNNpi;
   Double_t* Dplus_piplus_or_Kplus_Two_ProbNNp;
 
+  ReducerLeaf<Double_t>* varPseudorapidity;
+  Double_t* pseudorapidity;
+  Double_t* B0_P;
+  Double_t* B0_PZ;
+
   void CreateSpecialBranches() {
     Dplus_P0_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P0_ID").branch_address();
     Dplus_P1_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P1_ID").branch_address();
@@ -243,6 +248,11 @@ class B02DDVariablesReducer : public Reducer {
     varPiTwoplus_SumProbNNppi_value = (Double_t*)varPiTwoplus_SumProbNNppi->branch_address();
     varPiTwoplus_PID_value = (Double_t*)varPiTwoplus_PID->branch_address();
     varPiTwoplus_PIDp_value = (Double_t*)varPiTwoplus_PIDp->branch_address();
+
+    B0_P = (Double_t*)GetInterimLeafByName("B0_P").branch_address();
+    B0_PZ = (Double_t*)GetInterimLeafByName("B0_PZ").branch_address();
+    varPseudorapidity = &(CreateDoubleLeaf("varPseudorapidity", -999999));
+    pseudorapidity = (Double_t*)varPseudorapidity->branch_address();
   }
 
   void UpdateSpecialLeaves() {
@@ -330,6 +340,8 @@ class B02DDVariablesReducer : public Reducer {
     *varPiTwoplus_SumProbNNppi_value = *varPiTwoplus_ProbNNp_value + *varPiTwoplus_ProbNNpi_value;
     *varPiTwoplus_PID_value = *varPiTwoplus_ProbNNk_value / *varPiTwoplus_SumProbNNkpi_value;
     *varPiTwoplus_PIDp_value = *varPiTwoplus_ProbNNp_value / *varPiTwoplus_SumProbNNppi_value;
+
+    *pseudorapidity = TMath::ATanH(*B0_PZ / *B0_P);
   }
 
   bool EntryPassesSpecialCuts() {

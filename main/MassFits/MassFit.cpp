@@ -401,7 +401,7 @@ int main(int argc, char * argv[]){
   fitresultprinter.Print();
 
   if (massmodel_ipatia) pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_Ipatia.txt");
-  else pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults.txt");
+  else pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/Mass/FitResults_"+config.getString("identifier")+".txt"));
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
   cfg_plot_mass.InitializeOptions();
@@ -459,7 +459,7 @@ int main(int argc, char * argv[]){
     spr.Run();
     spr.Finalize();
 
-    if (split_years) {
+    if (split_years || split_final_state) {
       Reducer AReducer;
       AReducer.set_input_file_path(config.getString("sweights_tuple"));
       AReducer.set_input_tree_path("B02DD");
@@ -468,33 +468,43 @@ int main(int argc, char * argv[]){
   
       AReducer.Initialize();
 
-      ReducerLeaf<Double_t>* SigWeight = &(AReducer.CreateDoubleLeaf("SigWeight",0.));
-      ReducerLeaf<Double_t>* BsSigWeight = &(AReducer.CreateDoubleLeaf("BsSigWeight",0.));
-      ReducerLeaf<Double_t>* BkgWeight = &(AReducer.CreateDoubleLeaf("BkgWeight",0.));
-      if (split_final_state) {
-        ReducerLeaf<Double_t>& SigWeight_Kpipi = AReducer.CreateDoubleLeaf("SigWeight_Kpipi",0.);
-        SigWeight_Kpipi.Add(AReducer.GetInterimLeafByName("parSigYield_11_Kpipi_sw"), AReducer.GetInterimLeafByName("parSigYield_12_Kpipi_sw"));
-        ReducerLeaf<Double_t>& SigWeight_KKpi = AReducer.CreateDoubleLeaf("SigWeight_KKpi",0.);
-        SigWeight_KKpi.Add(AReducer.GetInterimLeafByName("parSigYield_11_KKpi_sw"), AReducer.GetInterimLeafByName("parSigYield_12_KKpi_sw"));
-        SigWeight->Add(SigWeight_Kpipi, SigWeight_KKpi);
-        ReducerLeaf<Double_t>& BsSigWeight_Kpipi = AReducer.CreateDoubleLeaf("BsSigWeight_Kpipi",0.);
-        BsSigWeight_Kpipi.Add(AReducer.GetInterimLeafByName("parSigBsYield_11_Kpipi_sw"), AReducer.GetInterimLeafByName("parSigBsYield_12_Kpipi_sw"));
-        ReducerLeaf<Double_t>& BsSigWeight_KKpi = AReducer.CreateDoubleLeaf("BsSigWeight_KKpi",0.);
-        BsSigWeight_KKpi.Add(AReducer.GetInterimLeafByName("parSigBsYield_11_KKpi_sw"), AReducer.GetInterimLeafByName("parSigBsYield_12_KKpi_sw"));
-        BsSigWeight->Add(BsSigWeight_Kpipi, BsSigWeight_KKpi);
-        ReducerLeaf<Double_t>& BkgWeight_Kpipi = AReducer.CreateDoubleLeaf("BkgWeight_Kpipi",0.);
-        BkgWeight_Kpipi.Add(AReducer.GetInterimLeafByName("parBkgYield_11_Kpipi_sw"), AReducer.GetInterimLeafByName("parBkgYield_12_Kpipi_sw"));
-        ReducerLeaf<Double_t>& BkgWeight_KKpi = AReducer.CreateDoubleLeaf("BkgWeight_KKpi",0.);
-        BkgWeight_KKpi.Add(AReducer.GetInterimLeafByName("parBkgYield_11_KKpi_sw"), AReducer.GetInterimLeafByName("parBkgYield_12_KKpi_sw"));
-        BkgWeight->Add(BkgWeight_Kpipi, BkgWeight_KKpi);
+      if (split_years) {
+        if (split_final_state) {
+          ReducerLeaf<Double_t>& SigWeight_Kpipi = AReducer.CreateDoubleLeaf("SigWeight_Kpipi",0.);
+          SigWeight_Kpipi.Add(AReducer.GetInterimLeafByName("parSigYield_11_Kpipi_sw"), AReducer.GetInterimLeafByName("parSigYield_12_Kpipi_sw"));
+          ReducerLeaf<Double_t>& SigWeight_KKpi = AReducer.CreateDoubleLeaf("SigWeight_KKpi",0.);
+          SigWeight_KKpi.Add(AReducer.GetInterimLeafByName("parSigYield_11_KKpi_sw"), AReducer.GetInterimLeafByName("parSigYield_12_KKpi_sw"));
+          ReducerLeaf<Double_t>& SigWeight = AReducer.CreateDoubleLeaf("SigWeight",0.);
+          SigWeight.Add(SigWeight_Kpipi, SigWeight_KKpi);
+          ReducerLeaf<Double_t>& BsSigWeight_Kpipi = AReducer.CreateDoubleLeaf("BsSigWeight_Kpipi",0.);
+          BsSigWeight_Kpipi.Add(AReducer.GetInterimLeafByName("parSigBsYield_11_Kpipi_sw"), AReducer.GetInterimLeafByName("parSigBsYield_12_Kpipi_sw"));
+          ReducerLeaf<Double_t>& BsSigWeight_KKpi = AReducer.CreateDoubleLeaf("BsSigWeight_KKpi",0.);
+          BsSigWeight_KKpi.Add(AReducer.GetInterimLeafByName("parSigBsYield_11_KKpi_sw"), AReducer.GetInterimLeafByName("parSigBsYield_12_KKpi_sw"));
+          ReducerLeaf<Double_t>& BsSigWeight = AReducer.CreateDoubleLeaf("BsSigWeight",0.);
+          BsSigWeight.Add(BsSigWeight_Kpipi, BsSigWeight_KKpi);
+          ReducerLeaf<Double_t>& BkgWeight_Kpipi = AReducer.CreateDoubleLeaf("BkgWeight_Kpipi",0.);
+          BkgWeight_Kpipi.Add(AReducer.GetInterimLeafByName("parBkgYield_11_Kpipi_sw"), AReducer.GetInterimLeafByName("parBkgYield_12_Kpipi_sw"));
+          ReducerLeaf<Double_t>& BkgWeight_KKpi = AReducer.CreateDoubleLeaf("BkgWeight_KKpi",0.);
+          BkgWeight_KKpi.Add(AReducer.GetInterimLeafByName("parBkgYield_11_KKpi_sw"), AReducer.GetInterimLeafByName("parBkgYield_12_KKpi_sw"));
+          ReducerLeaf<Double_t>& BkgWeight = AReducer.CreateDoubleLeaf("BkgWeight",0.);
+          BkgWeight.Add(BkgWeight_Kpipi, BkgWeight_KKpi);
+        }
+        else {
+          ReducerLeaf<Double_t>& SigWeight = AReducer.CreateDoubleLeaf("SigWeight",0.);
+          SigWeight.Add(AReducer.GetInterimLeafByName("parSigYield_11_sw"), AReducer.GetInterimLeafByName("parSigYield_12_sw"));
+          ReducerLeaf<Double_t>& BsSigWeight = AReducer.CreateDoubleLeaf("BsSigWeight",0.);
+          BsSigWeight.Add(AReducer.GetInterimLeafByName("parSigBsYield_11_sw"), AReducer.GetInterimLeafByName("parSigBsYield_12_sw"));
+          ReducerLeaf<Double_t>& BkgWeight = AReducer.CreateDoubleLeaf("BkgWeight",0.);
+          BkgWeight.Add(AReducer.GetInterimLeafByName("parBkgYield_11_sw"), AReducer.GetInterimLeafByName("parBkgYield_12_sw"));
+        }
       }
       else {
-        // SigWeight = &(AReducer.CreateDoubleLeaf("SigWeight",0.));
-        SigWeight->Add(AReducer.GetInterimLeafByName("parSigYield_11_sw"), AReducer.GetInterimLeafByName("parSigYield_12_sw"));
-        // BsSigWeight = &(AReducer.CreateDoubleLeaf("BsSigWeight",0.));
-        BsSigWeight->Add(AReducer.GetInterimLeafByName("parSigBsYield_11_sw"), AReducer.GetInterimLeafByName("parSigBsYield_12_sw"));
-        // BkgWeight = &(AReducer.CreateDoubleLeaf("BkgWeight",0.));
-        BkgWeight->Add(AReducer.GetInterimLeafByName("parBkgYield_11_sw"), AReducer.GetInterimLeafByName("parBkgYield_12_sw"));
+        ReducerLeaf<Double_t>& SigWeight = AReducer.CreateDoubleLeaf("SigWeight",0.);
+        SigWeight.Add(AReducer.GetInterimLeafByName("parSigYield_Kpipi_sw"), AReducer.GetInterimLeafByName("parSigYield_KKpi_sw"));
+        ReducerLeaf<Double_t>& BsSigWeight = AReducer.CreateDoubleLeaf("BsSigWeight",0.);
+        BsSigWeight.Add(AReducer.GetInterimLeafByName("parSigBsYield_Kpipi_sw"), AReducer.GetInterimLeafByName("parSigBsYield_KKpi_sw"));
+        ReducerLeaf<Double_t>& BkgWeight = AReducer.CreateDoubleLeaf("BkgWeight",0.);
+        BkgWeight.Add(AReducer.GetInterimLeafByName("parBkgYield_Kpipi_sw"), AReducer.GetInterimLeafByName("parBkgYield_KKpi_sw"));
       }
 
       AReducer.Run();

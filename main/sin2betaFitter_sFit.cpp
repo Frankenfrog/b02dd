@@ -92,24 +92,25 @@ int main(int argc, char * argv[]){
   int num_cpu = config.getInt("num_cpu");
   bool pereventresolution = config.getBool("pereventresolution");
   bool cp_fit = config.getBool("cp_fit");
+  TString SStagger = config.getString("SStagger");
 
   RooRealVar        obsTime("obsTime","#it{t}",0.25,15.25,"ps");
   RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0.,0.5);
-  RooRealVar        obsEtaSSPion("obsEtaSSPion_TupleCalib","#eta_{SS#pi}",0.,0.5);
+  RooRealVar        obsEtaSS("obsEta"+SStagger,"#eta_{SS}",0.,0.5);
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
   RooCategory       obsTagOS("obsTagOS_StdComb_NoZero","Flavour Tag");
   obsTagOS.defineType("B0",1);
   obsTagOS.defineType("B0bar",-1);
-  RooCategory       obsTagSSPion("obsTagSSPion_NoZero","Flavour Tag");
-  obsTagSSPion.defineType("B0",1);
-  obsTagSSPion.defineType("B0bar",-1);
+  RooCategory       obsTagSS("obsTag"+SStagger+"_NoZero","Flavour Tag");
+  obsTagSS.defineType("B0",1);
+  obsTagSS.defineType("B0bar",-1);
   
   RooCategory       catYear("catYear","year of data taking");
   catYear.defineType("2011",2011);
   catYear.defineType("2012",2012);
-  RooCategory       catTag("catTaggedOSSSPion","OS or SSPion tagged");
+  RooCategory       catTag("catTaggedOS"+SStagger,"OS or SS tagged");
   catTag.defineType("OS",1);
-  catTag.defineType("SSPion",-1);
+  catTag.defineType("SS",-1);
   catTag.defineType("both",10);
   // catTag.defineType("untagged",0);
   
@@ -119,11 +120,12 @@ int main(int argc, char * argv[]){
   if (pereventresolution) observables.add(obsTimeErr);
   if (cp_fit){
     observables.add(obsEtaOS);
-    observables.add(obsEtaSSPion);
+    observables.add(obsEtaSS);
     observables.add(obsTagOS);
-    observables.add(obsTagSSPion);
+    observables.add(obsTagSS);
   }
   RooArgSet         categories(catYear,catTag,SigWeight,"categories");
+  RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
   // Get data set
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
@@ -131,7 +133,7 @@ int main(int argc, char * argv[]){
   RooDataSet*       data = &(tuple.ConvertToDataSet(WeightVar(SigWeight)));
   data->Print();
 
-  RooDataSet        proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSSPion,obsTagOS,obsTagSSPion,obsTimeErr));
+  RooDataSet        proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
   
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
@@ -162,23 +164,23 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaDeltaP0_OS("parSigEtaDeltaP0_OS","delta mistag probability",0.0140,0.,0.03);
   RooRealVar          parSigEtaDeltaP0Mean_OS("parSigEtaDeltaP0Mean_OS","#bar{#delta p_{0}}",0.0148);
   RooRealVar          parSigEtaDeltaP0Sigma_OS("parSigEtaDeltaP0Sigma_OS","#sigma_{#bar{#delta p_{0}}}",0.0012);  // B+ value 0.0016  Kstar 0.0031
-  
+  Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_OS);
+
   RooRealVar          parSigEtaDeltaP1_OS("parSigEtaDeltaP1_OS","delta scale calibration parameter probability",0.066,0.,0.1);
   RooRealVar          parSigEtaDeltaP1Mean_OS("parSigEtaDeltaP1Mean_OS","#bar{#delta p_{1}}",0.070);
   RooRealVar          parSigEtaDeltaP1Sigma_OS("parSigEtaDeltaP1Sigma_OS","#sigma_{#bar{#delta p_{1}}}",0.012);   // B+ value 0.018   Kstar 0.035
-
-  RooRealVar          parSigEtaDeltaP0P1CorrelationCoeff_OS("parSigEtaDeltaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 or Delta p0 and Delta p1 for OS",0.14);   // B+ value 0.14  Kstar 0.07
-  TMatrixDSym         covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
-  covariancematrixSigEtaDelta_OS.Print();
+  Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_OS);
   
-  // SSPion tags
+  // SS tags
   RooRealVar          parSigEtaDeltaP0_SS("parSigEtaDeltaP0_SS","delta mistag probability",-0.003,-0.02,0.02);
   RooRealVar          parSigEtaDeltaP0Mean_SS("parSigEtaDeltaP0Mean_SS","#bar{#delta p_{0}}",-0.0026);
   RooRealVar          parSigEtaDeltaP0Sigma_SS("parSigEtaDeltaP0Sigma_SS","#sigma_{#bar{#delta p_{0}}}",0.0044);
-  
+  Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_SS);
+
   RooRealVar          parSigEtaDeltaP1_SS("parSigEtaDeltaP1_SS","delta scale calibration parameter probability",-0.18,-0.7,0.3);
   RooRealVar          parSigEtaDeltaP1Mean_SS("parSigEtaDeltaP1Mean_SS","#bar{#delta p_{1}}",-0.18);
   RooRealVar          parSigEtaDeltaP1Sigma_SS("parSigEtaDeltaP1Sigma_SS","#sigma_{#bar{#delta p_{1}}}",0.10);
+  Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_SS);
 
 //=========================================================================================================================================================================================================================
 
@@ -226,34 +228,31 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP0_OS("parSigEtaP0_OS","Offset on per-event mistag",0.3815,0.0,0.1);
   RooRealVar          parSigEtaP0Mean_OS("parSigEtaP0Mean_OS","#bar{p}_{0}",0.3815);
   RooRealVar          parSigEtaP0Sigma_OS("parSigEtaP0Sigma_OS","#sigma_{#bar{p}_{0}}",0.0019);   // B+ value 0.0011  Kstar 0.0022
-  
+  Gaussian_Constraints.add(parSigEtaP0Sigma_OS);
+
   RooRealVar          parSigEtaP1_OS("parSigEtaP1_OS","Offset on per-event mistag",0.978,0.9,1.1);
   RooRealVar          parSigEtaP1Mean_OS("parSigEtaP1Mean_OS","#bar{p}_{0}",0.978);
   RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{0}}",0.007);  // B+ value 0.012   Kstar 0.024
-
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 for OS",0.14);   // B+ value 0.14  Kstar -0.0025
-  TMatrixDSym         covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
-  covariancematrixSigEta_OS.Print();
+  Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
   RooRealVar          parSigEtaP0_SS("parSigEtaP0_SS","Offset on per-event mistag",0.4228,0.3,0.5);
   RooRealVar          parSigEtaP0Mean_SS("parSigEtaP0Mean_SS","#bar{p}_{0}",0.4232);
   RooRealVar          parSigEtaP0Sigma_SS("parSigEtaP0Sigma_SS","#sigma_{#bar{p}_{0}}",0.0029);
-  
+  Gaussian_Constraints.add(parSigEtaP0Sigma_SS);
+
   RooRealVar          parSigEtaP1_SS("parSigEtaP1_SS","Offset on per-event mistag",1.01,0.7,1.1);
   RooRealVar          parSigEtaP1Mean_SS("parSigEtaP1Mean_SS","#bar{p}_{0}",1.011);
   RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{0}}",0.064);
+  Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
   
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SSPion",0.030);
-  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SSPion",-0.007);
-  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SSPion",0.0016);
-  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SSPion",0.0004);
-  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SSPion",-0.006);
-  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SSPion",0.04);
-
-  TMatrixDSym         covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
-  covariancematrixSigEta_SS.Print();
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.030);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",-0.007);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",0.0016);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",0.0004);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",-0.006);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.04);
 
   RooRealVar          parSigEtaMean_SS("parSigEtaMean_SS","Mean on per-event mistag",0.42484);
 
@@ -269,19 +268,19 @@ int main(int argc, char * argv[]){
   CPCoefficient     parSigTimeCos_11_OS("parSigTimeCos_11_OS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
   CPCoefficient     parSigTimeCos_12_OS("parSigTimeCos_12_OS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
   
-  CPCoefficient     parSigTimeCosh_11_SS("parSigTimeCosh_11_SS",RooConst(1.0),obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeCosh_12_SS("parSigTimeCosh_12_SS",RooConst(1.0),obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_SS("parSigTimeSin_11_SS",parSigTimeBlindedSin2b,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_SS("parSigTimeSin_12_SS",parSigTimeBlindedSin2b,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_SS("parSigTimeCos_11_SS",parSigTimeBlindedC,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_SS("parSigTimeCos_12_SS",parSigTimeBlindedC,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCosh_11_SS("parSigTimeCosh_11_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeCosh_12_SS("parSigTimeCosh_12_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeSin_11_SS("parSigTimeSin_11_SS",parSigTimeBlindedSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_SS("parSigTimeSin_12_SS",parSigTimeBlindedSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_SS("parSigTimeCos_11_SS",parSigTimeBlindedC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_SS("parSigTimeCos_12_SS",parSigTimeBlindedC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
-  CPCoefficient     parSigTimeCosh_11_BS("parSigTimeCosh_11_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeCosh_12_BS("parSigTimeCosh_12_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_BS("parSigTimeSin_11_BS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_BS("parSigTimeSin_12_BS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_BS("parSigTimeCos_11_BS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_BS("parSigTimeCos_12_BS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSSPion,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSSPion,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCosh_11_BS("parSigTimeCosh_11_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeCosh_12_BS("parSigTimeCosh_12_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeSin_11_BS("parSigTimeSin_11_BS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_BS("parSigTimeSin_12_BS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_BS("parSigTimeCos_11_BS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_BS("parSigTimeCos_12_BS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
   
 //=========================================================================================================================================================================================================================
 
@@ -317,10 +316,10 @@ int main(int argc, char * argv[]){
   RooSuperCategory  supercategory("supercategory","supercategory",RooArgSet(catYear,catTag));
   RooSimultaneous   pdf("pdf","P",supercategory);
   pdf.addPdf(*pdfSigTime_11_OS,"{2011;OS}");
-  pdf.addPdf(*pdfSigTime_11_SS,"{2011;SSPion}");
+  pdf.addPdf(*pdfSigTime_11_SS,"{2011;SS}");
   pdf.addPdf(*pdfSigTime_11_BS,"{2011;both}");
   pdf.addPdf(*pdfSigTime_12_OS,"{2012;OS}");
-  pdf.addPdf(*pdfSigTime_12_SS,"{2012;SSPion}");
+  pdf.addPdf(*pdfSigTime_12_SS,"{2012;SS}");
   pdf.addPdf(*pdfSigTime_12_BS,"{2012;both}");
 
   cout  <<  "simultaneous PDF built"  <<  endl;
@@ -329,9 +328,15 @@ int main(int argc, char * argv[]){
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
-  
+  Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
   // pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.txt");
   pdf.Print();
+  
+  RooRealVar            parSigEtaDeltaP0P1CorrelationCoeff_OS("parSigEtaDeltaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 or Delta p0 and Delta p1 for OS",0.14);   // B+ value 0.14  Kstar 0.07
+  TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
+  RooRealVar            parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 for OS",0.14);   // B+ value 0.14  Kstar -0.0025
+  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
+  TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
   
   RooArgSet             constrainingPdfs("constrainingPdfs");
   RooGaussian           conpdfSigTimeTau("conpdfSigTimeTau","constraint for #tau",parSigTimeTau,parSigTimeTauMean,parSigTimeTauSigma);
@@ -382,9 +387,9 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
-  if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSSPion)))));
+  if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
-  if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSSPion,obsTimeErr)))));
+  if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
   fitting_args.Add((TObject*)(new RooCmdArg(Offset(true))));
 
@@ -407,11 +412,11 @@ int main(int argc, char * argv[]){
   cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
   std::vector<std::string> components_time;
   PlotSimultaneous Time(cfg_plot_time, obsTime, *data, pdf, components_time);
-  RooArgSet projargset(obsTimeErr,obsTagOS,obsTagSSPion,obsEtaOS,obsEtaSSPion);
+  RooArgSet projargset(obsTimeErr,obsTagOS,obsTagSS,obsEtaOS,obsEtaSS);
   Time.AddPlotArg(NumCPU(1));
 //  Time.AddPlotArg(Normalization(1./data->numEntries()));
   Time.AddPlotArg(ProjWData(projargset,*data,true));
-  if (!cp_fit)  Time.PlotItLogY();
+  if (!pereventresolution)  Time.PlotItLogY();
   
   return 0;
 }
