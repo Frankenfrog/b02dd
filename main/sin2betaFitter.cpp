@@ -606,33 +606,23 @@ int main(int argc, char * argv[]){
       RooDataSet* data_bootstrapped;
       RooDataSet* data_bootstrapped_sweighted;
       SPlotFit2* splotfit;
+      RooFitResult* fit_result;
       TRandom3 random(0);
       TStopwatch  stopwatch;
-
-      for (int i = 0; i < 2 ; ++i) {
-        cout  <<  i <<  endl;
-        try {
-          data_bootstrapped = new RooDataSet("data_bootstrapped","data_bootstrapped",RooArgSet(observables,categories));
-          for (int i = 0; i < data->numEntries(); ++i) {
-            data->get(random.Rndm()*data->numEntries());
-            data_bootstrapped->add(*(data->get()));
-          }
-          data_bootstrapped->Print();
-          pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
-          RooArgSet set_of_yields;
-          RooRealVar SigWeight_11_Kpipi("parSigYield_11_Kpipi_sw","signal weight for 11 Kpipi",-10,10);
-          RooRealVar SigWeight_11_KKpi("parSigYield_11_KKpi_sw","signal weight for 11 KKpi",-10,10);
-          RooRealVar SigWeight_12_Kpipi("parSigYield_12_Kpipi_sw","signal weight for 12 Kpipi",-10,10);
-          RooRealVar SigWeight_12_KKpi("parSigYield_12_KKpi_sw","signal weight for 12 KKpi",-10,10);
-          RooFormulaVar sum_of_signal_weights_year_finalstate("sum_of_signal_weights_year_finalstate","sum of signal weights","@0+@1+@2+@3",RooArgList(SigWeight_11_Kpipi,SigWeight_11_KKpi,SigWeight_12_Kpipi,SigWeight_12_KKpi));
-          RooRealVar SigWeight_11("parSigYield_11_sw","signal weight for 11",-10,10);
-          RooRealVar SigWeight_12("parSigYield_12_sw","signal weight for 12",-10,10);
-          RooFormulaVar sum_of_signal_weights_year("sum_of_signal_weights_year","sum of signal weights","@0+@1",RooArgList(SigWeight_11,SigWeight_12));
-          RooRealVar SigWeight_Kpipi("parSigYield_Kpipi_sw","signal weight for Kpipi",-10,10);
-          RooRealVar SigWeight_KKpi("parSigYield_KKpi_sw","signal weight for KKpi",-10,10);
-          RooFormulaVar sum_of_signal_weights_finalstate("sum_of_signal_weights_finalstate","sum of signal weights","@0+@1",RooArgList(SigWeight_Kpipi,SigWeight_KKpi));
-          RooRealVar SigWeight_single("parSigYield_sw","signal weight",-10,10);
-          if (split_years) {
+      RooArgSet set_of_yields;
+      RooRealVar SigWeight_11_Kpipi("parSigYield_11_Kpipi_sw","signal weight for 11 Kpipi",-10,10);
+      RooRealVar SigWeight_11_KKpi("parSigYield_11_KKpi_sw","signal weight for 11 KKpi",-10,10);
+      RooRealVar SigWeight_12_Kpipi("parSigYield_12_Kpipi_sw","signal weight for 12 Kpipi",-10,10);
+      RooRealVar SigWeight_12_KKpi("parSigYield_12_KKpi_sw","signal weight for 12 KKpi",-10,10);
+      RooFormulaVar sum_of_signal_weights_year_finalstate("sum_of_signal_weights_year_finalstate","sum of signal weights","@0+@1+@2+@3",RooArgList(SigWeight_11_Kpipi,SigWeight_11_KKpi,SigWeight_12_Kpipi,SigWeight_12_KKpi));
+      RooRealVar SigWeight_11("parSigYield_11_sw","signal weight for 11",-10,10);
+      RooRealVar SigWeight_12("parSigYield_12_sw","signal weight for 12",-10,10);
+      RooFormulaVar sum_of_signal_weights_year("sum_of_signal_weights_year","sum of signal weights","@0+@1",RooArgList(SigWeight_11,SigWeight_12));
+      RooRealVar SigWeight_Kpipi("parSigYield_Kpipi_sw","signal weight for Kpipi",-10,10);
+      RooRealVar SigWeight_KKpi("parSigYield_KKpi_sw","signal weight for KKpi",-10,10);
+      RooFormulaVar sum_of_signal_weights_finalstate("sum_of_signal_weights_finalstate","sum of signal weights","@0+@1",RooArgList(SigWeight_Kpipi,SigWeight_KKpi));
+      RooRealVar SigWeight_single("parSigYield_sw","signal weight",-10,10);
+      if (split_years) {
             if (split_final_state) {
               set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi));
               set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi));
@@ -650,6 +640,16 @@ int main(int argc, char * argv[]){
           }
           else set_of_yields.add(parSigYield);
 
+      for (int i = 0; i < 20 ; ++i) {
+        cout  <<  i <<  endl;
+        try {
+          data_bootstrapped = new RooDataSet("data_bootstrapped","data_bootstrapped",RooArgSet(observables,categories));
+          for (int i = 0; i < data->numEntries(); ++i) {
+            data->get(random.Rndm()*data->numEntries());
+            data_bootstrapped->add(*(data->get()));
+          }
+          data_bootstrapped->Print();
+          pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
           splotfit = new SPlotFit2(*pdfMass,*data_bootstrapped,set_of_yields);
           splotfit->set_use_minos(false);
           splotfit->set_num_cpu(config.getInt("num_cpu"));
@@ -682,7 +682,7 @@ int main(int argc, char * argv[]){
           //   constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Bootstrapping/WithMass/generation.par");
           // }
           stopwatch.Start(true);
-          RooFitResult* fit_result = pdf.fitTo(*data_bootstrapped_sweighted,fitting_args);
+          fit_result = pdf.fitTo(*data_bootstrapped_sweighted,fitting_args);
           stopwatch.Stop();
           fit_result->Print("v");
           tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
