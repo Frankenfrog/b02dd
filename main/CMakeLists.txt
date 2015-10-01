@@ -13,6 +13,7 @@ add_executable(DecayTimeResolution_MC DecayTimeResolution_MC.cpp)
 add_executable(sin2betaFitter_bootstrapping sin2betaFitter_bootstrapping.cpp)
 add_executable(sin2betaFitter_bootstrapping_with_mass sin2betaFitter_bootstrapping_with_mass.cpp)
 add_executable(sin2betaFitter sin2betaFitter.cpp)
+add_executable(MCDataBDTComparison MCDataBDTComparison.cpp)
 
 # Aliases for module libs
 
@@ -28,3 +29,4 @@ target_link_libraries(DecayTimeResolution_MC ${ALL_LIBRARIES})
 target_link_libraries(sin2betaFitter_bootstrapping ${ALL_LIBRARIES})
 target_link_libraries(sin2betaFitter_bootstrapping_with_mass ${ALL_LIBRARIES})
 target_link_libraries(sin2betaFitter ${ALL_LIBRARIES})
+target_link_libraries(MCDataBDTComparison ${ALL_LIBRARIES})

@@ -171,8 +171,8 @@ int main(int argc, char * argv[]){
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet*       data;
-  if (bootstrapping || massfit) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-  else data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  if (bootstrapping || massfit || calculate_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+  else if (decaytimefit)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
   data->Print();
 
   // Mass PDF
