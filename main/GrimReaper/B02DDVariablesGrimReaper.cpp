@@ -144,7 +144,11 @@ class B02DDVariablesReducer : public Reducer {
 
   ReducerLeaf<Double_t>* varPseudorapidity;
   Double_t* pseudorapidity;
+  ReducerLeaf<Double_t>* varPhi;
+  Double_t* phi;
   Double_t* B0_P;
+  Double_t* B0_PX;
+  Double_t* B0_PY;
   Double_t* B0_PZ;
 
   void CreateSpecialBranches() {
@@ -250,9 +254,13 @@ class B02DDVariablesReducer : public Reducer {
     varPiTwoplus_PIDp_value = (Double_t*)varPiTwoplus_PIDp->branch_address();
 
     B0_P = (Double_t*)GetInterimLeafByName("B0_P").branch_address();
+    B0_PX = (Double_t*)GetInterimLeafByName("B0_PX").branch_address();
+    B0_PY = (Double_t*)GetInterimLeafByName("B0_PY").branch_address();
     B0_PZ = (Double_t*)GetInterimLeafByName("B0_PZ").branch_address();
     varPseudorapidity = &(CreateDoubleLeaf("varPseudorapidity", -999999));
     pseudorapidity = (Double_t*)varPseudorapidity->branch_address();
+    varPhi = &(CreateDoubleLeaf("varPhi", -999999));
+    phi = (Double_t*)varPhi->branch_address();
   }
 
   void UpdateSpecialLeaves() {
@@ -342,6 +350,9 @@ class B02DDVariablesReducer : public Reducer {
     *varPiTwoplus_PIDp_value = *varPiTwoplus_ProbNNp_value / *varPiTwoplus_SumProbNNppi_value;
 
     *pseudorapidity = TMath::ATanH(*B0_PZ / *B0_P);
+    if (*B0_PX>0) *phi = TMath::ATan(*B0_PY / *B0_PX);
+    else if (*B0_PY>0) *phi = TMath::ATan(*B0_PY / *B0_PX) + TMath::Pi();
+    else *phi = TMath::ATan(*B0_PY / *B0_PX) - TMath::Pi();
   }
 
   bool EntryPassesSpecialCuts() {
