@@ -172,7 +172,9 @@ int main(int argc, char * argv[]){
   RooFitResult* fit_result = pdfDsDExtend.fitTo(*optimized_data, fitting_args);
   pdfDsDExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/FitResults_DsDMass.txt");
   Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfDsDExtend, components_mass, "DsDMass");
-  Mass.PlotItLogNoLogY();
+  Mass.set_scaletype_x(kLinear);
+  Mass.set_scaletype_y(kBoth);
+  Mass.PlotIt();
 
   return 0;
 }

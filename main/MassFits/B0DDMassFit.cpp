@@ -393,6 +393,8 @@ int main(int argc, char * argv[]){
   std::vector<std::string> components_mass;
   components_mass += "pdfBdDDMassExtend.*", "pdfBsDDMassExtend.*", "pdfDsDDDMassExtend.*", "pdfDsDDCombMassExtend.*", "pdfBkgDCombMassExtend.*", "pdfDsDCombDMassExtend.*", "pdfBkgCombDMassExtend.*", "pdfBkgCombMassExtend.*";
   Plot* Mass;
+  Mass->set_scaletype_x(kLinear);
+  Mass->set_scaletype_y(kBoth);
   if (massmodel_ipatia) {
     if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_Ipatia_obsMass_"+string(config.getString("identifier")));
     else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "3Dweights_Ipatia_obsMass_"+string(config.getString("identifier")));
@@ -401,15 +403,15 @@ int main(int argc, char * argv[]){
     if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_obsMass_"+string(config.getString("identifier")));
     else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "3Dweights_obsMass_"+string(config.getString("identifier")));
   }
-  Mass->PlotItLogNoLogY();
+  Mass->PlotIt();
 
   if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMassDauOne, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_obsMassDauOne_"+string(config.getString("identifier")));
   else Mass = new Plot(cfg_plot_mass, obsMassDauOne, data, *pdfMass, components_mass, "3Dweights_obsMassDauOne_"+string(config.getString("identifier")));
-  Mass->PlotItLogNoLogY();
+  Mass->PlotIt();
 
   if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMassDauTwo, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_obsMassDauTwo_"+string(config.getString("identifier")));
   else Mass = new Plot(cfg_plot_mass, obsMassDauTwo, data, *pdfMass, components_mass, "3Dweights_obsMassDauTwo_"+string(config.getString("identifier")));
-  Mass->PlotItLogNoLogY();
+  Mass->PlotIt();
 
   return 0;
 }

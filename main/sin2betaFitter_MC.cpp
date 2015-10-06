@@ -94,7 +94,7 @@ int main(int argc, char * argv[]){
   bool truetag = false;
   if (cp_fit) truetag = config.getBool("truetag");
 
-  RooRealVar        obsTime("obsTime","#it{t}",0.25,15.25,"ps");
+  RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSSPion("obsEtaSSPion_TupleCalib","#eta_{SS#pi}",0.,0.5);
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
@@ -202,10 +202,10 @@ int main(int argc, char * argv[]){
   
   // Decay Time Acceptance
   std::vector<double> knots;
-  knots += 0.5;
-  knots += 1.0;
+  knots += 0.8;
+  // knots += 1.0;
   knots += 2.0;
-  knots += 8.0;
+  // knots += 8.0;
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
@@ -326,12 +326,12 @@ int main(int argc, char * argv[]){
   
 //========================================================================================================================================================================================================================
   
-  RooAbsPdf* pdf;
+  // RooAbsPdf* pdf;
 
   // Build Simultaneous PDF
   RooSuperCategory  supercategory("supercategory","supercategory",RooArgSet(catYear,catTag));
-  if (truetag) pdf = pdfSigTime_True;
-  else {
+  // if (truetag) pdf = pdfSigTime_True;
+  // else {
     RooSimultaneous* pdf = new RooSimultaneous("pdf","P",supercategory);
     pdf->addPdf(*pdfSigTime_11_OS,"{2011;OS}");
     pdf->addPdf(*pdfSigTime_11_SS,"{2011;SSPion}");
@@ -340,7 +340,7 @@ int main(int argc, char * argv[]){
     pdf->addPdf(*pdfSigTime_12_SS,"{2012;SSPion}");
     pdf->addPdf(*pdfSigTime_12_BS,"{2012;both}");
     cout  <<  "simultaneous PDF built"  <<  endl;
-  }
+  // }
 
   // Get Starting Values and Fit PDF to data
   pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_MC.txt");
@@ -425,7 +425,9 @@ int main(int argc, char * argv[]){
     Time.AddPlotArg(NumCPU(1));
     // Time.AddPlotArg(Normalization(1./data->numEntries()));
     Time.AddPlotArg(ProjWData(projargset,*data,false));
-    if (!cp_fit)  Time.PlotItLogY();
+    Time.set_scaletype_x(kBoth);
+    Time.set_scaletype_y(kLogarithmic);
+    if (!cp_fit)  Time.PlotIt();
   }
 
   return 0;
@@ -461,12 +463,12 @@ void PlotAcceptance(RooAbsReal* acceptance){
   TCanvas c("c","c",800,600);
   c.SetLogx(true);
   
-  RooRealVar        obsTime("obsTime","#it{t}",0.25,15.25,"ps");
+  RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
 
   RooPlot* plot = obsTime.frame();
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
-  plot->SetMaximum(1.);
+  plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline.pdf");
@@ -475,18 +477,9 @@ void PlotAcceptance(RooAbsReal* acceptance){
   plot = obsTime.frame();
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
-  plot->SetMaximum(1.);
+  plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline_nolog.pdf");
-  
-  c.SetLogx(true);
-  plot = obsTime.frame();
-  acceptance->plotOn(plot);
-  plot->SetMinimum(0.);
-  plot->SetMaximum(0.7);
-  plot->GetYaxis()->SetTitle("acceptance");
-  plot->Draw();
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline_zoomed.pdf");
 }
 

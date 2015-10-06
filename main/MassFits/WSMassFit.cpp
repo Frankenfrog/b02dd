@@ -151,5 +151,7 @@ void FitandPlot(RooDataSet* original_data, TString cut, TString identifier){
   cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots");
   std::vector<std::string> components_mass;
   Plot Mass(cfg_plot_mass, obsMass, *fitdata, pdfBkgExtend, components_mass, string("WSMass_"+identifier));
-  Mass.PlotItLogNoLogY();
+  Mass.set_scaletype_x(kLinear);
+  Mass.set_scaletype_y(kBoth);
+  Mass.PlotIt();
 }

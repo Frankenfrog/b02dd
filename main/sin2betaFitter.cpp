@@ -164,7 +164,8 @@ int main(int argc, char * argv[]){
     observables.add(obsTagOS);
     observables.add(obsTagSS);
   }
-  RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catTriggerSetTopo234BodyBBDT,SigWeight,"categories");
+  RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catTriggerSetTopo234BodyBBDT,"categories");
+  if (!(massfit || calculate_sweights)) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
   // Get data set
@@ -395,10 +396,11 @@ int main(int argc, char * argv[]){
 
   // Decay Time Acceptance
   std::vector<double> knots;
-  knots += 0.5;
-  knots += 1.0;
+  // knots += 0.5;
+  // knots += 1.0;
+  knots += 0.8;
   knots += 2.0;
-  knots += 8.0;
+  // knots += 8.0;
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
@@ -596,7 +598,9 @@ int main(int argc, char * argv[]){
     cfg_com.CheckHelpFlagAndPrintHelp();
     cfg_com.PrintAll();
 
-    ToyStudyStd tstudy(cfg_com, cfg_tstudy);
+    PlotConfig cfg_plot("cfg_plot");
+
+    ToyStudyStd tstudy(cfg_com, cfg_tstudy, cfg_plot);
 
     if (method.EqualTo("generate")) {
       fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
@@ -720,7 +724,9 @@ int main(int argc, char * argv[]){
     Plot* Mass;
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, *data, *pdfMass, components_mass, "obsMass");
-    Mass->PlotItLogNoLogY();
+    Mass->set_scaletype_x(kLinear);
+    Mass->set_scaletype_y(kBoth);
+    Mass->PlotIt();
 
     if (calculate_sweights){
       RooArgSet set_of_yields;
@@ -841,11 +847,12 @@ int main(int argc, char * argv[]){
     if (cp_fit && !pereventresolution) projargset.add(RooArgSet(obsEtaOS,obsEtaSS));
     if (!cp_fit && pereventresolution) projargset.add(obsTimeErr);
     if (cp_fit && pereventresolution) projargset.add(RooArgSet(obsTimeErr,obsEtaOS,obsEtaSS));
-    // (obsTimeErr,obsTagOS,obsTagSS,obsEtaOS,obsEtaSS);
     Time.AddPlotArg(NumCPU(1));
     // Time.AddPlotArg(Normalization(1./data->numEntries()));
     Time.AddPlotArg(ProjWData(projargset,*data,true));
-    if (!pereventresolution)  Time.PlotItLogY();
+    Time.set_scaletype_x(kLinear);
+    Time.set_scaletype_y(kLogarithmic);
+    if (!pereventresolution)  Time.PlotIt();
   }
   return 0;
 }

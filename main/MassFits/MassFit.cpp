@@ -418,7 +418,9 @@ int main(int argc, char * argv[]){
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "obsMass");
   }
-  Mass->PlotItLogNoLogY();
+  Mass->set_scaletype_x(kLinear);
+  Mass->set_scaletype_y(kBoth);
+  Mass->PlotIt();
 
   if (calculate_sweights){
     RooArgSet set_of_yields;

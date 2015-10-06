@@ -416,7 +416,9 @@ int main(int argc, char * argv[]){
   Time.AddPlotArg(NumCPU(1));
 //  Time.AddPlotArg(Normalization(1./data->numEntries()));
   Time.AddPlotArg(ProjWData(projargset,*data,true));
-  if (!pereventresolution)  Time.PlotItLogY();
+  Time.set_scaletype_x(kLinear);
+  Time.set_scaletype_y(kLogarithmic);
+  if (!pereventresolution)  Time.PlotIt();
   
   return 0;
 }

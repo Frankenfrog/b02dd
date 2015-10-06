@@ -64,6 +64,7 @@
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"
 #include "doofit/fitter/splot/SPlotFit2.h"
+#include "doofit/plotting/Plot/PlotConfig.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -77,6 +78,7 @@ using namespace doofit::toy;
 using namespace doofit::roofit::functions;
 using namespace doofit::roofit::pdfs;
 using namespace doofit::fitter::splot;
+using namespace doofit::plotting;
 
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
@@ -423,7 +425,9 @@ int main(int argc, char * argv[]){
     cfg_com.CheckHelpFlagAndPrintHelp();
     cfg_com.PrintAll();
 
-    ToyStudyStd tstudy(cfg_com, cfg_tstudy);
+    PlotConfig cfg_plot("cfg_plot");
+
+    ToyStudyStd tstudy(cfg_com, cfg_tstudy, cfg_plot);
 
     if (method.EqualTo("g")) {
 

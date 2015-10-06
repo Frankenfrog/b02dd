@@ -255,7 +255,9 @@ int main(int argc, char * argv[]){
     if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "DDweights_obsMass_"+string(config.getString("identifier")));
     else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "DDweights_obsMass_"+string(config.getString("identifier")));
   }
-  Mass->PlotItLogNoLogY();
+  Mass->set_scaletype_x(kLinear);
+  Mass->set_scaletype_y(kBoth);
+  Mass->PlotIt();
 
   return 0;
 }

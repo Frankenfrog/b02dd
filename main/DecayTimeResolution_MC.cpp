@@ -165,7 +165,9 @@ int main(int argc, char * argv[]){
   RooArgSet projargset(obsTimeErr);
   Time.AddPlotArg(NumCPU(1));
   Time.AddPlotArg(ProjWData(projargset,*data,true));
-  Time.PlotItLogNoLogY();
+  Time.set_scaletype_x(kLinear);
+  Time.set_scaletype_y(kBoth);
+  Time.PlotIt();
   
   return 0;
 }

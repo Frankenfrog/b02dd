@@ -187,7 +187,9 @@ int main(int argc, char * argv[]){
   RooFitResult* fit_result = pdfSigExtend.fitTo(*optimized_data, fitting_args);
   pdfSigExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/FitResults_Mass.txt");
   Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfSigExtend, components_mass, "CB_obsMass");
-  Mass.PlotItLogNoLogY();
+  Mass.set_scaletype_x(kLinear);
+  Mass.set_scaletype_y(kBoth);
+  Mass.PlotIt();
 
   fit_result = pdfSigDExtend.fitTo(*optimized_data, fitting_args);
   pdfSigDExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/FitResults_DMass.txt");
