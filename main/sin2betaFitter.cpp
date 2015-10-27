@@ -98,7 +98,11 @@ int main(int argc, char * argv[]){
   int num_cpu = config.getInt("num_cpu");
   bool pereventresolution = config.getBool("pereventresolution");
   bool cp_fit = config.getBool("cp_fit");
-  TString SStagger = config.getString("SStagger");
+  TString taggingcategory = config.getString("taggingcategory");
+  TString OS_tagger = config.getString("OS_tagger");
+  TString SS_tagger = config.getString("SS_tagger");
+  bool OS_tagging = config.getBool("OS_tagging");
+  bool SS_tagging = config.getBool("SS_tagging");
   bool split_years      = config.getBool("split_years");
   bool split_final_state  = config.getBool("split_final_state");
   bool calculate_sweights = config.getBool("calculate_sweights");
@@ -116,23 +120,23 @@ int main(int argc, char * argv[]){
 
   RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
-  RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0.,0.5);
-  RooRealVar        obsEtaSS("obsEta"+SStagger,"#eta_{SS}",0.,0.5);
+  RooRealVar        obsEtaOS("obsEta"+OS_tagger,"#eta_{OS}",0.,0.5);
+  RooRealVar        obsEtaSS("obsEta"+SS_tagger,"#eta_{SS}",0.,0.5);
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
-  RooCategory       obsTagOS("obsTagOS_StdComb_NoZero","Flavour Tag");
+  RooCategory       obsTagOS("obsTag"+OS_tagger+"_NoZero","Flavour Tag");
   obsTagOS.defineType("B0",1);
   obsTagOS.defineType("B0bar",-1);
-  RooCategory       obsTagSS("obsTag"+SStagger+"_NoZero","Flavour Tag");
+  RooCategory       obsTagSS("obsTag"+SS_tagger+"_NoZero","Flavour Tag");
   obsTagSS.defineType("B0",1);
   obsTagSS.defineType("B0bar",-1);
   
   RooCategory       catYear("catYear","year of data taking");
   catYear.defineType("2011",2011);
   catYear.defineType("2012",2012);
-  RooCategory       catTag("catTaggedOS"+SStagger,"OS or SS tagged");
-  catTag.defineType("OS",1);
-  catTag.defineType("SS",-1);
-  catTag.defineType("both",10);
+  RooCategory       catTag(taggingcategory,"OS or SS tagged");
+  if (OS_tagging)   catTag.defineType("OS",1);
+  if (SS_tagging)   catTag.defineType("SS",-1);
+  if (OS_tagging && SS_tagging)   catTag.defineType("both",10);
   if (!decaytimefit) catTag.defineType("untagged",0);
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
@@ -165,7 +169,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagSS);
   }
   RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catTriggerSetTopo234BodyBBDT,"categories");
-  if (!(massfit || calculate_sweights)) categories.add(SigWeight);
+  if (decaytimefit) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
   // Get data set
@@ -359,23 +363,23 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaDeltaP0_OS("parSigEtaDeltaP0_OS","delta mistag probability",0.0140,0.,0.03);
   RooRealVar          parSigEtaDeltaP0Mean_OS("parSigEtaDeltaP0Mean_OS","#bar{#delta p_{0}}",0.0148);
   RooRealVar          parSigEtaDeltaP0Sigma_OS("parSigEtaDeltaP0Sigma_OS","#sigma_{#bar{#delta p_{0}}}",0.0012);  // B+ value 0.0016  Kstar 0.0031
-  Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_OS);
+  if (OS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_OS);
 
   RooRealVar          parSigEtaDeltaP1_OS("parSigEtaDeltaP1_OS","delta scale calibration parameter probability",0.066,0.,0.1);
   RooRealVar          parSigEtaDeltaP1Mean_OS("parSigEtaDeltaP1Mean_OS","#bar{#delta p_{1}}",0.070);
   RooRealVar          parSigEtaDeltaP1Sigma_OS("parSigEtaDeltaP1Sigma_OS","#sigma_{#bar{#delta p_{1}}}",0.012);   // B+ value 0.018   Kstar 0.035
-  Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_OS);
+  if (OS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_OS);
 
   // SS tags
   RooRealVar          parSigEtaDeltaP0_SS("parSigEtaDeltaP0_SS","delta mistag probability",-0.003,-0.02,0.02);
   RooRealVar          parSigEtaDeltaP0Mean_SS("parSigEtaDeltaP0Mean_SS","#bar{#delta p_{0}}",-0.0026);
   RooRealVar          parSigEtaDeltaP0Sigma_SS("parSigEtaDeltaP0Sigma_SS","#sigma_{#bar{#delta p_{0}}}",0.0044);
-  Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_SS);
+  if (SS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_SS);
 
   RooRealVar          parSigEtaDeltaP1_SS("parSigEtaDeltaP1_SS","delta scale calibration parameter probability",-0.18,-0.7,0.3);
   RooRealVar          parSigEtaDeltaP1Mean_SS("parSigEtaDeltaP1Mean_SS","#bar{#delta p_{1}}",-0.18);
   RooRealVar          parSigEtaDeltaP1Sigma_SS("parSigEtaDeltaP1Sigma_SS","#sigma_{#bar{#delta p_{1}}}",0.10);
-  Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_SS);
+  if (SS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_SS);
 
 //=========================================================================================================================================================================================================================
 
@@ -396,11 +400,8 @@ int main(int argc, char * argv[]){
 
   // Decay Time Acceptance
   std::vector<double> knots;
-  // knots += 0.5;
-  // knots += 1.0;
   knots += 0.8;
   knots += 2.0;
-  // knots += 8.0;
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
@@ -424,24 +425,24 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP0_OS("parSigEtaP0_OS","Offset on per-event mistag",0.3815,0.0,0.1);
   RooRealVar          parSigEtaP0Mean_OS("parSigEtaP0Mean_OS","#bar{p}_{0}",0.3815);
   RooRealVar          parSigEtaP0Sigma_OS("parSigEtaP0Sigma_OS","#sigma_{#bar{p}_{0}}",0.0019);   // B+ value 0.0011  Kstar 0.0022
-  Gaussian_Constraints.add(parSigEtaP0Sigma_OS);
+  if (OS_tagging) Gaussian_Constraints.add(parSigEtaP0Sigma_OS);
 
   RooRealVar          parSigEtaP1_OS("parSigEtaP1_OS","Offset on per-event mistag",0.978,0.9,1.1);
   RooRealVar          parSigEtaP1Mean_OS("parSigEtaP1Mean_OS","#bar{p}_{0}",0.978);
   RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{0}}",0.007);  // B+ value 0.012   Kstar 0.024
-  Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
+  if (OS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
   RooRealVar          parSigEtaP0_SS("parSigEtaP0_SS","Offset on per-event mistag",0.4228,0.3,0.5);
   RooRealVar          parSigEtaP0Mean_SS("parSigEtaP0Mean_SS","#bar{p}_{0}",0.4232);
   RooRealVar          parSigEtaP0Sigma_SS("parSigEtaP0Sigma_SS","#sigma_{#bar{p}_{0}}",0.0029);
-  Gaussian_Constraints.add(parSigEtaP0Sigma_SS);
+  if (SS_tagging) Gaussian_Constraints.add(parSigEtaP0Sigma_SS);
 
   RooRealVar          parSigEtaP1_SS("parSigEtaP1_SS","Offset on per-event mistag",1.01,0.7,1.1);
   RooRealVar          parSigEtaP1Mean_SS("parSigEtaP1Mean_SS","#bar{p}_{0}",1.011);
   RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{0}}",0.064);
-  Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
+  if (SS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
 
   RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.030);
   RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",-0.007);
@@ -511,12 +512,12 @@ int main(int argc, char * argv[]){
   // Build Simultaneous PDF
   RooSuperCategory  supercategory_time("supercategory_time","supercategory_time",RooArgSet(catYear,catTag));
   RooSimultaneous   pdf("pdf","P",supercategory_time);
-  pdf.addPdf(*pdfSigTime_11_OS,"{2011;OS}");
-  pdf.addPdf(*pdfSigTime_11_SS,"{2011;SS}");
-  pdf.addPdf(*pdfSigTime_11_BS,"{2011;both}");
-  pdf.addPdf(*pdfSigTime_12_OS,"{2012;OS}");
-  pdf.addPdf(*pdfSigTime_12_SS,"{2012;SS}");
-  pdf.addPdf(*pdfSigTime_12_BS,"{2012;both}");
+  if(OS_tagging) pdf.addPdf(*pdfSigTime_11_OS,"{2011;OS}");
+  if(SS_tagging) pdf.addPdf(*pdfSigTime_11_SS,"{2011;SS}");
+  if(OS_tagging && SS_tagging) pdf.addPdf(*pdfSigTime_11_BS,"{2011;both}");
+  if(OS_tagging) pdf.addPdf(*pdfSigTime_12_OS,"{2012;OS}");
+  if(SS_tagging) pdf.addPdf(*pdfSigTime_12_SS,"{2012;SS}");
+  if(OS_tagging && SS_tagging) pdf.addPdf(*pdfSigTime_12_BS,"{2012;both}");
 
   cout  <<  "simultaneous PDF built"  <<  endl;
 
@@ -556,9 +557,9 @@ int main(int argc, char * argv[]){
     constrainingPdfs.add(conpdfSigTimeDeltaM);
     constrainingPdfs.add(conpdfSigEtaDeltaProd_11);
     constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
-    constrainingPdfs.add(conpdfSigEta_OS);
-    constrainingPdfs.add(conpdfSigEta_SS);
-    constrainingPdfs.add(conpdfSigEtaDelta_OS);
+    if (OS_tagging)  constrainingPdfs.add(conpdfSigEta_OS);
+    if (SS_tagging)  constrainingPdfs.add(conpdfSigEta_SS);
+    if (OS_tagging)  constrainingPdfs.add(conpdfSigEtaDelta_OS);
   }
   cout  <<  "Constraints added" <<  endl;
 
@@ -719,6 +720,7 @@ int main(int argc, char * argv[]){
     cfg_plot_mass.InitializeOptions();
     cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots/"+config.getString("identifier"));
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
+    cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{unofficial}");
     std::vector<std::string> components_mass;
     components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgBdBsExtend.*", "pdfBkgBsDsDExtend.*", "pdfBkgBdExtend.*";
     Plot* Mass;
