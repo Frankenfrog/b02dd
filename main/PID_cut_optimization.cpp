@@ -203,18 +203,10 @@ void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
     cout  << "FOM: "  <<  y_vals.at(i)  <<  " pm "  <<  y_errors.at(i)  <<  endl;
   }
 
-  double gr_x_vals[x_vals.size()];
-  double gr_y_vals[x_vals.size()];
-  double gr_y_errors[x_vals.size()];
-  for (int i = 0; i < x_vals.size(); ++i) {
-    gr_x_vals[i] = x_vals.at(i);
-    gr_y_vals[i] = y_vals.at(i);
-    gr_y_errors[i] = y_errors.at(i);
-  }
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
-  TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+  TGraphErrors  gr(x_vals.size(),&x_vals[0], &y_vals[0], NULL, &y_errors[0]);
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
@@ -254,19 +246,10 @@ void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
     cout  << "FOM: "  <<  y_vals.at(i)  <<  " pm "  <<  y_errors.at(i)  <<  endl;
   }
 
-  double gr_x_vals[x_vals.size()];
-  double gr_y_vals[x_vals.size()];
-  double gr_y_errors[x_vals.size()];
-  for (int i = 0; i < x_vals.size(); ++i) {
-    gr_x_vals[i] = x_vals.at(i);
-    gr_y_vals[i] = y_vals.at(i);
-    gr_y_errors[i] = y_errors.at(i);
-  }
-
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
-  TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+  TGraphErrors  gr(x_vals.size(), &x_vals[0], &y_vals[0], NULL, &y_errors[0]);
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
@@ -309,18 +292,10 @@ void KKPiPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
     cout  << "FOM: "  <<  y_vals.at(i)  <<  " pm "  <<  y_errors.at(i)  <<  endl;
   }
 
-  double gr_x_vals[x_vals.size()];
-  double gr_y_vals[x_vals.size()];
-  double gr_y_errors[x_vals.size()];
-  for (int i = 0; i < x_vals.size(); ++i) {
-    gr_x_vals[i] = x_vals.at(i);
-    gr_y_vals[i] = y_vals.at(i);
-    gr_y_errors[i] = y_errors.at(i);
-  }
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
-  TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+  TGraphErrors  gr(x_vals.size(), &x_vals[0], &y_vals[0], NULL, &y_errors[0]);
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
@@ -366,16 +341,7 @@ void ElectronPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& f
     cout  << "Uncertainty on FOM due to expected number of background candidates in signal region: "  <<  FOM_error_Nbkg  <<  endl;
   }
 
-  double gr_x_vals[x_vals.size()];
-  double gr_y_vals[x_vals.size()];
-  double gr_y_errors[x_vals.size()];
-  for (int i = 0; i < x_vals.size(); ++i) {
-    gr_x_vals[i] = x_vals.at(i);
-    gr_y_vals[i] = y_vals.at(i);
-    gr_y_errors[i] = y_errors.at(i);
-  }
-
-  TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+  TGraphErrors  gr(x_vals.size(), &x_vals[0], &y_vals[0], NULL, &y_errors[0]);
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S^{2}/#sqrt{S+B}");
   gr.Draw("AP");

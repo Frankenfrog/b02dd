@@ -243,27 +243,17 @@ int main(int argc, char * argv[]){
     // background_yield_bdt2 += parBkgYield_11_Kpipi.getVal() + parBkgYield_12_Kpipi.getVal() + parBkgYield_11_KKpi.getVal() + parBkgYield_12_KKpi.getVal();
   }
 
-  double signal_yield_bdt1_array[signal_yield_bdt1.size()];
-  double background_yield_bdt1_array[signal_yield_bdt1.size()];
-  // double signal_yield_bdt2_array[signal_yield_bdt2.size()];
-  // double background_yield_bdt2_array[signal_yield_bdt2.size()];
-  for (int i = 0; i < signal_yield_bdt1.size(); ++i) {
-    signal_yield_bdt1_array[i] = signal_yield_bdt1.at(i);
-    background_yield_bdt1_array[i] = background_yield_bdt1.at(i);
-    // signal_yield_bdt2_array[i] = signal_yield_bdt2.at(i);
-    // background_yield_bdt2_array[i] = background_yield_bdt2.at(i);
-  }
-  // TMultiGraph* mg = new TMultiGraph();
-  // TGraph*  gr_bdt1 = new TGraph(signal_yield_bdt1.size(), signal_yield_bdt1_array, background_yield_bdt1_array);
-  // gr_bdt1->SetLineColor(2);
-  // TGraph*  gr_bdt2 = new TGraph(signal_yield_bdt2.size(), signal_yield_bdt2_array, background_yield_bdt2_array);
-  // gr_bdt2->SetLineColor(4);
-  // mg->Add(gr_bdt1);
-  // mg->Add(gr_bdt2);
-  // mg->Draw("AC");
-  // mg->GetXaxis()->SetTitle("signal yield");
-  // mg->GetYaxis()->SetTitle("background yield");
-  // c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/SignalvsBackgroundYield_"+config.getString("bdt_classifier1")+".pdf"));
+  TMultiGraph* mg = new TMultiGraph();
+  TGraph*  gr_bdt1 = new TGraph(signal_yield_bdt1.size(), &signal_yield_bdt1[0], &background_yield_bdt1[0]);
+  gr_bdt1->SetLineColor(2);
+  TGraph*  gr_bdt2 = new TGraph(signal_yield_bdt2.size(), &signal_yield_bdt2[0], &background_yield_bdt2[0]);
+  gr_bdt2->SetLineColor(4);
+  mg->Add(gr_bdt1);
+  mg->Add(gr_bdt2);
+  mg->Draw("AC");
+  mg->GetXaxis()->SetTitle("signal yield");
+  mg->GetYaxis()->SetTitle("background yield");
+  c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/SignalvsBackgroundYield_"+config.getString("bdt_classifier1")+".pdf"));
 
   // for (int i = 0; i < signal_yield_bdt1.size(); ++i)  cout <<  (int)signal_yield_bdt1.at(i) <<  "\t"  <<  (int)background_yield_bdt1.at(i) <<  "\t" <<  (int)signal_yield_bdt2.at(i) <<  "\t"  <<  (int)background_yield_bdt2.at(i) <<  endl;
   for (int i = 0; i < signal_yield_bdt1.size(); ++i)  cout <<  (int)signal_yield_bdt1.at(i) <<  "\t"  <<  (int)background_yield_bdt1.at(i) <<  endl;
