@@ -42,6 +42,11 @@ echo "**Tuple DPlus** (common variables, pre-selection, vetos + PID cuts, BDT se
 echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleDPlus.root"
 B02DDFlavourTaggingGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleD.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleDPlus.root" > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_massvetos_bdt_finalselection_ft.log
 
+echo ""
+echo "**Tuple E** (common variables, pre-selection, vetos + PID cuts, BDT selection applied, final selection, FT variables, random candidate selection)"
+echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleE.root"
+CandidateSelectionGrimReaper "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleDplus.root" B02DD "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_TupleE.root" B02DD "idxRandom" > scythe_${RUN_NAME}_${DATE}_DT2012_B02DD_vars_preselected_bdt_finalselection_ft_random.log
+
 # echo ""
 # echo "**Fit Tuple** (common variables, pre-selection, BDT selection, final selection, FT variables)"
 # echo "${INPUT_PATH}${BASE_FILE_NAME}_${DATE}_${PRODUCER}_selected_FitTuple.root"
