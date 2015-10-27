@@ -79,8 +79,8 @@ int main(int argc, char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
-  RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),"#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMassDauTwo(TString(config.getString("observable_name_DauTwo")),TString(config.getString("observable_title_DauTwo")),1845,1895,"MeV/c^{2}");
 
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
@@ -95,18 +95,9 @@ int main(int argc, char * argv[]){
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
   catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
 
-  RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
-  RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
-  RooRealVar        varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID",0,1);
-  RooRealVar        varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID",0,1);
-  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
-  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
-
   RooArgSet         observables(obsMassDauOne,obsMassDauTwo,"observables");
   RooArgSet         variables(varBDT,varDMinTauSignificance,"variables");
-  RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
   RooArgSet         realvars(observables,variables,"realvars");
-  realvars.add(varPIDs);
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,"categories");
   
   // Get data set
@@ -182,18 +173,11 @@ int main(int argc, char * argv[]){
       if (FOM > FOM_max)  FOM_max = FOM;
       y_errors += 0;
     }
-    double gr_x_vals[x_vals.size()];
-    double gr_y_vals[x_vals.size()];
-    double gr_y_errors[x_vals.size()];
-    for (int i = 0; i < x_vals.size(); ++i) {
-      gr_x_vals[i] = x_vals.at(i);
-      gr_y_vals[i] = y_vals.at(i)/FOM_max;
-      gr_y_errors[i] = y_errors.at(i);
-    }
+
     gROOT->SetStyle("Plain");
     setStyle("LHCb");
     TCanvas c("c","c",800,600);
-    TGraphErrors  gr(x_vals.size(),gr_x_vals, gr_y_vals, NULL, gr_y_errors);
+    TGraphErrors  gr(x_vals.size(), &x_vals[0], &y_vals[0], NULL, &y_errors[0]);
     gr.GetXaxis()->SetTitle("D tau significance");
     if (config.getDouble("FOM_expo") == 1.) gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
     if (config.getDouble("FOM_expo") == 2.) gr.GetYaxis()->SetTitle("FOM = S^{2}/#sqrt{S+B}");
@@ -235,7 +219,7 @@ int main(int argc, char * argv[]){
     spr.set_output_file_path(config.getString("sweights_tuple"));
 
     spr.set_output_tree_path("B02DD");
-    spr.set_cut_string("obsMassDauOne>="+to_string(obsMassDauOne.getMin())+"&&obsMassDauOne<="+to_string(obsMassDauOne.getMax())+"&&obsMassDauTwo>="+to_string(obsMassDauTwo.getMin())+"&&obsMassDauTwo<="+to_string(obsMassDauTwo.getMax())+"&&"+string(config.getString("cut")));
+    spr.set_cut_string(TString(obsMassDauOne.GetName())+">="+to_string(obsMassDauOne.getMin())+"&&"+TString(obsMassDauOne.GetName())+"<="+to_string(obsMassDauOne.getMax())+"&&"+TString(obsMassDauTwo.GetName())+">="+to_string(obsMassDauTwo.getMin())+"&&"+TString(obsMassDauTwo.GetName())+"<="+to_string(obsMassDauTwo.getMax())+"&&"+string(config.getString("cut")));
     spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
     spr.Initialize();
     spr.Run();

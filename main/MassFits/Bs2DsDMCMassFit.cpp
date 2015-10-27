@@ -89,16 +89,7 @@ int main(int argc, char * argv[]){
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("misID",30);
 
-  RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
-  RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
-  RooRealVar        varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID",0,1);
-  RooRealVar        varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID",0,1);
-  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
-  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
-
   RooArgSet         observables(obsMass,"observables");
-  RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
-  observables.add(varPIDs);
   RooArgSet         categories(catDDFinalState,catBkg,catTriggerSetTopo234BodyBBDT,"categories");
   
   // Get data set

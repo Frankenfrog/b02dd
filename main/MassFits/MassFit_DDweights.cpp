@@ -76,18 +76,10 @@ int main(int argc, char * argv[]){
   bool massmodel_ipatia = config.getBool("ipatia");
   bool split_years      = config.getBool("split_years");
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5400,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5400,"MeV/c^{2}");
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
   RooRealVar        DD_weight("parSigDDYield_sw","parSigDDYield_sw",-10,10);
-
-  RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
-  RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
-  RooRealVar        varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID",0,1);
-  RooRealVar        varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID",0,1);
-  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
-  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
-  RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
 
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
@@ -97,6 +89,7 @@ int main(int argc, char * argv[]){
   catDDFinalState.defineType("KpiKKpipi",41);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
 
   RooCategory       catYear("catYear","catYear");
   catYear.defineType("2011",2011);
@@ -104,7 +97,6 @@ int main(int argc, char * argv[]){
 
   RooArgSet         observables(obsMass,"observables");
   RooArgSet         variables(varBDT,varDMinTauSignificance,DD_weight,"variables");
-  variables.add(varPIDs);
   RooArgSet         realvars(observables,variables,"realvars");
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
@@ -205,8 +197,8 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDstDHighExtend_12("pdfBkgDstDHighExtend_12","pdfBkgDstDHighExtend_12",pdfBkgDstDHighMass,parBkgDstDHighYield_12);
   RooExtendPdf      pdfBkgDstDHighExtend("pdfBkgDstDHighExtend","pdfBkgDstDHighExtend",pdfBkgDstDHighMass,parBkgDstDHighYield);
 
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11,pdfBkgExtend_11));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12,pdfBkgExtend_12));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11/*,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11,pdfBkgExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12/*,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12,pdfBkgExtend_12*/));
   
   RooAbsPdf*        pdfMass;
 

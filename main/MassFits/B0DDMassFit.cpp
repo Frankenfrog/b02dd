@@ -84,14 +84,6 @@ int main(int argc, char * argv[]){
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
 
-  RooRealVar        varKminus_PID("varKminus_PID","varKminus_PID",0,1);
-  RooRealVar        varKplus_PID("varKplus_PID","varKplus_PID",0,1);
-  RooRealVar        varPiOneminus_PID("varPiOneminus_PID","varPiOneminus_PID",0,1);
-  RooRealVar        varPiOneplus_PID("varPiOneplus_PID","varPiOneplus_PID",0,1);
-  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
-  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
-  RooArgSet         varPIDs(varKminus_PID,varKplus_PID,varPiOneminus_PID,varPiOneplus_PID,varPiTwominus_PID,varPiTwoplus_PID,"varPIDs");
-
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
   catDDFinalState.defineType("KpipiKKpi",13);
@@ -108,7 +100,6 @@ int main(int argc, char * argv[]){
 
   RooArgSet         observables(obsMass,obsMassDauOne,obsMassDauTwo,"observables");
   RooArgSet         variables(varBDT,varDMinTauSignificance,"variables");
-  variables.add(varPIDs);
   RooArgSet         realvars(observables,variables,"realvars");
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,catYear,"categories");
   
@@ -325,9 +316,9 @@ int main(int argc, char * argv[]){
   pdfList_11.add(pdfDsDCombDMassExtend_11);
   pdfList_11.add(pdfBkgCombDMassExtend_11);
   pdfList_11.add(pdfBkgCombMassExtend_11);
-  pdfList_11.add(pdfBdDCombMassExtend_11);
-  pdfList_11.add(pdfBdCombDMassExtend_11);
-  pdfList_11.add(pdfBdCombMassExtend_11);
+  // pdfList_11.add(pdfBdDCombMassExtend_11);
+  // pdfList_11.add(pdfBdCombDMassExtend_11);
+  // pdfList_11.add(pdfBdCombMassExtend_11);
   RooArgList        pdfList_12(pdfBdDDMassExtend_12,pdfBsDDMassExtend_12,/*pdfDstDLowDDMassExtend_12,pdfDstDHighDDMassExtend_12,*/pdfDsDDDMassExtend_12,"pdfList_12");
   //pdfList_12.add(pdfLowDCombMassExtend_12);
   pdfList_12.add(pdfDsDDCombMassExtend_12);
@@ -336,9 +327,9 @@ int main(int argc, char * argv[]){
   pdfList_12.add(pdfDsDCombDMassExtend_12);
   pdfList_12.add(pdfBkgCombDMassExtend_12);
   pdfList_12.add(pdfBkgCombMassExtend_12);
-  pdfList_12.add(pdfBdDCombMassExtend_12);
-  pdfList_12.add(pdfBdCombDMassExtend_12);
-  pdfList_12.add(pdfBdCombMassExtend_12);
+  // pdfList_12.add(pdfBdDCombMassExtend_12);
+  // pdfList_12.add(pdfBdCombDMassExtend_12);
+  // pdfList_12.add(pdfBdCombMassExtend_12);
   RooArgList        pdfList(pdfBdDDMassExtend,pdfBsDDMassExtend,/*pdfDstDLowDDMassExtend,pdfDstDHighDDMassExtend,*/pdfDsDDDMassExtend,"pdfList");
   //pdfList.add(pdfLowDCombMassExtend);
   pdfList.add(pdfDsDDCombMassExtend);
@@ -347,9 +338,9 @@ int main(int argc, char * argv[]){
   pdfList.add(pdfDsDCombDMassExtend);
   pdfList.add(pdfBkgCombDMassExtend);
   pdfList.add(pdfBkgCombMassExtend);
-  pdfList.add(pdfBdDCombMassExtend);
-  pdfList.add(pdfBdCombDMassExtend);
-  pdfList.add(pdfBdCombMassExtend);
+  // pdfList.add(pdfBdDCombMassExtend);
+  // pdfList.add(pdfBdCombDMassExtend);
+  // pdfList.add(pdfBdCombMassExtend);
 
   RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",pdfList_11);
   RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",pdfList_12);
@@ -391,10 +382,8 @@ int main(int argc, char * argv[]){
   cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots/"+string(config.getString("identifier")));
   cfg_plot_mass.set_simultaneous_plot_all_categories(true);
   std::vector<std::string> components_mass;
-  components_mass += "pdfBdDDMassExtend.*", "pdfBsDDMassExtend.*", "pdfDsDDDMassExtend.*", "pdfDsDDCombMassExtend.*", "pdfBkgDCombMassExtend.*", "pdfDsDCombDMassExtend.*", "pdfBkgCombDMassExtend.*", "pdfBkgCombMassExtend.*";
+  components_mass += "pdfBdDDMassExtend.*", "pdfBsDDMassExtend.*", "pdfDsDDDMassExtend.*", "pdfDsDDCombMassExtend.*", "pdfBkgDCombMassExtend.*", "pdfDsDCombDMassExtend.*", "pdfBkgCombDMassExtend.*";//, "pdfBkgCombMassExtend.*";
   Plot* Mass;
-  Mass->set_scaletype_x(kLinear);
-  Mass->set_scaletype_y(kBoth);
   if (massmodel_ipatia) {
     if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_Ipatia_obsMass_"+string(config.getString("identifier")));
     else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "3Dweights_Ipatia_obsMass_"+string(config.getString("identifier")));
@@ -403,6 +392,8 @@ int main(int argc, char * argv[]){
     if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_obsMass_"+string(config.getString("identifier")));
     else Mass = new Plot(cfg_plot_mass, obsMass, data, *pdfMass, components_mass, "3Dweights_obsMass_"+string(config.getString("identifier")));
   }
+  Mass->set_scaletype_x(kLinear);
+  Mass->set_scaletype_y(kBoth);
   Mass->PlotIt();
 
   if (split_years) Mass = new PlotSimultaneous(cfg_plot_mass, obsMassDauOne, data, *((RooSimultaneous*)pdfMass), components_mass, "3Dweights_obsMassDauOne_"+string(config.getString("identifier")));
