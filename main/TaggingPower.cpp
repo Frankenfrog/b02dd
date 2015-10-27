@@ -19,6 +19,11 @@ using namespace std;
 using namespace RooFit;
 using namespace doocore::io;
 
+TString OS_tag_observable;
+TString OS_mistag_observable;
+TString SS_tag_observable;
+TString SS_mistag_observable;
+
 void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, double p0_OS, double p1_OS, double etamean_OS, double deltap0_OS, double deltap1_OS, double p0_SS, double p1_SS, double etamean_SS, double deltap0_SS, double deltap1_SS, double p0error_OS, double p1error_OS, double p0error_SS, double p1error_SS, TString identifier);
 
 int main(int argc, const char * argv[]){
@@ -28,37 +33,48 @@ int main(int argc, const char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
-  RooCategory       obsTagOS("obsTagOS_StdComb","Flavour Tag");
+  OS_tag_observable = config.getString("OS_tag_observable");
+  OS_mistag_observable = config.getString("OS_mistag_observable");
+  SS_tag_observable = config.getString("SS_tag_observable");
+  SS_mistag_observable = config.getString("SS_mistag_observable");
+  TString sweightname = config.getString("sweightname");
+
+  RooCategory       obsTagOS(OS_tag_observable,"Flavour Tag");
   obsTagOS.defineType("B0",1);
   obsTagOS.defineType("B0bar",-1);
   obsTagOS.defineType("no Tag",0);
-  RooCategory       obsTagSS("obsTagSS","Flavour Tag");
+  RooCategory       obsTagSS(SS_tag_observable,"Flavour Tag");
   obsTagSS.defineType("B0",1);
   obsTagSS.defineType("B0bar",-1);
   obsTagSS.defineType("no Tag",0);
-  RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0,0.5);
-  RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0,0.5);
-  RooRealVar        weight("SigWeight","Signal weight",-10,10);
-  
-  RooArgSet         observables(obsTagOS,obsTagSS,weight,obsEtaOS,obsEtaSS,"observables");
-   
-  EasyTuple         sweighted_tuple(config.getString("tuple"),"B02DD",observables);
+  RooRealVar        obsEtaOS(OS_mistag_observable,"#eta_{OS}",0,0.5);
+  RooRealVar        obsEtaSS(SS_mistag_observable,"#eta_{SS}",0,0.5);
+  RooRealVar        SigWeight(sweightname,"Signal weight",-10,10);
+
+  RooArgSet         observables(obsTagOS,obsTagSS,SigWeight,obsEtaOS,obsEtaSS,"observables");
+
+  EasyTuple         sweighted_tuple(config.getString("tuple"),config.getString("tree"),observables);
   sweighted_tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar("SigWeight"));
   signaldata.Print();
-  
-  RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==1&&abs(obsTagSS)==0"),WeightVar("SigWeight"));
+
+  RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1&&abs("+SS_tag_observable+")==0"),WeightVar(sweightname));
   signaldata_OS.Print();
-  RooDataSet        signaldata_SS("signaldata_SS","signaldata_SS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==0&&abs(obsTagSS)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_SS("signaldata_SS","signaldata_SS",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==0&&abs("+SS_tag_observable+")==1"),WeightVar(sweightname));
   signaldata_SS.Print();
-  RooDataSet        signaldata_BS("signaldata_BS","signaldata_BS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==1&&abs(obsTagSS)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_BS("signaldata_BS","signaldata_BS",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1&&abs("+SS_tag_observable+")==1"),WeightVar(sweightname));
   signaldata_BS.Print();
-  RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs(obsTagOS_StdComb)==1"),WeightVar("SigWeight"));
-  RooDataSet        signaldata_allSS("signaldata_allSS","signaldata_allSS",observables,Import(signaldata),Cut("abs(obsTagSS)==1"),WeightVar("SigWeight"));
+  RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1"),WeightVar(sweightname));
+  signaldata_allOS.Print();
+  RooDataSet        signaldata_allSS("signaldata_allSS","signaldata_allSS",observables,Import(signaldata),Cut("abs("+SS_tag_observable+")==1"),WeightVar(sweightname));
+  signaldata_allSS.Print();
+  RooDataSet        signaldata_tagged("signaldata_tagged","signaldata_tagged",observables,Import(signaldata),Cut("abs("+SS_tag_observable+")==1||abs("+OS_tag_observable+")==1"),WeightVar(sweightname));
+  signaldata_tagged.Print();
 
   double            mean_mistag_OS = signaldata_allOS.mean(obsEtaOS);
   double            mean_mistag_OS_error = 1./sqrt(signaldata_allOS.sumEntries());
   cout  <<  "Mean mistag OS: "  <<  mean_mistag_OS  <<  " pm "  <<  mean_mistag_OS_error <<  endl;
+  cout  <<  "OS tagging efficiency: "  <<  signaldata_allOS.sumEntries()/signaldata.sumEntries()  <<  endl;
 
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_OS,    mean_mistag_OS+config.getDouble("p0_OS"), config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "OS exclusively");
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_SS,    mean_mistag_OS+config.getDouble("p0_OS"), config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "SS exclusively");
@@ -66,22 +82,22 @@ int main(int argc, const char * argv[]){
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allOS, mean_mistag_OS+config.getDouble("p0_OS"), config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all OS");
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allSS, mean_mistag_OS+config.getDouble("p0_OS"), config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all SS");
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata,       mean_mistag_OS+config.getDouble("p0_OS"), config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all");
-  
+
   return 0;
 }
 
 void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, double p0_OS, double p1_OS, double etamean_OS, double deltap0_OS, double deltap1_OS, double p0_SS, double p1_SS, double etamean_SS, double deltap0_SS, double deltap1_SS, double p0error_OS, double p1error_OS, double p0error_SS, double p1error_SS, TString identifier){
-  
+
   double weight = 0., etaOS = 0., etaSS = 0., tagOS = 0., tagSS = 0., omegaOS = 0., omegaSS = 0., omegaOS_B0 = 0., omegaSS_B0 = 0., omegaOS_B0bar = 0., omegaSS_B0bar = 0.;
   double taggingpower = 0., taggingpowererror = 0., taggingpowererrorp0OScomponent = 0., taggingpowererrorp1OScomponent = 0., taggingpowererrorp0SScomponent = 0., taggingpowererrorp1SScomponent = 0.;
-  
+
   for (int i = 0; i < data->numEntries(); i++) {
     data->get(i);
     weight = data->weight();
-    etaOS = data->get()->getRealValue("obsEtaOS_StdComb");
-    etaSS = data->get()->getRealValue("obsEtaSS");
-    tagOS = data->get()->getCatIndex("obsTagOS_StdComb");
-    tagSS = data->get()->getCatIndex("obsTagSS");
+    etaOS = data->get()->getRealValue(OS_mistag_observable);
+    etaSS = data->get()->getRealValue(SS_mistag_observable);
+    tagOS = data->get()->getCatIndex(OS_tag_observable);
+    tagSS = data->get()->getCatIndex(SS_tag_observable);
     omegaOS = 0.5;
     omegaOS_B0 = 0.5;
     omegaOS_B0bar = 0.5;
@@ -115,3 +131,4 @@ void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, do
 
   cout  <<  "Taggingpower component for "  <<  identifier <<  ": "  <<  100*taggingpower  <<  " pm " <<  100*taggingpowererror  <<  endl;
 }
+
