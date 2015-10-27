@@ -58,11 +58,11 @@ parSigBsYield_12        =  250  L(0 - 2000)     // 300  80
 parSigYield_11          =  400  L(0 - 2000)       // 350  87
 parSigYield_12          =  1000 L(0 - 5000)       // 1000 260
 
-parBkgCombDYield        =  6000  L(0 - 400000)
-parBkgCombYield         =  4000  L(0 - 400000)
-parBkgDCombYield        =  5500  L(0 - 400000)
-parBkgDExponent         = -0.005 L(-0.1 - 0.1)
-parSigDDYield           =  5000  L(0 - 100000)
+parBkgCombDYield        =  1100  L(0 - 400000)
+parBkgCombYield         =  600   L(0 - 400000)
+parBkgDCombYield        =  1100  L(0 - 400000)
+parBkgDExponent         = -0.006 L(-0.1 - 0.1)
+parSigDDYield           =  2000  L(0 - 100000)
 parSigDMassMean         =  1870  L(1860 - 1880)
 parSigDMassSigma        =  8     L(1 - 100)
 

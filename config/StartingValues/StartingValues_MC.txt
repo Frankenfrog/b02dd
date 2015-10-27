@@ -15,9 +15,7 @@ parResSigmaCorrectionFactor1  =  1.000 C
 parResSigmaCorrectionFactor2  =  1.000 C
 parResFraction2				  =  0.500 C
 
-parSigTimeAccCSpline1 =  0.5 L(0 - 2) 
-parSigTimeAccCSpline2 =  0.6 L(0 - 2) 
-parSigTimeAccCSpline3 =  0.8 L(0 - 2) 
-parSigTimeAccCSpline4 =  1 C L(0 - 2) 
-parSigTimeAccCSpline5 =  0.8 L(0 - 2) 
-parSigTimeAccCSpline6 =  0.7 L(0 - 2) 
+parSigTimeAccCSpline1 =  0.6 L(0 - 2)
+parSigTimeAccCSpline2 =  0.7 L(0 - 2)
+parSigTimeAccCSpline3 =  1 C L(0 - 2)
+parSigTimeAccCSpline4 =  1 L(0 - 2)
