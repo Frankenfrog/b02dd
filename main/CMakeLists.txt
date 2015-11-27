@@ -1,5 +1,6 @@
 add_subdirectory(GrimReaper)
 add_subdirectory(MassFits)
+add_subdirectory(SystematicStudies)
 
 # Executables
 add_executable(PID_cut_optimization PID_cut_optimization.cpp)
@@ -11,7 +12,7 @@ add_executable(DecayTimeResolution_MC DecayTimeResolution_MC.cpp)
 add_executable(sin2betaFitter sin2betaFitter.cpp)
 add_executable(MCDataBDTComparison MCDataBDTComparison.cpp)
 add_executable(Correlations Correlations.cpp)
-
+add_executable(FitterValidation FitterValidation.cpp)
 
 # Aliases for module libs
 
@@ -25,3 +26,4 @@ target_link_libraries(DecayTimeResolution_MC ${ALL_LIBRARIES})
 target_link_libraries(sin2betaFitter ${ALL_LIBRARIES})
 target_link_libraries(MCDataBDTComparison ${ALL_LIBRARIES})
 target_link_libraries(Correlations ${ALL_LIBRARIES})
+target_link_libraries(FitterValidation ${ALL_LIBRARIES})
