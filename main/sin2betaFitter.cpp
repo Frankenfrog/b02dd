@@ -111,6 +111,14 @@ int main(int argc, char * argv[]){
   TString method = config.getString("method");
   bool massfit = config.getBool("massfit");
   bool decaytimefit = config.getBool("decaytimefit");
+  bool mistag_histograms = config.getBool("mistag_histograms");
+  if (mistag_histograms) {
+    bootstrapping = false;
+    massfit = false;
+    calculate_sweights = false;
+    decaytimefit = false;
+  }
+  std::string cut = config.getString("cut");
 
   if (bootstrapping && argc < 3) {
     std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
@@ -118,7 +126,7 @@ int main(int argc, char * argv[]){
     return 0;
   }
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEta"+OS_tagger,"#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEta"+SS_tagger,"#eta_{SS}",0.,0.5);
@@ -169,7 +177,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagSS);
   }
   RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catTriggerSetTopo234BodyBBDT,"categories");
-  if (decaytimefit) categories.add(SigWeight);
+  if (decaytimefit || mistag_histograms) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
   // Get data set
@@ -178,7 +186,7 @@ int main(int argc, char * argv[]){
   RooDataSet*       data;
   if (bootstrapping || massfit || calculate_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
   else if (decaytimefit)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
-  data->Print();
+  if (!mistag_histograms) data->Print();
 
   // Mass PDF
   // Signal
@@ -195,7 +203,7 @@ int main(int argc, char * argv[]){
   RooCBShape        pdfSigMassCB2("pdfSigMassCB2","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
 
   RooRealVar        parSigMassCBFraction("parSigMassCBFraction","parSigMassCBFraction",0.5,0,1);
-  RooAddPdf*        pdfSigMass = new RooAddPdf("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB2),parSigMassCBFraction);
+  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB2),parSigMassCBFraction);
 
   // B0 --> DsD background
   RooRealVar        parBkgDsDMean("parBkgDsDMean","Mean Mass",5220,5210,5230,"MeV/c^{2}");
@@ -217,7 +225,16 @@ int main(int argc, char * argv[]){
   RooFormulaVar     parSigBsMassMean("parSigBsMassMean","Bs Mean Mass","@0+87.35",RooArgList(parSigMassMean));
   RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
   RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
-  RooAddPdf*        pdfSigBsMass = new RooAddPdf("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB2),parSigMassCBFraction);
+  RooAddPdf         pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB2),parSigMassCBFraction);
+
+  // Bd --> D*+ D- with D*+ --> D+ pi0 Background
+  RooRealVar        parBkgDstDLowMassMean("parBkgDstDLowMassMean","Mean Mass",5060,5050,5070,"MeV/c^{2}");
+  RooRealVar        parBkgDstDLowMassSigma("parBkgDstDLowMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
+  RooGaussian       pdfBkgDstDLowMass("pdfBkgDstDLowMass","Lower DstD Mass PDF",obsMass,parBkgDstDLowMassMean,parBkgDstDLowMassSigma);
+
+  RooRealVar        parBkgDstDHighMassMean("parBkgDstDHighMassMean","Mean Mass",5120,5100,5140,"MeV/c^{2}");
+  RooRealVar        parBkgDstDHighMassSigma("parBkgDstDHighMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
+  RooGaussian       pdfBkgDstDHighMass("pdfBkgDstDHighMass","Upper DstD Mass PDF",obsMass,parBkgDstDHighMassMean,parBkgDstDHighMassSigma);
   
   // combinatorial background
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
@@ -254,6 +271,24 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigBsYield_11("parSigBsYield_11","parSigBsYield_11",100,0,1000);
   RooRealVar        parSigBsYield_12("parSigBsYield_12","parSigBsYield_12",100,0,1000);
   RooRealVar        parSigBsYield("parSigBsYield","parSigBsYield",100,0,1000);
+  RooRealVar        parBkgDstDHighYield_11_Kpipi("parBkgDstDHighYield_11_Kpipi","parBkgDstDHighYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_12_Kpipi("parBkgDstDHighYield_12_Kpipi","parBkgDstDHighYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_11_KKpi("parBkgDstDHighYield_11_KKpi","parBkgDstDHighYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_12_KKpi("parBkgDstDHighYield_12_KKpi","parBkgDstDHighYield_12_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_Kpipi("parBkgDstDHighYield_Kpipi","parBkgDstDHighYield_Kpipi",1800,0,10000);
+  RooRealVar        parBkgDstDHighYield_KKpi("parBkgDstDHighYield_KKpi","parBkgDstDHighYield_KKpi",700,0,10000);
+  RooRealVar        parBkgDstDHighYield_11("parBkgDstDHighYield_11","parBkgDstDHighYield_11",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_12("parBkgDstDHighYield_12","parBkgDstDHighYield_12",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield("parBkgDstDHighYield","parBkgDstDHighYield",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_11_Kpipi("parBkgDstDLowYield_11_Kpipi","parBkgDstDLowYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_12_Kpipi("parBkgDstDLowYield_12_Kpipi","parBkgDstDLowYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_11_KKpi("parBkgDstDLowYield_11_KKpi","parBkgDstDLowYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_12_KKpi("parBkgDstDLowYield_12_KKpi","parBkgDstDLowYield_12_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_Kpipi("parBkgDstDLowYield_Kpipi","parBkgDstDLowYield_Kpipi",1800,0,10000);
+  RooRealVar        parBkgDstDLowYield_KKpi("parBkgDstDLowYield_KKpi","parBkgDstDLowYield_KKpi",700,0,10000);
+  RooRealVar        parBkgDstDLowYield_11("parBkgDstDLowYield_11","parBkgDstDLowYield_11",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_12("parBkgDstDLowYield_12","parBkgDstDLowYield_12",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield("parBkgDstDLowYield","parBkgDstDLowYield",5000,0,10000);
   RooRealVar        parBkgYield_11_Kpipi("parBkgYield_11_Kpipi","parBkgYield_11_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_12_Kpipi("parBkgYield_12_Kpipi","parBkgYield_12_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_11_KKpi("parBkgYield_11_KKpi","parBkgYield_11_KKpi",5000,0,10000);
@@ -264,15 +299,15 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgYield_12("parBkgYield_12","parBkgYield_12",5000,0,10000);
   RooRealVar        parBkgYield("parBkgYield","parBkgYield",5000,0,10000);
 
-  RooExtendPdf      pdfSigExtend_11_Kpipi("pdfSigExtend_11_Kpipi","pdfSigExtend_11_Kpipi",*pdfSigMass,parSigYield_11_Kpipi);
-  RooExtendPdf      pdfSigExtend_12_Kpipi("pdfSigExtend_12_Kpipi","pdfSigExtend_12_Kpipi",*pdfSigMass,parSigYield_12_Kpipi);
-  RooExtendPdf      pdfSigExtend_11_KKpi("pdfSigExtend_11_KKpi","pdfSigExtend_11_KKpi",*pdfSigMass,parSigYield_11_KKpi);
-  RooExtendPdf      pdfSigExtend_12_KKpi("pdfSigExtend_12_KKpi","pdfSigExtend_12_KKpi",*pdfSigMass,parSigYield_12_KKpi);
-  RooExtendPdf      pdfSigExtend_Kpipi("pdfSigExtend_Kpipi","pdfSigExtend_Kpipi",*pdfSigMass,parSigYield_Kpipi);
-  RooExtendPdf      pdfSigExtend_KKpi("pdfSigExtend_KKpi","pdfSigExtend_KKpi",*pdfSigMass,parSigYield_KKpi);
-  RooExtendPdf      pdfSigExtend_11("pdfSigExtend_11","pdfSigExtend_11",*pdfSigMass,parSigYield_11);
-  RooExtendPdf      pdfSigExtend_12("pdfSigExtend_12","pdfSigExtend_12",*pdfSigMass,parSigYield_12);
-  RooExtendPdf      pdfSigExtend("pdfSigExtend","pdfSigExtend",*pdfSigMass,parSigYield);
+  RooExtendPdf      pdfSigExtend_11_Kpipi("pdfSigExtend_11_Kpipi","pdfSigExtend_11_Kpipi",pdfSigMass,parSigYield_11_Kpipi);
+  RooExtendPdf      pdfSigExtend_12_Kpipi("pdfSigExtend_12_Kpipi","pdfSigExtend_12_Kpipi",pdfSigMass,parSigYield_12_Kpipi);
+  RooExtendPdf      pdfSigExtend_11_KKpi("pdfSigExtend_11_KKpi","pdfSigExtend_11_KKpi",pdfSigMass,parSigYield_11_KKpi);
+  RooExtendPdf      pdfSigExtend_12_KKpi("pdfSigExtend_12_KKpi","pdfSigExtend_12_KKpi",pdfSigMass,parSigYield_12_KKpi);
+  RooExtendPdf      pdfSigExtend_Kpipi("pdfSigExtend_Kpipi","pdfSigExtend_Kpipi",pdfSigMass,parSigYield_Kpipi);
+  RooExtendPdf      pdfSigExtend_KKpi("pdfSigExtend_KKpi","pdfSigExtend_KKpi",pdfSigMass,parSigYield_KKpi);
+  RooExtendPdf      pdfSigExtend_11("pdfSigExtend_11","pdfSigExtend_11",pdfSigMass,parSigYield_11);
+  RooExtendPdf      pdfSigExtend_12("pdfSigExtend_12","pdfSigExtend_12",pdfSigMass,parSigYield_12);
+  RooExtendPdf      pdfSigExtend("pdfSigExtend","pdfSigExtend",pdfSigMass,parSigYield);
   RooExtendPdf      pdfBkgDsDExtend_11_Kpipi("pdfBkgDsDExtend_11_Kpipi","pdfBkgDsDExtend_11_Kpipi",pdfBkgDsDMass,parBkgDsDYield_11_Kpipi);
   RooExtendPdf      pdfBkgDsDExtend_12_Kpipi("pdfBkgDsDExtend_12_Kpipi","pdfBkgDsDExtend_12_Kpipi",pdfBkgDsDMass,parBkgDsDYield_12_Kpipi);
   RooExtendPdf      pdfBkgDsDExtend_11_KKpi("pdfBkgDsDExtend_11_KKpi","pdfBkgDsDExtend_11_KKpi",pdfBkgDsDMass,parBkgDsDYield_11_KKpi);
@@ -282,15 +317,42 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDsDExtend_11("pdfBkgDsDExtend_11","pdfBkgDsDExtend_11",pdfBkgDsDMass,parBkgDsDYield_11);
   RooExtendPdf      pdfBkgDsDExtend_12("pdfBkgDsDExtend_12","pdfBkgDsDExtend_12",pdfBkgDsDMass,parBkgDsDYield_12);
   RooExtendPdf      pdfBkgDsDExtend("pdfBkgDsDExtend","pdfBkgDsDExtend",pdfBkgDsDMass,parBkgDsDYield);
-  RooExtendPdf      pdfSigBsExtend_11_Kpipi("pdfSigBsExtend_11_Kpipi","pdfSigBsExtend_11_Kpipi",*pdfSigBsMass,parSigBsYield_11_Kpipi);
-  RooExtendPdf      pdfSigBsExtend_12_Kpipi("pdfSigBsExtend_12_Kpipi","pdfSigBsExtend_12_Kpipi",*pdfSigBsMass,parSigBsYield_12_Kpipi);
-  RooExtendPdf      pdfSigBsExtend_11_KKpi("pdfSigBsExtend_11_KKpi","pdfSigBsExtend_11_KKpi",*pdfSigBsMass,parSigBsYield_11_KKpi);
-  RooExtendPdf      pdfSigBsExtend_12_KKpi("pdfSigBsExtend_12_KKpi","pdfSigBsExtend_12_KKpi",*pdfSigBsMass,parSigBsYield_12_KKpi);
-  RooExtendPdf      pdfSigBsExtend_Kpipi("pdfSigBsExtend_Kpipi","pdfSigBsExtend_Kpipi",*pdfSigBsMass,parSigBsYield_Kpipi);
-  RooExtendPdf      pdfSigBsExtend_KKpi("pdfSigBsExtend_KKpi","pdfSigBsExtend_KKpi",*pdfSigBsMass,parSigBsYield_KKpi);
-  RooExtendPdf      pdfSigBsExtend_11("pdfSigBsExtend_11","pdfSigBsExtend_11",*pdfSigBsMass,parSigBsYield_11);
-  RooExtendPdf      pdfSigBsExtend_12("pdfSigBsExtend_12","pdfSigBsExtend_12",*pdfSigBsMass,parSigBsYield_12);
-  RooExtendPdf      pdfSigBsExtend("pdfSigBsExtend","pdfSigBsExtend",*pdfSigBsMass,parSigBsYield);
+  RooExtendPdf      pdfSigBsExtend_11_Kpipi("pdfSigBsExtend_11_Kpipi","pdfSigBsExtend_11_Kpipi",pdfSigBsMass,parSigBsYield_11_Kpipi);
+  RooExtendPdf      pdfSigBsExtend_12_Kpipi("pdfSigBsExtend_12_Kpipi","pdfSigBsExtend_12_Kpipi",pdfSigBsMass,parSigBsYield_12_Kpipi);
+  RooExtendPdf      pdfSigBsExtend_11_KKpi("pdfSigBsExtend_11_KKpi","pdfSigBsExtend_11_KKpi",pdfSigBsMass,parSigBsYield_11_KKpi);
+  RooExtendPdf      pdfSigBsExtend_12_KKpi("pdfSigBsExtend_12_KKpi","pdfSigBsExtend_12_KKpi",pdfSigBsMass,parSigBsYield_12_KKpi);
+  RooExtendPdf      pdfSigBsExtend_Kpipi("pdfSigBsExtend_Kpipi","pdfSigBsExtend_Kpipi",pdfSigBsMass,parSigBsYield_Kpipi);
+  RooExtendPdf      pdfSigBsExtend_KKpi("pdfSigBsExtend_KKpi","pdfSigBsExtend_KKpi",pdfSigBsMass,parSigBsYield_KKpi);
+  RooExtendPdf      pdfSigBsExtend_11("pdfSigBsExtend_11","pdfSigBsExtend_11",pdfSigBsMass,parSigBsYield_11);
+  RooExtendPdf      pdfSigBsExtend_12("pdfSigBsExtend_12","pdfSigBsExtend_12",pdfSigBsMass,parSigBsYield_12);
+  RooExtendPdf      pdfSigBsExtend("pdfSigBsExtend","pdfSigBsExtend",pdfSigBsMass,parSigBsYield);
+  RooExtendPdf      pdfBkgDstDHighExtend_11_Kpipi("pdfBkgDstDHighExtend_11_Kpipi","pdfBkgDstDHighExtend_11_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_Kpipi);
+  RooExtendPdf      pdfBkgDstDHighExtend_12_Kpipi("pdfBkgDstDHighExtend_12_Kpipi","pdfBkgDstDHighExtend_12_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_Kpipi);
+  RooExtendPdf      pdfBkgDstDHighExtend_11_KKpi("pdfBkgDstDHighExtend_11_KKpi","pdfBkgDstDHighExtend_11_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_KKpi);
+  RooExtendPdf      pdfBkgDstDHighExtend_12_KKpi("pdfBkgDstDHighExtend_12_KKpi","pdfBkgDstDHighExtend_12_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_KKpi);
+  RooExtendPdf      pdfBkgDstDHighExtend_Kpipi("pdfBkgDstDHighExtend_Kpipi","pdfBkgDstDHighExtend_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_Kpipi);
+  RooExtendPdf      pdfBkgDstDHighExtend_KKpi("pdfBkgDstDHighExtend_KKpi","pdfBkgDstDHighExtend_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_KKpi);
+  RooExtendPdf      pdfBkgDstDHighExtend_11("pdfBkgDstDHighExtend_11","pdfBkgDstDHighExtend_11",pdfBkgDstDHighMass,parBkgDstDHighYield_11);
+  RooExtendPdf      pdfBkgDstDHighExtend_12("pdfBkgDstDHighExtend_12","pdfBkgDstDHighExtend_12",pdfBkgDstDHighMass,parBkgDstDHighYield_12);
+  RooExtendPdf      pdfBkgDstDHighExtend("pdfBkgDstDHighExtend","pdfBkgDstDHighExtend",pdfBkgDstDHighMass,parBkgDstDHighYield);
+  RooExtendPdf      pdfBkgDstDLowExtend_11_Kpipi("pdfBkgDstDLowExtend_11_Kpipi","pdfBkgDstDLowExtend_11_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_Kpipi);
+  RooExtendPdf      pdfBkgDstDLowExtend_12_Kpipi("pdfBkgDstDLowExtend_12_Kpipi","pdfBkgDstDLowExtend_12_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_Kpipi);
+  RooExtendPdf      pdfBkgDstDLowExtend_11_KKpi("pdfBkgDstDLowExtend_11_KKpi","pdfBkgDstDLowExtend_11_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_KKpi);
+  RooExtendPdf      pdfBkgDstDLowExtend_12_KKpi("pdfBkgDstDLowExtend_12_KKpi","pdfBkgDstDLowExtend_12_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_KKpi);
+  RooExtendPdf      pdfBkgDstDLowExtend_Kpipi("pdfBkgDstDLowExtend_Kpipi","pdfBkgDstDLowExtend_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_Kpipi);
+  RooExtendPdf      pdfBkgDstDLowExtend_KKpi("pdfBkgDstDLowExtend_KKpi","pdfBkgDstDLowExtend_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_KKpi);
+  RooExtendPdf      pdfBkgDstDLowExtend_11("pdfBkgDstDLowExtend_11","pdfBkgDstDLowExtend_11",pdfBkgDstDLowMass,parBkgDstDLowYield_11);
+  RooExtendPdf      pdfBkgDstDLowExtend_12("pdfBkgDstDLowExtend_12","pdfBkgDstDLowExtend_12",pdfBkgDstDLowMass,parBkgDstDLowYield_12);
+  RooExtendPdf      pdfBkgDstDLowExtend("pdfBkgDstDLowExtend","pdfBkgDstDLowExtend",pdfBkgDstDLowMass,parBkgDstDLowYield);
+  RooAddPdf         pdfBkgDstDExtend_11_Kpipi("pdfBkgDstDExtend_11_Kpipi","pdfBkgDstDExtend_11_Kpipi",RooArgList(pdfBkgDstDLowExtend_11_Kpipi,pdfBkgDstDHighExtend_11_Kpipi));
+  RooAddPdf         pdfBkgDstDExtend_12_Kpipi("pdfBkgDstDExtend_12_Kpipi","pdfBkgDstDExtend_12_Kpipi",RooArgList(pdfBkgDstDLowExtend_12_Kpipi,pdfBkgDstDHighExtend_12_Kpipi));
+  RooAddPdf         pdfBkgDstDExtend_11_KKpi("pdfBkgDstDExtend_11_KKpi","pdfBkgDstDExtend_11_KKpi",RooArgList(pdfBkgDstDLowExtend_11_KKpi,pdfBkgDstDHighExtend_11_KKpi));
+  RooAddPdf         pdfBkgDstDExtend_12_KKpi("pdfBkgDstDExtend_12_KKpi","pdfBkgDstDExtend_12_KKpi",RooArgList(pdfBkgDstDLowExtend_12_KKpi,pdfBkgDstDHighExtend_12_KKpi));
+  RooAddPdf         pdfBkgDstDExtend_Kpipi("pdfBkgDstDExtend_Kpipi","pdfBkgDstDExtend_Kpipi",RooArgList(pdfBkgDstDLowExtend_Kpipi,pdfBkgDstDHighExtend_Kpipi));
+  RooAddPdf         pdfBkgDstDExtend_KKpi("pdfBkgDstDExtend_KKpi","pdfBkgDstDExtend_KKpi",RooArgList(pdfBkgDstDLowExtend_KKpi,pdfBkgDstDHighExtend_KKpi));
+  RooAddPdf         pdfBkgDstDExtend_11("pdfBkgDstDExtend_11","pdfBkgDstDExtend_11",RooArgList(pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11));
+  RooAddPdf         pdfBkgDstDExtend_12("pdfBkgDstDExtend_12","pdfBkgDstDExtend_12",RooArgList(pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12));
+  RooAddPdf         pdfBkgDstDExtend("pdfBkgDstDExtend","pdfBkgDstDExtend",RooArgList(pdfBkgDstDLowExtend,pdfBkgDstDHighExtend));
   RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass_Kpipi,parBkgYield_11_Kpipi);
   RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass_Kpipi,parBkgYield_12_Kpipi);
   RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
@@ -301,14 +363,14 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi));
-  RooAddPdf         pdfMass_Kpipi("pdfMass_Kpipi","Mass PDF",RooArgList(pdfSigExtend_Kpipi,pdfBkgDsDExtend_Kpipi,pdfSigBsExtend_Kpipi,pdfBkgExtend_Kpipi));
-  RooAddPdf         pdfMass_KKpi("pdfMass_KKpi","Mass PDF",RooArgList(pdfSigExtend_KKpi,pdfBkgDsDExtend_KKpi,pdfSigBsExtend_KKpi,pdfBkgExtend_KKpi));
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi));
+  RooAddPdf         pdfMass_Kpipi("pdfMass_Kpipi","Mass PDF",RooArgList(pdfSigExtend_Kpipi,pdfBkgDsDExtend_Kpipi,pdfSigBsExtend_Kpipi,pdfBkgExtend_Kpipi,pdfBkgDstDExtend_Kpipi));
+  RooAddPdf         pdfMass_KKpi("pdfMass_KKpi","Mass PDF",RooArgList(pdfSigExtend_KKpi,pdfBkgDsDExtend_KKpi,pdfSigBsExtend_KKpi,pdfBkgExtend_KKpi,pdfBkgDstDExtend_KKpi));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,pdfBkgDstDExtend_11));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,pdfBkgDstDExtend_12));
 
   RooSuperCategory  supercategory_mass("supercategory_mass","supercategory_mass",RooArgList(catYear,catDDFinalStateParticles));
   RooAbsPdf*        pdfMass;
@@ -332,7 +394,7 @@ int main(int argc, char * argv[]){
     ((RooSimultaneous*)pdfMass)->addPdf(pdfMass_Kpipi,"Kpipi");
     ((RooSimultaneous*)pdfMass)->addPdf(pdfMass_KKpi,"KKpi");
   }
-  else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend));
+  else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,pdfBkgDstDExtend));
 
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
@@ -521,7 +583,7 @@ int main(int argc, char * argv[]){
 
   cout  <<  "simultaneous PDF built"  <<  endl;
 
-  // Get Starting Values and Fit PDF to data
+  // Get Starting Values
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
@@ -571,7 +633,6 @@ int main(int argc, char * argv[]){
     // constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.txt");
   }
 
-  // Fit PDF to data
   pdf.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
@@ -722,7 +783,7 @@ int main(int argc, char * argv[]){
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
     cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{unofficial}");
     std::vector<std::string> components_mass;
-    components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgBdBsExtend.*", "pdfBkgBsDsDExtend.*", "pdfBkgBdExtend.*";
+    components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgDstDExtend.*";
     Plot* Mass;
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, *data, *pdfMass, components_mass, "obsMass");
@@ -759,7 +820,7 @@ int main(int argc, char * argv[]){
       spr.set_output_file_path(config.getString("sweights_tuple"));
     
       spr.set_output_tree_path("B02DD");
-      spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&"+string(config.getString("cut")));
+      spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&"+string(cut));
       spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
       RooMsgService::instance().setStreamStatus(0, false);
       RooMsgService::instance().setStreamStatus(1, false);
@@ -855,6 +916,23 @@ int main(int argc, char * argv[]){
     Time.set_scaletype_x(kLinear);
     Time.set_scaletype_y(kLogarithmic);
     if (!pereventresolution)  Time.PlotIt();
+  }
+  if (mistag_histograms) {
+    TFile* file_mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","recreate");
+    TTree&            tree = tuple.tree();
+    TH1D* hist_Sig_OS_eta = new TH1D("hist_Sig_OS_eta","hist_Sig_OS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaOS.GetName())+">>hist_Sig_OS_eta",TString(cut+"*SigWeight"));
+    TH1D* hist_Sig_SS_eta = new TH1D("hist_Sig_SS_eta","hist_Sig_SS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaSS.GetName())+">>hist_Sig_SS_eta",TString(cut+"*SigWeight"));
+    TH1D* hist_Bkg_OS_eta = new TH1D("hist_Bkg_OS_eta","hist_Bkg_OS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaOS.GetName())+">>hist_Bkg_OS_eta",TString(cut+"*(1-SigWeight)"));
+    TH1D* hist_Bkg_SS_eta = new TH1D("hist_Bkg_SS_eta","hist_Bkg_SS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaSS.GetName())+">>hist_Bkg_SS_eta",TString(cut+"*(1-SigWeight)"));
+    hist_Sig_OS_eta->Write();
+    hist_Sig_SS_eta->Write();
+    hist_Bkg_OS_eta->Write();
+    hist_Bkg_SS_eta->Write();
+    file_mistag_histograms->Close();
   }
   return 0;
 }
