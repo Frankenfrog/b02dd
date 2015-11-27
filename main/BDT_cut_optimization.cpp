@@ -80,10 +80,10 @@ int main(int argc, char * argv[]){
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
 
-  RooRealVar        obsMass("obsMass","#it{m_{K#pi#pi K#pi#pi}}",5150,5600,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{K#pi#pi K#pi#pi}}",5000,5500,"MeV/c^{2}");
 
-  RooRealVar        BDT_classifier(TString(config.getString("bdt_classifier1")),"BDT_classifier",-1,1);
-  RooRealVar        BDT2_classifier(TString(config.getString("bdt_classifier2")),"BDT2_classifier",-1,1);
+  RooRealVar        BDT_classifier(TString(config.getString("bdt_classifier1")+"_classifier"),"BDT_classifier",-1,1);
+  RooRealVar        BDT2_classifier(TString(config.getString("bdt_classifier2")+"_classifier"),"BDT2_classifier",-1,1);
   // RooRealVar        BDTG1_classifier("BDTG1_classifier","BDTG1_classifier",-1,1);
   // RooRealVar        BDTG2_classifier("BDTG2_classifier","BDTG2_classifier",-1,1);
   
@@ -151,7 +151,16 @@ int main(int argc, char * argv[]){
   RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
   RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
   RooAddPdf*        pdfSigBsMass = new RooAddPdf("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB2),parSigMassCBFraction);
-  
+
+  // Bd --> D*+ D- with D*+ --> D+ pi0 Background
+  RooRealVar        parBkgDstDLowMassMean("parBkgDstDLowMassMean","Mean Mass",5060,5050,5070,"MeV/c^{2}");
+  RooRealVar        parBkgDstDLowMassSigma("parBkgDstDLowMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
+  RooGaussian       pdfBkgDstDLowMass("pdfBkgDstDLowMass","Lower DstD Mass PDF",obsMass,parBkgDstDLowMassMean,parBkgDstDLowMassSigma);
+
+  RooRealVar        parBkgDstDHighMassMean("parBkgDstDHighMassMean","Mean Mass",5120,5100,5140,"MeV/c^{2}");
+  RooRealVar        parBkgDstDHighMassSigma("parBkgDstDHighMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
+  RooGaussian       pdfBkgDstDHighMass("pdfBkgDstDHighMass","Upper DstD Mass PDF",obsMass,parBkgDstDHighMassMean,parBkgDstDHighMassSigma);
+
   // combinatorial background
   RooRealVar        parBkgExponent_Kpipi("parBkgExponent_Kpipi","parBkgExponent_Kpipi",-0.001,-1,1);
   RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
@@ -170,6 +179,14 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigBsYield_12_Kpipi("parSigBsYield_12_Kpipi","parSigBsYield_12_Kpipi",100,0,1000);
   RooRealVar        parSigBsYield_11_KKpi("parSigBsYield_11_KKpi","parSigBsYield_11_KKpi",100,0,1000);
   RooRealVar        parSigBsYield_12_KKpi("parSigBsYield_12_KKpi","parSigBsYield_12_KKpi",100,0,1000);
+  RooRealVar        parBkgDstDHighYield_11_Kpipi("parBkgDstDHighYield_11_Kpipi","parBkgDstDHighYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_12_Kpipi("parBkgDstDHighYield_12_Kpipi","parBkgDstDHighYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_11_KKpi("parBkgDstDHighYield_11_KKpi","parBkgDstDHighYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDHighYield_12_KKpi("parBkgDstDHighYield_12_KKpi","parBkgDstDHighYield_12_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_11_Kpipi("parBkgDstDLowYield_11_Kpipi","parBkgDstDLowYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_12_Kpipi("parBkgDstDLowYield_12_Kpipi","parBkgDstDLowYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_11_KKpi("parBkgDstDLowYield_11_KKpi","parBkgDstDLowYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDLowYield_12_KKpi("parBkgDstDLowYield_12_KKpi","parBkgDstDLowYield_12_KKpi",5000,0,10000);
   RooRealVar        parBkgYield_11_Kpipi("parBkgYield_11_Kpipi","parBkgYield_11_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_12_Kpipi("parBkgYield_12_Kpipi","parBkgYield_12_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_11_KKpi("parBkgYield_11_KKpi","parBkgYield_11_KKpi",5000,0,10000);
@@ -187,15 +204,23 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfSigBsExtend_12_Kpipi("pdfSigBsExtend_12_Kpipi","pdfSigBsExtend_12_Kpipi",*pdfSigBsMass,parSigBsYield_12_Kpipi);
   RooExtendPdf      pdfSigBsExtend_11_KKpi("pdfSigBsExtend_11_KKpi","pdfSigBsExtend_11_KKpi",*pdfSigBsMass,parSigBsYield_11_KKpi);
   RooExtendPdf      pdfSigBsExtend_12_KKpi("pdfSigBsExtend_12_KKpi","pdfSigBsExtend_12_KKpi",*pdfSigBsMass,parSigBsYield_12_KKpi);
+  RooExtendPdf      pdfBkgDstDHighExtend_11_Kpipi("pdfBkgDstDHighExtend_11_Kpipi","pdfBkgDstDHighExtend_11_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_Kpipi);
+  RooExtendPdf      pdfBkgDstDHighExtend_12_Kpipi("pdfBkgDstDHighExtend_12_Kpipi","pdfBkgDstDHighExtend_12_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_Kpipi);
+  RooExtendPdf      pdfBkgDstDHighExtend_11_KKpi("pdfBkgDstDHighExtend_11_KKpi","pdfBkgDstDHighExtend_11_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_KKpi);
+  RooExtendPdf      pdfBkgDstDHighExtend_12_KKpi("pdfBkgDstDHighExtend_12_KKpi","pdfBkgDstDHighExtend_12_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_KKpi);
+  RooExtendPdf      pdfBkgDstDLowExtend_11_Kpipi("pdfBkgDstDLowExtend_11_Kpipi","pdfBkgDstDLowExtend_11_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_Kpipi);
+  RooExtendPdf      pdfBkgDstDLowExtend_12_Kpipi("pdfBkgDstDLowExtend_12_Kpipi","pdfBkgDstDLowExtend_12_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_Kpipi);
+  RooExtendPdf      pdfBkgDstDLowExtend_11_KKpi("pdfBkgDstDLowExtend_11_KKpi","pdfBkgDstDLowExtend_11_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_KKpi);
+  RooExtendPdf      pdfBkgDstDLowExtend_12_KKpi("pdfBkgDstDLowExtend_12_KKpi","pdfBkgDstDLowExtend_12_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_KKpi);
   RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass_Kpipi,parBkgYield_11_Kpipi);
   RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass_Kpipi,parBkgYield_12_Kpipi);
   RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
   RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass_KKpi,parBkgYield_12_KKpi);
   
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,pdfBkgDstDHighExtend_11_Kpipi,pdfBkgDstDLowExtend_11_Kpipi));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,pdfBkgDstDHighExtend_12_Kpipi,pdfBkgDstDLowExtend_12_Kpipi));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,pdfBkgDstDHighExtend_11_KKpi,pdfBkgDstDLowExtend_11_KKpi));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,pdfBkgDstDHighExtend_12_KKpi,pdfBkgDstDLowExtend_12_KKpi));
   
   RooSuperCategory  supercategory("supercategory","supercategory",RooArgList(catYear,catDDFinalStateParticles));
   RooSimultaneous   pdfMass("pdfMass","pdfMass",supercategory);
@@ -229,13 +254,13 @@ int main(int argc, char * argv[]){
 
   for (int i = 0; i < n_steps; ++i) {
     double cutvalue = -0.3+0.01*i;
-    reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier1")+">"+to_string(cutvalue))));
+    reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier1")+"_classifier>"+to_string(cutvalue))));
     reduced_data->Print();
     fit_result = pdfMass.fitTo(*reduced_data,fitting_args);
     pdfMass.getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier1")+"/FitResults_Mass_"+to_string(i)+".txt"));
     signal_yield_bdt1 += parSigYield_11_Kpipi.getVal() + parSigYield_12_Kpipi.getVal() + parSigYield_11_KKpi.getVal() + parSigYield_12_KKpi.getVal();
     background_yield_bdt1 += parBkgYield_11_Kpipi.getVal() + parBkgYield_12_Kpipi.getVal() + parBkgYield_11_KKpi.getVal() + parBkgYield_12_KKpi.getVal();
-    // reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier2")+">"+to_string(cutvalue))));
+    // reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier2")+"_classifier>"+to_string(cutvalue))));
     // reduced_data->Print();
     // fit_result = pdfMass.fitTo(*reduced_data,fitting_args);
     // pdfMass.getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier2")+"/FitResults_Mass_"+to_string(i)+".txt"));
