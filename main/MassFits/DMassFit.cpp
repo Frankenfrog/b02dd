@@ -81,6 +81,7 @@ int main(int argc, char * argv[]){
 
   RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),"#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
   RooRealVar        obsMassDauTwo(TString(config.getString("observable_name_DauTwo")),TString(config.getString("observable_title_DauTwo")),1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
 
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
@@ -95,7 +96,7 @@ int main(int argc, char * argv[]){
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
   catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
 
-  RooArgSet         observables(obsMassDauOne,obsMassDauTwo,"observables");
+  RooArgSet         observables(obsMassDauOne,obsMassDauTwo,obsMass,"observables");
   RooArgSet         variables(varBDT,varDMinTauSignificance,"variables");
   RooArgSet         realvars(observables,variables,"realvars");
   RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,"categories");

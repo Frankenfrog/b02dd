@@ -76,7 +76,7 @@ int main(int argc, char * argv[]){
   bool massmodel_ipatia = config.getBool("ipatia");
   bool split_years      = config.getBool("split_years");
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5400,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
   RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",-5,150);
   RooRealVar        DD_weight("parSigDDYield_sw","parSigDDYield_sw",-10,10);
@@ -103,7 +103,7 @@ int main(int argc, char * argv[]){
   // Get data set
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(realvars,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"));
+  RooDataSet&       data = tuple.ConvertToDataSet(WeightVar("parSigDDYield_sw"),Cut(TString(config.getString("cut"))));
   
   data.Print();
 
@@ -197,8 +197,8 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDstDHighExtend_12("pdfBkgDstDHighExtend_12","pdfBkgDstDHighExtend_12",pdfBkgDstDHighMass,parBkgDstDHighYield_12);
   RooExtendPdf      pdfBkgDstDHighExtend("pdfBkgDstDHighExtend","pdfBkgDstDHighExtend",pdfBkgDstDHighMass,parBkgDstDHighYield);
 
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11/*,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11,pdfBkgExtend_11*/));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12/*,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12,pdfBkgExtend_12*/));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11/*,pdfBkgExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12/*,pdfBkgExtend_12*/));
   
   RooAbsPdf*        pdfMass;
 
