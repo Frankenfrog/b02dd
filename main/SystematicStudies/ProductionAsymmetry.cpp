@@ -138,6 +138,7 @@ int main(int argc, char * argv[]){
   // CPV parameters
   RooRealVar          parSigTimeSin2b("parSigTimeSin2b","#it{S_{D^{+}D^{-}}}",0.7,-2,2);
   RooRealVar          parSigTimeC("parSigTimeC","#it{C_{D^{+}D^{-}}}",0,-2,2);
+  RooFormulaVar       parSigTimeADeltaGamma("parSigTimeADeltaGamma","#it{A^{#Delta #Gamma}_{D^{+}D^{-}}}","-sqrt(1-@0*@0-@1*@1)",RooArgList(parSigTimeSin2b,parSigTimeC));
 
   // Production asymmetries
   RooRealVar          parSigEtaDeltaProd_11("parSigEtaDeltaProd_11","B0/B0bar production asymmetry",-0.0066,-0.05,0.02);
@@ -255,54 +256,29 @@ int main(int argc, char * argv[]){
   CPCoefficient     parSigTimeCos_11_OS("parSigTimeCos_11_OS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
   CPCoefficient     parSigTimeCos_12_OS("parSigTimeCos_12_OS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
-  RooRealVar        obsEtaSS_decaytimedependent_offset("obsEtaSS_decaytimedependent_offset","obsEtaSS_decaytimedependent_offset",0.4264);
-  RooRealVar        obsEtaSS_decaytimedependent_slope("obsEtaSS_decaytimedependent_slope","obsEtaSS_decaytimedependent_slope",0.0014);
-  RooFormulaVar     obsEtaSS_decaytimedependent("obsEtaSS_decaytimedependent","obsEtaSS_decaytimedependent","@0+@1*@2",RooArgList(obsEtaSS_decaytimedependent_offset,obsEtaSS_decaytimedependent_slope,obsTime));
+  CPCoefficient     parSigTimeCosh_11_SS("parSigTimeCosh_11_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeCosh_12_SS("parSigTimeCosh_12_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeSin_11_SS("parSigTimeSin_11_SS",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_SS("parSigTimeSin_12_SS",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_SS("parSigTimeCos_11_SS",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_SS("parSigTimeCos_12_SS",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
-  CPCoefficient     parSigTimeCosh_11_SS_generate("parSigTimeCosh_11_SS_generate",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeCosh_12_SS_generate("parSigTimeCosh_12_SS_generate",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_SS_generate("parSigTimeSin_11_SS_generate",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_SS_generate("parSigTimeSin_12_SS_generate",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_SS_generate("parSigTimeCos_11_SS_generate",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_SS_generate("parSigTimeCos_12_SS_generate",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
-
-  CPCoefficient     parSigTimeCosh_11_BS_generate("parSigTimeCosh_11_BS_generate",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeCosh_12_BS_generate("parSigTimeCosh_12_BS_generate",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_BS_generate("parSigTimeSin_11_BS_generate",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_BS_generate("parSigTimeSin_12_BS_generate",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_BS_generate("parSigTimeCos_11_BS_generate",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_BS_generate("parSigTimeCos_12_BS_generate",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS_decaytimedependent,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
-
-  CPCoefficient     parSigTimeCosh_11_SS_fit("parSigTimeCosh_11_SS_fit",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeCosh_12_SS_fit("parSigTimeCosh_12_SS_fit",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_SS_fit("parSigTimeSin_11_SS_fit",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_SS_fit("parSigTimeSin_12_SS_fit",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_SS_fit("parSigTimeCos_11_SS_fit",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_SS_fit("parSigTimeCos_12_SS_fit",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
-
-  CPCoefficient     parSigTimeCosh_11_BS_fit("parSigTimeCosh_11_BS_fit",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeCosh_12_BS_fit("parSigTimeCosh_12_BS_fit",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_BS_fit("parSigTimeSin_11_BS_fit",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_BS_fit("parSigTimeSin_12_BS_fit",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_BS_fit("parSigTimeCos_11_BS_fit",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_BS_fit("parSigTimeCos_12_BS_fit",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCosh_11_BS("parSigTimeCosh_11_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeCosh_12_BS("parSigTimeCosh_12_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient     parSigTimeSin_11_BS("parSigTimeSin_11_BS",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_BS("parSigTimeSin_12_BS",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_BS("parSigTimeCos_11_BS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_BS("parSigTimeCos_12_BS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
 //=========================================================================================================================================================================================================================
 
   // Decay Time PDF
-  RooBDecay         pdfSigTime_11_OS_generate("pdfSigTime_11_OS_generate","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_OS,parSigTimeSinh,parSigTimeCos_11_OS,parSigTimeSin_11_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_11_SS_generate("pdfSigTime_11_SS_generate","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_SS_generate,parSigTimeSinh,parSigTimeCos_11_SS_generate,parSigTimeSin_11_SS_generate,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_12_OS_generate("pdfSigTime_12_OS_generate","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_OS,parSigTimeSinh,parSigTimeCos_12_OS,parSigTimeSin_12_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_12_SS_generate("pdfSigTime_12_SS_generate","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_SS_generate,parSigTimeSinh,parSigTimeCos_12_SS_generate,parSigTimeSin_12_SS_generate,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_11_BS_generate("pdfSigTime_11_BS_generate","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_BS_generate,parSigTimeSinh,parSigTimeCos_11_BS_generate,parSigTimeSin_11_BS_generate,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_12_BS_generate("pdfSigTime_12_BS_generate","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_BS_generate,parSigTimeSinh,parSigTimeCos_12_BS_generate,parSigTimeSin_12_BS_generate,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-
-  RooBDecay         pdfSigTime_11_OS_fit("pdfSigTime_11_OS_fit","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_OS,parSigTimeSinh,parSigTimeCos_11_OS,parSigTimeSin_11_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_11_SS_fit("pdfSigTime_11_SS_fit","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_SS_fit,parSigTimeSinh,parSigTimeCos_11_SS_fit,parSigTimeSin_11_SS_fit,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_12_OS_fit("pdfSigTime_12_OS_fit","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_OS,parSigTimeSinh,parSigTimeCos_12_OS,parSigTimeSin_12_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_12_SS_fit("pdfSigTime_12_SS_fit","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_SS_fit,parSigTimeSinh,parSigTimeCos_12_SS_fit,parSigTimeSin_12_SS_fit,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_11_BS_fit("pdfSigTime_11_BS_fit","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_BS_fit,parSigTimeSinh,parSigTimeCos_11_BS_fit,parSigTimeSin_11_BS_fit,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  RooBDecay         pdfSigTime_12_BS_fit("pdfSigTime_12_BS_fit","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_BS_fit,parSigTimeSinh,parSigTimeCos_12_BS_fit,parSigTimeSin_12_BS_fit,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay         pdfSigTime_11_OS("pdfSigTime_11_OS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_OS,parSigTimeSinh,parSigTimeCos_11_OS,parSigTimeSin_11_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay         pdfSigTime_11_SS("pdfSigTime_11_SS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_SS,parSigTimeSinh,parSigTimeCos_11_SS,parSigTimeSin_11_SS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay         pdfSigTime_12_OS("pdfSigTime_12_OS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_OS,parSigTimeSinh,parSigTimeCos_12_OS,parSigTimeSin_12_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay         pdfSigTime_12_SS("pdfSigTime_12_SS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_SS,parSigTimeSinh,parSigTimeCos_12_SS,parSigTimeSin_12_SS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay         pdfSigTime_11_BS("pdfSigTime_11_BS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_BS,parSigTimeSinh,parSigTimeCos_11_BS,parSigTimeSin_11_BS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay         pdfSigTime_12_BS("pdfSigTime_12_BS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_BS,parSigTimeSinh,parSigTimeCos_12_BS,parSigTimeSin_12_BS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
 
 //========================================================================================================================================================================================================================
 
@@ -314,36 +290,36 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigYield_11_BS("parSigYield_11_BS","parSigYield_11_BS", 200, 0, 1000);
   RooRealVar        parSigYield_12_BS("parSigYield_12_BS","parSigYield_12_BS", 200, 0, 1000);
 
-  RooExtendPdf      pdfSigExtend_11_OS_generate("pdfSigExtend_11_OS_generate","pdfSigExtend_11_OS_generate",pdfSigTime_11_OS_generate,parSigYield_11_OS);
-  RooExtendPdf      pdfSigExtend_11_SS_generate("pdfSigExtend_11_SS_generate","pdfSigExtend_11_SS_generate",pdfSigTime_11_SS_generate,parSigYield_11_SS);
-  RooExtendPdf      pdfSigExtend_12_OS_generate("pdfSigExtend_12_OS_generate","pdfSigExtend_12_OS_generate",pdfSigTime_12_OS_generate,parSigYield_12_OS);
-  RooExtendPdf      pdfSigExtend_12_SS_generate("pdfSigExtend_12_SS_generate","pdfSigExtend_12_SS_generate",pdfSigTime_12_SS_generate,parSigYield_12_SS);
-  RooExtendPdf      pdfSigExtend_11_BS_generate("pdfSigExtend_11_BS_generate","pdfSigExtend_11_BS_generate",pdfSigTime_11_BS_generate,parSigYield_11_BS);
-  RooExtendPdf      pdfSigExtend_12_BS_generate("pdfSigExtend_12_BS_generate","pdfSigExtend_12_BS_generate",pdfSigTime_12_BS_generate,parSigYield_12_BS);
+  RooExtendPdf      pdfSigExtend_11_OS("pdfSigExtend_11_OS","pdfSigExtend_11_OS",pdfSigTime_11_OS,parSigYield_11_OS);
+  RooExtendPdf      pdfSigExtend_11_SS("pdfSigExtend_11_SS","pdfSigExtend_11_SS",pdfSigTime_11_SS,parSigYield_11_SS);
+  RooExtendPdf      pdfSigExtend_12_OS("pdfSigExtend_12_OS","pdfSigExtend_12_OS",pdfSigTime_12_OS,parSigYield_12_OS);
+  RooExtendPdf      pdfSigExtend_12_SS("pdfSigExtend_12_SS","pdfSigExtend_12_SS",pdfSigTime_12_SS,parSigYield_12_SS);
+  RooExtendPdf      pdfSigExtend_11_BS("pdfSigExtend_11_BS","pdfSigExtend_11_BS",pdfSigTime_11_BS,parSigYield_11_BS);
+  RooExtendPdf      pdfSigExtend_12_BS("pdfSigExtend_12_BS","pdfSigExtend_12_BS",pdfSigTime_12_BS,parSigYield_12_BS);
 
 //========================================================================================================================================================================================================================
 
   // Build Simultaneous PDF
   RooSuperCategory  supercategory_time("supercategory_time","supercategory_time",RooArgSet(catYear,catTag));
   RooSimultaneous   pdfTime_generate("pdfTime_generate","P",supercategory_time);
-  pdfTime_generate.addPdf(pdfSigExtend_11_OS_generate,"{2011;OS}");
-  pdfTime_generate.addPdf(pdfSigExtend_11_SS_generate,"{2011;SS}");
-  pdfTime_generate.addPdf(pdfSigExtend_11_BS_generate,"{2011;both}");
-  pdfTime_generate.addPdf(pdfSigExtend_12_OS_generate,"{2012;OS}");
-  pdfTime_generate.addPdf(pdfSigExtend_12_SS_generate,"{2012;SS}");
-  pdfTime_generate.addPdf(pdfSigExtend_12_BS_generate,"{2012;both}");
+  pdfTime_generate.addPdf(pdfSigExtend_11_OS,"{2011;OS}");
+  pdfTime_generate.addPdf(pdfSigExtend_11_SS,"{2011;SS}");
+  pdfTime_generate.addPdf(pdfSigExtend_11_BS,"{2011;both}");
+  pdfTime_generate.addPdf(pdfSigExtend_12_OS,"{2012;OS}");
+  pdfTime_generate.addPdf(pdfSigExtend_12_SS,"{2012;SS}");
+  pdfTime_generate.addPdf(pdfSigExtend_12_BS,"{2012;both}");
 
   RooSimultaneous   pdfTime_fit("pdfTime_fit","P",supercategory_time);
-  pdfTime_fit.addPdf(pdfSigTime_11_OS_fit,"{2011;OS}");
-  pdfTime_fit.addPdf(pdfSigTime_11_SS_fit,"{2011;SS}");
-  pdfTime_fit.addPdf(pdfSigTime_11_BS_fit,"{2011;both}");
-  pdfTime_fit.addPdf(pdfSigTime_12_OS_fit,"{2012;OS}");
-  pdfTime_fit.addPdf(pdfSigTime_12_SS_fit,"{2012;SS}");
-  pdfTime_fit.addPdf(pdfSigTime_12_BS_fit,"{2012;both}");  
+  pdfTime_fit.addPdf(pdfSigTime_11_OS,"{2011;OS}");
+  pdfTime_fit.addPdf(pdfSigTime_11_SS,"{2011;SS}");
+  pdfTime_fit.addPdf(pdfSigTime_11_BS,"{2011;both}");
+  pdfTime_fit.addPdf(pdfSigTime_12_OS,"{2012;OS}");
+  pdfTime_fit.addPdf(pdfSigTime_12_SS,"{2012;SS}");
+  pdfTime_fit.addPdf(pdfSigTime_12_BS,"{2012;both}");  
 
   cout  <<  "simultaneous PDF built"  <<  endl;
 
-  Gaussian_Constraints.readFromFile("/home/fmeier/storage03/b02dd/Systematics/MistagTimeCorrelation/generation.par");
+  Gaussian_Constraints.readFromFile("/home/fmeier/storage03/b02dd/Systematics/ProductionAsymmetry/generation.par");
 
   RooRealVar            parSigEtaDeltaP0P1CorrelationCoeff_OS("parSigEtaDeltaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 or Delta p0 and Delta p1 for OS",0.14);
   TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
@@ -406,7 +382,7 @@ int main(int argc, char * argv[]){
   TIterator*  iterator = constrainingPdfs.createIterator();
   RooAbsPdf*  constrainingPdf;
   while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-    constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MistagTimeCorrelation/generation.par");
+    constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/ProductionAsymmetry/generation.par");
   }
   ws->import(constrainingPdfs);
   ws->defineSet("constrainingPdfs",constrainingPdfs);
@@ -456,11 +432,12 @@ int main(int argc, char * argv[]){
       cout  <<  i <<  endl;
       try {
         data = tfac.Generate();
-        pdfTime_fit.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MistagTimeCorrelation/generation.par");
+        pdfTime_fit.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/ProductionAsymmetry/generation.par");
         iterator = constrainingPdfs.createIterator();
         while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/DecayTimeFitValidation/generation.par");
+          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/ProductionAsymmetry/generation.par");
         }
+        parSigEtaDeltaProdMean_11.setVal(config.getDouble("prodasymm11"));
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));
         data_newconstrain_deltaetaOS = conpdfSigEtaDelta_OS.generate(RooArgSet(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),1);

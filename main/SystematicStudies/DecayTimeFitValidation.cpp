@@ -235,7 +235,7 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{1}}",0.064);
   Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
 
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.030);
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.0);
   RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",-0.007);
   RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",0.0016);
   RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",0.0004);
@@ -380,11 +380,10 @@ int main(int argc, char * argv[]){
 
   RooDataSet* data = NULL;
   TIterator*  iterator = constrainingPdfs.createIterator();
-        RooAbsPdf*  constrainingPdf;
-        while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
-        }
+  RooAbsPdf*  constrainingPdf;
+  while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
+    constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/DecayTimeFitValidation/generation.par");
+  }
   ws->import(constrainingPdfs);
   ws->defineSet("constrainingPdfs",constrainingPdfs);
 
@@ -429,12 +428,15 @@ int main(int argc, char * argv[]){
     RooFitResult* fit_result;
     TStopwatch  stopwatch;
     RooDataSet* data_newconstrain_etaOS, *data_newconstrain_etaSS, *data_newconstrain_deltaetaOS, *data_newconstrain_deltaetaSS;
-    for (int i = 0; i < 100 ; ++i) {
+    for (int i = 0; i < 10 ; ++i) {
       cout  <<  i <<  endl;
       try {
         data = tfac.Generate();
-        // ws->allVars().readFromFile("/home/fmeier/storage03/b02dd/Systematics/DecayTimeFitValidation/generation.par");
         pdfTime_fit.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/DecayTimeFitValidation/generation.par");
+        iterator = constrainingPdfs.createIterator();
+        while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
+          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/DecayTimeFitValidation/generation.par");
+        }
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));
         data_newconstrain_deltaetaOS = conpdfSigEtaDelta_OS.generate(RooArgSet(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),1);
@@ -443,17 +445,20 @@ int main(int argc, char * argv[]){
         data_newconstrain_etaOS = conpdfSigEta_OS.generate(RooArgSet(parSigEtaP0_OS,parSigEtaP1_OS),1);
         parSigEtaP0Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP0_OS"));
         parSigEtaP1Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP1_OS"));
-        data_newconstrain_deltaetaSS = conpdfSigEtaDelta_SS.generate(RooArgSet(parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),1);
-        parSigEtaDeltaP0Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP0_SS"));
-        parSigEtaDeltaP1Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP1_SS"));
+        // data_newconstrain_deltaetaSS = conpdfSigEtaDelta_SS.generate(RooArgSet(parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),1);
+        // parSigEtaDeltaP0Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP0_SS"));
+        // parSigEtaDeltaP1Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP1_SS"));
         data_newconstrain_etaSS = conpdfSigEta_SS.generate(RooArgSet(parSigEtaP0_SS,parSigEtaP1_SS),1);
         parSigEtaP0Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP0_SS"));
         parSigEtaP1Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP1_SS"));
+        parSigTimeTauMean.setVal(conpdfSigTimeTau.generate(parSigTimeTau,1)->get()->getRealValue("parSigTimeTau"));
+        parSigTimeDeltaMMean.setVal(conpdfSigTimeDeltaM.generate(parSigTimeDeltaM,1)->get()->getRealValue("parSigTimeDeltaM"));
         stopwatch.Start(true);
         fit_result = pdfTime_fit.fitTo(*data,fitting_args);
         stopwatch.Stop();
         fit_result->Print("v");
         tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
+        delete iterator;
         delete data;
         delete data_newconstrain_etaOS;
         delete data_newconstrain_etaSS;
