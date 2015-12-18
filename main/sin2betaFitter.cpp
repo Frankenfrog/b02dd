@@ -462,8 +462,13 @@ int main(int argc, char * argv[]){
 
   // Decay Time Acceptance
   std::vector<double> knots;
+  knots += 0.4;
+  knots += 0.6;
   knots += 0.8;
+  knots += 1.0;
+  knots += 1.5;
   knots += 2.0;
+  knots += 5.0;
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
@@ -741,7 +746,7 @@ int main(int argc, char * argv[]){
             data_bootstrapped_sweighted = new RooDataSet("data_bootstrapped_sweighted","data_bootstrapped_sweighted",data_bootstrapped,*(data_bootstrapped->get()),TString(catTag.GetName())+"!=0","parSigYield_sw");
           }
           data_bootstrapped_sweighted->Print();
-          pdf.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines_fixed.txt");
+          // pdf.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines_fixed.txt");
           // TIterator*  iterator = constrainingPdfs.createIterator();
           // RooAbsPdf*  constrainingPdf;
           // while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
@@ -781,7 +786,7 @@ int main(int argc, char * argv[]){
     cfg_plot_mass.InitializeOptions();
     cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots/"+config.getString("identifier"));
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
-    cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{unofficial}");
+    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{unofficial}");
     std::vector<std::string> components_mass;
     components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgDstDExtend.*";
     Plot* Mass;
