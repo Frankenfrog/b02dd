@@ -119,6 +119,7 @@ int main(int argc, char * argv[]){
     decaytimefit = false;
   }
   std::string cut = config.getString("cut");
+  bool more_knots = config.getBool("more_knots");
 
   if (bootstrapping && argc < 3) {
     std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
@@ -462,13 +463,13 @@ int main(int argc, char * argv[]){
 
   // Decay Time Acceptance
   std::vector<double> knots;
-  knots += 0.4;
-  knots += 0.6;
+  if(more_knots) knots += 0.4;
+  if(more_knots) knots += 0.6;
   knots += 0.8;
-  knots += 1.0;
-  knots += 1.5;
+  if(more_knots) knots += 1.0;
+  if(more_knots) knots += 1.5;
   knots += 2.0;
-  knots += 5.0;
+  if(more_knots) knots += 5.0;
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
@@ -908,6 +909,7 @@ int main(int argc, char * argv[]){
     PlotConfig cfg_plot_time("cfg_plot_time");
     cfg_plot_time.set_plot_appendix("");
     cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
+    cfg_plot_time.set_label_text("");
     std::vector<std::string> components_time;
     PlotSimultaneous Time(cfg_plot_time, obsTime, *data, pdf, components_time);
     RooDataSet proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
@@ -977,7 +979,7 @@ void PlotAcceptance(RooAbsReal* acceptance){
   c.SetLogx(true);
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
-  // plot->SetMaximum(1.);
+  plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline.pdf");
@@ -986,7 +988,7 @@ void PlotAcceptance(RooAbsReal* acceptance){
   plot = obsTime.frame();
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
-  // plot->SetMaximum(1.);
+  plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_nolog.pdf");
