@@ -7,6 +7,7 @@ add_executable(FlavourTaggingCalibration FlavourTaggingCalibration.cpp)
 add_executable(ProductionAsymmetry ProductionAsymmetry.cpp)
 add_executable(CorrelationMassTime CorrelationMassTime.cpp)
 add_executable(DecayTimeAcceptance DecayTimeAcceptance.cpp)
+add_executable(MassModel MassModel.cpp)
 
 # Aliases for module libs
 
@@ -19,3 +20,4 @@ target_link_libraries(FlavourTaggingCalibration ${ALL_LIBRARIES})
 target_link_libraries(ProductionAsymmetry ${ALL_LIBRARIES})
 target_link_libraries(CorrelationMassTime ${ALL_LIBRARIES})
 target_link_libraries(DecayTimeAcceptance ${ALL_LIBRARIES})
+target_link_libraries(MassModel ${ALL_LIBRARIES})
