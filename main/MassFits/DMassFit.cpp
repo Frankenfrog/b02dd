@@ -55,7 +55,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/fitter/splot/SPlotFit2.h"
 
 // from DooSelection
@@ -191,7 +191,7 @@ int main(int argc, char * argv[]){
   else {
     RooFitResult* fit_result = pdfMass.fitTo(data, fitting_args);
     pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResult_"+TString(config.getString("identifier"))+".txt");
-    doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+    doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
   
     PlotConfig cfg_plot_mass("cfg_plot_mass");

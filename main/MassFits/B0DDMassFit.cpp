@@ -55,7 +55,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -371,7 +371,7 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
   RooFitResult* fit_result = pdfMass->fitTo(data, fitting_args);
-  doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+  doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
 
   if (massmodel_ipatia) pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResults_Ipatia_3Dweights_"+TString(config.getString("identifier"))+".txt");
