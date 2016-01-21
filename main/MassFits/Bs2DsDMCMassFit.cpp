@@ -54,7 +54,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/fitter/splot/SPlotFit2.h"
 
 // from DooSelection
@@ -79,18 +79,31 @@ int main(int argc, char * argv[]){
     return 1;
   }
 
-  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5200,5400,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
   
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
   RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
   catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  RooCategory       idxPV("idxPV","idxPV");
+  idxPV.defineType("best PV",0);
 
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("misID",30);
+  RooCategory       B0_TRUEID("B0_TRUEID","B0_TRUEID");
+  B0_TRUEID.defineType("Bsbar",-531);
+  B0_TRUEID.defineType("Bs",531);
+  RooCategory       Dplus_TRUEID("Dplus_TRUEID","Dplus_TRUEID");
+  Dplus_TRUEID.defineType("Dplus",411);
+  RooCategory       Dminus_TRUEID("Dminus_TRUEID","Dminus_TRUEID");
+  Dminus_TRUEID.defineType("Dsminus",-431);
+  RooCategory       Dminus_Kplus_or_piplus_TRUEID("Dminus_Kplus_or_piplus_TRUEID","Dminus_Kplus_or_piplus_TRUEID");
+  Dminus_Kplus_or_piplus_TRUEID.defineType("Kplus",321);
+  RooCategory       Dplus_Kminus_or_piminus_TRUEID("Dplus_Kminus_or_piminus_TRUEID","Dplus_Kminus_or_piminus_TRUEID");
+  Dplus_Kminus_or_piminus_TRUEID.defineType("Dsminus",-431);
 
   RooArgSet         observables(obsMass,"observables");
-  RooArgSet         categories(catDDFinalState,catBkg,catTriggerSetTopo234BodyBBDT,"categories");
+  RooArgSet         categories(/*catDDFinalState,*/catBkg,idxPV/*,catTriggerSetTopo234BodyBBDT*/,"categories");
   
   // Get data set
   EasyTuple         tuple(argv[1],argv[2],RooArgSet(observables,categories));
@@ -132,7 +145,7 @@ int main(int argc, char * argv[]){
 
   RooFitResult* fit_result = pdfMass.fitTo(data, fitting_args);
   pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/FitResults_Bs2DsDMass.txt");
-  doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+  doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
