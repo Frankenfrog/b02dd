@@ -57,7 +57,8 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/plotting/correlations/CorrelationPlot.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/config/CommonConfig.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"
@@ -82,9 +83,7 @@ using namespace doofit::roofit::pdfs;
 using namespace doofit::fitter::splot;
 using namespace dooselection::reducer;
 
-void PlotTimeErr(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
-void PlotTime(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
-void PlotAcceptance(RooAbsReal* acceptance);
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result);
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -120,6 +119,8 @@ int main(int argc, char * argv[]){
   }
   std::string cut = config.getString("cut");
   bool more_knots = config.getBool("more_knots");
+  bool plot_acceptance = config.getBool("plot_acceptance");
+  bool plot_correlation_matrix = config.getBool("plot_correlation_matrix");
 
   if (bootstrapping && argc < 3) {
     std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
@@ -186,7 +187,11 @@ int main(int argc, char * argv[]){
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet*       data;
   if (bootstrapping || massfit || calculate_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-  else if (decaytimefit)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  else if (decaytimefit || plot_acceptance || plot_correlation_matrix)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  else {
+    cout << "What do you want to do? No use case is activated right now!" <<  endl;
+    return 0;
+  }
   if (!mistag_histograms) data->Print();
 
   // Mass PDF
@@ -222,6 +227,12 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgDsDMassCBFraction("parBkgDsDMassCBFraction","parBkgDsDMassCBFraction",0.5);
   RooAddPdf         pdfBkgDsDMass("pdfBkgDsDMass","pdfBkgDsDMass",RooArgList(pdfBkgDsDMassCB1,pdfBkgDsDMassCB2),parBkgDsDMassCBFraction);
 
+  // Bs --> DsD background
+  RooFormulaVar     parBkgBsDsDMassMean("parBkgBsDsDMassMean","shifted Bs --> DsD Mean Mass","@0+87.35",RooArgList(parBkgDsDMean));
+  RooCBShape        pdfBkgBsDsDMassCB1("pdfBkgBsDsDMassCB1","Mass PDF",obsMass,parBkgBsDsDMassMean,parBkgDsDMassSigma1,parBkgDsDMassCB1Alpha,parBkgDsDMassCB1Expo);
+  RooCBShape        pdfBkgBsDsDMassCB2("pdfBkgBsDsDMassCB2","Mass PDF",obsMass,parBkgBsDsDMassMean,parBkgDsDMassSigma2,parBkgDsDMassCB2Alpha,parBkgDsDMassCB2Expo);
+  RooAddPdf         pdfBkgBsDsDMass("pdfBkgBsDsDMass","pdfBkgBsDsDMass",RooArgList(pdfBkgBsDsDMassCB1,pdfBkgBsDsDMassCB2),parBkgDsDMassCBFraction);
+
   // Bs --> DD signal
   RooFormulaVar     parSigBsMassMean("parSigBsMassMean","Bs Mean Mass","@0+87.35",RooArgList(parSigMassMean));
   RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
@@ -236,7 +247,20 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgDstDHighMassMean("parBkgDstDHighMassMean","Mean Mass",5120,5100,5140,"MeV/c^{2}");
   RooRealVar        parBkgDstDHighMassSigma("parBkgDstDHighMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
   RooGaussian       pdfBkgDstDHighMass("pdfBkgDstDHighMass","Upper DstD Mass PDF",obsMass,parBkgDstDHighMassMean,parBkgDstDHighMassSigma);
-  
+
+  RooRealVar        parBkgDstDMassFraction("parBkgDstDMassFraction","fraction between low and high component",0.5,0,1);
+  RooAddPdf         pdfBkgDstDMass("pdfBkgDstDMass","pdfBkgDstDMass",RooArgList(pdfBkgDstDLowMass,pdfBkgDstDHighMass),parBkgDstDMassFraction);
+
+  // Bs --> D*+ D- with D*+ --> D+ pi0 Background
+  RooFormulaVar     parBkgBsDstDLowMassMean("parBkgBsDstDLowMassMean","Mean Mass","@0+87.35",RooArgList(parBkgDstDLowMassMean));
+  RooGaussian       pdfBkgBsDstDLowMass("pdfBkgBsDstDLowMass","Lower DstD Mass PDF",obsMass,parBkgBsDstDLowMassMean,parBkgDstDLowMassSigma);
+
+  RooFormulaVar     parBkgBsDstDHighMassMean("parBkgBsDstDHighMassMean","Mean Mass","@0+87.35",RooArgList(parBkgDstDHighMassMean));
+  RooGaussian       pdfBkgBsDstDHighMass("pdfBkgBsDstDHighMass","Upper DstD Mass PDF",obsMass,parBkgBsDstDHighMassMean,parBkgDstDHighMassSigma);
+
+  RooRealVar        parBkgBsDstDMassFraction("parBkgBsDstDMassFraction","fraction between low and high component",0.5,0,1);
+  RooAddPdf         pdfBkgBsDstDMass("pdfBkgBsDstDMass","pdfBkgBsDstDMass",RooArgList(pdfBkgBsDstDLowMass,pdfBkgBsDstDHighMass),parBkgBsDstDMassFraction);
+
   // combinatorial background
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
@@ -263,6 +287,15 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgDsDYield_11("parBkgDsDYield_11","parBkgDsDYield_11",1000,0,2000);
   RooRealVar        parBkgDsDYield_12("parBkgDsDYield_12","parBkgDsDYield_12",1000,0,2000);
   RooRealVar        parBkgDsDYield("parBkgDsDYield","parBkgDsDYield",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_11_Kpipi("parBkgBsDsDYield_11_Kpipi","parBkgBsDsDYield_11_Kpipi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_12_Kpipi("parBkgBsDsDYield_12_Kpipi","parBkgBsDsDYield_12_Kpipi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_11_KKpi("parBkgBsDsDYield_11_KKpi","parBkgBsDsDYield_11_KKpi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_12_KKpi("parBkgBsDsDYield_12_KKpi","parBkgBsDsDYield_12_KKpi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_Kpipi("parBkgBsDsDYield_Kpipi","parBkgBsDsDYield_Kpipi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_KKpi("parBkgBsDsDYield_KKpi","parBkgBsDsDYield_KKpi",150,0,2000);
+  RooRealVar        parBkgBsDsDYield_11("parBkgBsDsDYield_11","parBkgBsDsDYield_11",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_12("parBkgBsDsDYield_12","parBkgBsDsDYield_12",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield("parBkgBsDsDYield","parBkgBsDsDYield",1000,0,2000);
   RooRealVar        parSigBsYield_11_Kpipi("parSigBsYield_11_Kpipi","parSigBsYield_11_Kpipi",100,0,1000);
   RooRealVar        parSigBsYield_12_Kpipi("parSigBsYield_12_Kpipi","parSigBsYield_12_Kpipi",100,0,1000);
   RooRealVar        parSigBsYield_11_KKpi("parSigBsYield_11_KKpi","parSigBsYield_11_KKpi",100,0,1000);
@@ -272,24 +305,24 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigBsYield_11("parSigBsYield_11","parSigBsYield_11",100,0,1000);
   RooRealVar        parSigBsYield_12("parSigBsYield_12","parSigBsYield_12",100,0,1000);
   RooRealVar        parSigBsYield("parSigBsYield","parSigBsYield",100,0,1000);
-  RooRealVar        parBkgDstDHighYield_11_Kpipi("parBkgDstDHighYield_11_Kpipi","parBkgDstDHighYield_11_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_12_Kpipi("parBkgDstDHighYield_12_Kpipi","parBkgDstDHighYield_12_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_11_KKpi("parBkgDstDHighYield_11_KKpi","parBkgDstDHighYield_11_KKpi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_12_KKpi("parBkgDstDHighYield_12_KKpi","parBkgDstDHighYield_12_KKpi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_Kpipi("parBkgDstDHighYield_Kpipi","parBkgDstDHighYield_Kpipi",1800,0,10000);
-  RooRealVar        parBkgDstDHighYield_KKpi("parBkgDstDHighYield_KKpi","parBkgDstDHighYield_KKpi",700,0,10000);
-  RooRealVar        parBkgDstDHighYield_11("parBkgDstDHighYield_11","parBkgDstDHighYield_11",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_12("parBkgDstDHighYield_12","parBkgDstDHighYield_12",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield("parBkgDstDHighYield","parBkgDstDHighYield",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_11_Kpipi("parBkgDstDLowYield_11_Kpipi","parBkgDstDLowYield_11_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_12_Kpipi("parBkgDstDLowYield_12_Kpipi","parBkgDstDLowYield_12_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_11_KKpi("parBkgDstDLowYield_11_KKpi","parBkgDstDLowYield_11_KKpi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_12_KKpi("parBkgDstDLowYield_12_KKpi","parBkgDstDLowYield_12_KKpi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_Kpipi("parBkgDstDLowYield_Kpipi","parBkgDstDLowYield_Kpipi",1800,0,10000);
-  RooRealVar        parBkgDstDLowYield_KKpi("parBkgDstDLowYield_KKpi","parBkgDstDLowYield_KKpi",700,0,10000);
-  RooRealVar        parBkgDstDLowYield_11("parBkgDstDLowYield_11","parBkgDstDLowYield_11",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_12("parBkgDstDLowYield_12","parBkgDstDLowYield_12",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield("parBkgDstDLowYield","parBkgDstDLowYield",5000,0,10000);
+  RooRealVar        parBkgDstDYield_11_Kpipi("parBkgDstDYield_11_Kpipi","parBkgDstDYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_12_Kpipi("parBkgDstDYield_12_Kpipi","parBkgDstDYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_11_KKpi("parBkgDstDYield_11_KKpi","parBkgDstDYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_12_KKpi("parBkgDstDYield_12_KKpi","parBkgDstDYield_12_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_Kpipi("parBkgDstDYield_Kpipi","parBkgDstDYield_Kpipi",1800,0,10000);
+  RooRealVar        parBkgDstDYield_KKpi("parBkgDstDYield_KKpi","parBkgDstDYield_KKpi",700,0,10000);
+  RooRealVar        parBkgDstDYield_11("parBkgDstDYield_11","parBkgDstDYield_11",5000,0,10000);
+  RooRealVar        parBkgDstDYield_12("parBkgDstDYield_12","parBkgDstDYield_12",5000,0,10000);
+  RooRealVar        parBkgDstDYield("parBkgDstDYield","parBkgDstDYield",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield_11_Kpipi("parBkgBsDstDYield_11_Kpipi","parBkgBsDstDYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield_12_Kpipi("parBkgBsDstDYield_12_Kpipi","parBkgBsDstDYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield_11_KKpi("parBkgBsDstDYield_11_KKpi","parBkgBsDstDYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield_12_KKpi("parBkgBsDstDYield_12_KKpi","parBkgBsDstDYield_12_KKpi",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield_Kpipi("parBkgBsDstDYield_Kpipi","parBkgBsDstDYield_Kpipi",1800,0,10000);
+  RooRealVar        parBkgBsDstDYield_KKpi("parBkgBsDstDYield_KKpi","parBkgBsDstDYield_KKpi",700,0,10000);
+  RooRealVar        parBkgBsDstDYield_11("parBkgBsDstDYield_11","parBkgBsDstDYield_11",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield_12("parBkgBsDstDYield_12","parBkgBsDstDYield_12",5000,0,10000);
+  RooRealVar        parBkgBsDstDYield("parBkgBsDstDYield","parBkgBsDstDYield",5000,0,10000);
   RooRealVar        parBkgYield_11_Kpipi("parBkgYield_11_Kpipi","parBkgYield_11_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_12_Kpipi("parBkgYield_12_Kpipi","parBkgYield_12_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_11_KKpi("parBkgYield_11_KKpi","parBkgYield_11_KKpi",5000,0,10000);
@@ -318,6 +351,15 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDsDExtend_11("pdfBkgDsDExtend_11","pdfBkgDsDExtend_11",pdfBkgDsDMass,parBkgDsDYield_11);
   RooExtendPdf      pdfBkgDsDExtend_12("pdfBkgDsDExtend_12","pdfBkgDsDExtend_12",pdfBkgDsDMass,parBkgDsDYield_12);
   RooExtendPdf      pdfBkgDsDExtend("pdfBkgDsDExtend","pdfBkgDsDExtend",pdfBkgDsDMass,parBkgDsDYield);
+  RooExtendPdf      pdfBkgBsDsDExtend_11_Kpipi("pdfBkgBsDsDExtend_11_Kpipi","pdfBkgBsDsDExtend_11_Kpipi",pdfBkgBsDsDMass,parBkgBsDsDYield_11_Kpipi);
+  RooExtendPdf      pdfBkgBsDsDExtend_12_Kpipi("pdfBkgBsDsDExtend_12_Kpipi","pdfBkgBsDsDExtend_12_Kpipi",pdfBkgBsDsDMass,parBkgBsDsDYield_12_Kpipi);
+  RooExtendPdf      pdfBkgBsDsDExtend_11_KKpi("pdfBkgBsDsDExtend_11_KKpi","pdfBkgBsDsDExtend_11_KKpi",pdfBkgBsDsDMass,parBkgBsDsDYield_11_KKpi);
+  RooExtendPdf      pdfBkgBsDsDExtend_12_KKpi("pdfBkgBsDsDExtend_12_KKpi","pdfBkgBsDsDExtend_12_KKpi",pdfBkgBsDsDMass,parBkgBsDsDYield_12_KKpi);
+  RooExtendPdf      pdfBkgBsDsDExtend_Kpipi("pdfBkgBsDsDExtend_Kpipi","pdfBkgBsDsDExtend_Kpipi",pdfBkgBsDsDMass,parBkgBsDsDYield_Kpipi);
+  RooExtendPdf      pdfBkgBsDsDExtend_KKpi("pdfBkgBsDsDExtend_KKpi","pdfBkgBsDsDExtend_KKpi",pdfBkgBsDsDMass,parBkgBsDsDYield_KKpi);
+  RooExtendPdf      pdfBkgBsDsDExtend_11("pdfBkgBsDsDExtend_11","pdfBkgBsDsDExtend_11",pdfBkgBsDsDMass,parBkgBsDsDYield_11);
+  RooExtendPdf      pdfBkgBsDsDExtend_12("pdfBkgBsDsDExtend_12","pdfBkgBsDsDExtend_12",pdfBkgBsDsDMass,parBkgBsDsDYield_12);
+  RooExtendPdf      pdfBkgBsDsDExtend("pdfBkgBsDsDExtend","pdfBkgBsDsDExtend",pdfBkgBsDsDMass,parBkgBsDsDYield);
   RooExtendPdf      pdfSigBsExtend_11_Kpipi("pdfSigBsExtend_11_Kpipi","pdfSigBsExtend_11_Kpipi",pdfSigBsMass,parSigBsYield_11_Kpipi);
   RooExtendPdf      pdfSigBsExtend_12_Kpipi("pdfSigBsExtend_12_Kpipi","pdfSigBsExtend_12_Kpipi",pdfSigBsMass,parSigBsYield_12_Kpipi);
   RooExtendPdf      pdfSigBsExtend_11_KKpi("pdfSigBsExtend_11_KKpi","pdfSigBsExtend_11_KKpi",pdfSigBsMass,parSigBsYield_11_KKpi);
@@ -327,33 +369,24 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfSigBsExtend_11("pdfSigBsExtend_11","pdfSigBsExtend_11",pdfSigBsMass,parSigBsYield_11);
   RooExtendPdf      pdfSigBsExtend_12("pdfSigBsExtend_12","pdfSigBsExtend_12",pdfSigBsMass,parSigBsYield_12);
   RooExtendPdf      pdfSigBsExtend("pdfSigBsExtend","pdfSigBsExtend",pdfSigBsMass,parSigBsYield);
-  RooExtendPdf      pdfBkgDstDHighExtend_11_Kpipi("pdfBkgDstDHighExtend_11_Kpipi","pdfBkgDstDHighExtend_11_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_Kpipi);
-  RooExtendPdf      pdfBkgDstDHighExtend_12_Kpipi("pdfBkgDstDHighExtend_12_Kpipi","pdfBkgDstDHighExtend_12_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_Kpipi);
-  RooExtendPdf      pdfBkgDstDHighExtend_11_KKpi("pdfBkgDstDHighExtend_11_KKpi","pdfBkgDstDHighExtend_11_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_KKpi);
-  RooExtendPdf      pdfBkgDstDHighExtend_12_KKpi("pdfBkgDstDHighExtend_12_KKpi","pdfBkgDstDHighExtend_12_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_KKpi);
-  RooExtendPdf      pdfBkgDstDHighExtend_Kpipi("pdfBkgDstDHighExtend_Kpipi","pdfBkgDstDHighExtend_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_Kpipi);
-  RooExtendPdf      pdfBkgDstDHighExtend_KKpi("pdfBkgDstDHighExtend_KKpi","pdfBkgDstDHighExtend_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_KKpi);
-  RooExtendPdf      pdfBkgDstDHighExtend_11("pdfBkgDstDHighExtend_11","pdfBkgDstDHighExtend_11",pdfBkgDstDHighMass,parBkgDstDHighYield_11);
-  RooExtendPdf      pdfBkgDstDHighExtend_12("pdfBkgDstDHighExtend_12","pdfBkgDstDHighExtend_12",pdfBkgDstDHighMass,parBkgDstDHighYield_12);
-  RooExtendPdf      pdfBkgDstDHighExtend("pdfBkgDstDHighExtend","pdfBkgDstDHighExtend",pdfBkgDstDHighMass,parBkgDstDHighYield);
-  RooExtendPdf      pdfBkgDstDLowExtend_11_Kpipi("pdfBkgDstDLowExtend_11_Kpipi","pdfBkgDstDLowExtend_11_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_Kpipi);
-  RooExtendPdf      pdfBkgDstDLowExtend_12_Kpipi("pdfBkgDstDLowExtend_12_Kpipi","pdfBkgDstDLowExtend_12_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_Kpipi);
-  RooExtendPdf      pdfBkgDstDLowExtend_11_KKpi("pdfBkgDstDLowExtend_11_KKpi","pdfBkgDstDLowExtend_11_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_KKpi);
-  RooExtendPdf      pdfBkgDstDLowExtend_12_KKpi("pdfBkgDstDLowExtend_12_KKpi","pdfBkgDstDLowExtend_12_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_KKpi);
-  RooExtendPdf      pdfBkgDstDLowExtend_Kpipi("pdfBkgDstDLowExtend_Kpipi","pdfBkgDstDLowExtend_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_Kpipi);
-  RooExtendPdf      pdfBkgDstDLowExtend_KKpi("pdfBkgDstDLowExtend_KKpi","pdfBkgDstDLowExtend_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_KKpi);
-  RooExtendPdf      pdfBkgDstDLowExtend_11("pdfBkgDstDLowExtend_11","pdfBkgDstDLowExtend_11",pdfBkgDstDLowMass,parBkgDstDLowYield_11);
-  RooExtendPdf      pdfBkgDstDLowExtend_12("pdfBkgDstDLowExtend_12","pdfBkgDstDLowExtend_12",pdfBkgDstDLowMass,parBkgDstDLowYield_12);
-  RooExtendPdf      pdfBkgDstDLowExtend("pdfBkgDstDLowExtend","pdfBkgDstDLowExtend",pdfBkgDstDLowMass,parBkgDstDLowYield);
-  RooAddPdf         pdfBkgDstDExtend_11_Kpipi("pdfBkgDstDExtend_11_Kpipi","pdfBkgDstDExtend_11_Kpipi",RooArgList(pdfBkgDstDLowExtend_11_Kpipi,pdfBkgDstDHighExtend_11_Kpipi));
-  RooAddPdf         pdfBkgDstDExtend_12_Kpipi("pdfBkgDstDExtend_12_Kpipi","pdfBkgDstDExtend_12_Kpipi",RooArgList(pdfBkgDstDLowExtend_12_Kpipi,pdfBkgDstDHighExtend_12_Kpipi));
-  RooAddPdf         pdfBkgDstDExtend_11_KKpi("pdfBkgDstDExtend_11_KKpi","pdfBkgDstDExtend_11_KKpi",RooArgList(pdfBkgDstDLowExtend_11_KKpi,pdfBkgDstDHighExtend_11_KKpi));
-  RooAddPdf         pdfBkgDstDExtend_12_KKpi("pdfBkgDstDExtend_12_KKpi","pdfBkgDstDExtend_12_KKpi",RooArgList(pdfBkgDstDLowExtend_12_KKpi,pdfBkgDstDHighExtend_12_KKpi));
-  RooAddPdf         pdfBkgDstDExtend_Kpipi("pdfBkgDstDExtend_Kpipi","pdfBkgDstDExtend_Kpipi",RooArgList(pdfBkgDstDLowExtend_Kpipi,pdfBkgDstDHighExtend_Kpipi));
-  RooAddPdf         pdfBkgDstDExtend_KKpi("pdfBkgDstDExtend_KKpi","pdfBkgDstDExtend_KKpi",RooArgList(pdfBkgDstDLowExtend_KKpi,pdfBkgDstDHighExtend_KKpi));
-  RooAddPdf         pdfBkgDstDExtend_11("pdfBkgDstDExtend_11","pdfBkgDstDExtend_11",RooArgList(pdfBkgDstDLowExtend_11,pdfBkgDstDHighExtend_11));
-  RooAddPdf         pdfBkgDstDExtend_12("pdfBkgDstDExtend_12","pdfBkgDstDExtend_12",RooArgList(pdfBkgDstDLowExtend_12,pdfBkgDstDHighExtend_12));
-  RooAddPdf         pdfBkgDstDExtend("pdfBkgDstDExtend","pdfBkgDstDExtend",RooArgList(pdfBkgDstDLowExtend,pdfBkgDstDHighExtend));
+  RooExtendPdf      pdfBkgDstDExtend_11_Kpipi("pdfBkgDstDExtend_11_Kpipi","pdfBkgDstDExtend_11_Kpipi",pdfBkgDstDMass,parBkgDstDYield_11_Kpipi);
+  RooExtendPdf      pdfBkgDstDExtend_12_Kpipi("pdfBkgDstDExtend_12_Kpipi","pdfBkgDstDExtend_12_Kpipi",pdfBkgDstDMass,parBkgDstDYield_12_Kpipi);
+  RooExtendPdf      pdfBkgDstDExtend_11_KKpi("pdfBkgDstDExtend_11_KKpi","pdfBkgDstDExtend_11_KKpi",pdfBkgDstDMass,parBkgDstDYield_11_KKpi);
+  RooExtendPdf      pdfBkgDstDExtend_12_KKpi("pdfBkgDstDExtend_12_KKpi","pdfBkgDstDExtend_12_KKpi",pdfBkgDstDMass,parBkgDstDYield_12_KKpi);
+  RooExtendPdf      pdfBkgDstDExtend_Kpipi("pdfBkgDstDExtend_Kpipi","pdfBkgDstDExtend_Kpipi",pdfBkgDstDMass,parBkgDstDYield_Kpipi);
+  RooExtendPdf      pdfBkgDstDExtend_KKpi("pdfBkgDstDExtend_KKpi","pdfBkgDstDExtend_KKpi",pdfBkgDstDMass,parBkgDstDYield_KKpi);
+  RooExtendPdf      pdfBkgDstDExtend_11("pdfBkgDstDExtend_11","pdfBkgDstDExtend_11",pdfBkgDstDMass,parBkgDstDYield_11);
+  RooExtendPdf      pdfBkgDstDExtend_12("pdfBkgDstDExtend_12","pdfBkgDstDExtend_12",pdfBkgDstDMass,parBkgDstDYield_12);
+  RooExtendPdf      pdfBkgDstDExtend("pdfBkgDstDExtend","pdfBkgDstDExtend",pdfBkgDstDMass,parBkgDstDYield);
+  // RooExtendPdf      pdfBkgBsDstDExtend_11_Kpipi("pdfBkgBsDstDExtend_11_Kpipi","pdfBkgBsDstDExtend_11_Kpipi",pdfBkgBsDstDMass,parBkgBsDstDYield_11_Kpipi);
+  // RooExtendPdf      pdfBkgBsDstDExtend_12_Kpipi("pdfBkgBsDstDExtend_12_Kpipi","pdfBkgBsDstDExtend_12_Kpipi",pdfBkgBsDstDMass,parBkgBsDstDYield_12_Kpipi);
+  // RooExtendPdf      pdfBkgBsDstDExtend_11_KKpi("pdfBkgBsDstDExtend_11_KKpi","pdfBkgBsDstDExtend_11_KKpi",pdfBkgBsDstDMass,parBkgBsDstDYield_11_KKpi);
+  // RooExtendPdf      pdfBkgBsDstDExtend_12_KKpi("pdfBkgBsDstDExtend_12_KKpi","pdfBkgBsDstDExtend_12_KKpi",pdfBkgBsDstDMass,parBkgBsDstDYield_12_KKpi);
+  // RooExtendPdf      pdfBkgBsDstDExtend_Kpipi("pdfBkgBsDstDExtend_Kpipi","pdfBkgBsDstDExtend_Kpipi",pdfBkgBsDstDMass,parBkgBsDstDYield_Kpipi);
+  // RooExtendPdf      pdfBkgBsDstDExtend_KKpi("pdfBkgBsDstDExtend_KKpi","pdfBkgBsDstDExtend_KKpi",pdfBkgBsDstDMass,parBkgBsDstDYield_KKpi);
+  // RooExtendPdf      pdfBkgBsDstDExtend_11("pdfBkgBsDstDExtend_11","pdfBkgBsDstDExtend_11",pdfBkgBsDstDMass,parBkgBsDstDYield_11);
+  // RooExtendPdf      pdfBkgBsDstDExtend_12("pdfBkgBsDstDExtend_12","pdfBkgBsDstDExtend_12",pdfBkgBsDstDMass,parBkgBsDstDYield_12);
+  // RooExtendPdf      pdfBkgBsDstDExtend("pdfBkgBsDstDExtend","pdfBkgBsDstDExtend",pdfBkgBsDstDMass,parBkgBsDstDYield);
   RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass_Kpipi,parBkgYield_11_Kpipi);
   RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass_Kpipi,parBkgYield_12_Kpipi);
   RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
@@ -364,14 +397,14 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi));
-  RooAddPdf         pdfMass_Kpipi("pdfMass_Kpipi","Mass PDF",RooArgList(pdfSigExtend_Kpipi,pdfBkgDsDExtend_Kpipi,pdfSigBsExtend_Kpipi,pdfBkgExtend_Kpipi,pdfBkgDstDExtend_Kpipi));
-  RooAddPdf         pdfMass_KKpi("pdfMass_KKpi","Mass PDF",RooArgList(pdfSigExtend_KKpi,pdfBkgDsDExtend_KKpi,pdfSigBsExtend_KKpi,pdfBkgExtend_KKpi,pdfBkgDstDExtend_KKpi));
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,pdfBkgDstDExtend_11));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,pdfBkgDstDExtend_12));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi/*,pdfBkgBsDstDExtend_11_Kpipi*/));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi/*,pdfBkgBsDstDExtend_12_Kpipi*/));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi/*,pdfBkgBsDstDExtend_11_KKpi*/));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi/*,pdfBkgBsDstDExtend_12_KKpi*/));
+  RooAddPdf         pdfMass_Kpipi("pdfMass_Kpipi","Mass PDF",RooArgList(pdfSigExtend_Kpipi,pdfBkgDsDExtend_Kpipi,pdfSigBsExtend_Kpipi,pdfBkgExtend_Kpipi,pdfBkgDstDExtend_Kpipi,pdfBkgBsDsDExtend_Kpipi/*,pdfBkgBsDstDExtend_Kpipi*/));
+  RooAddPdf         pdfMass_KKpi("pdfMass_KKpi","Mass PDF",RooArgList(pdfSigExtend_KKpi,pdfBkgDsDExtend_KKpi,pdfSigBsExtend_KKpi,pdfBkgExtend_KKpi,pdfBkgDstDExtend_KKpi,pdfBkgBsDsDExtend_KKpi/*,pdfBkgBsDstDExtend_KKpi*/));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,pdfBkgDstDExtend_11,pdfBkgBsDsDExtend_11/*,pdfBkgBsDstDExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,pdfBkgDstDExtend_12,pdfBkgBsDsDExtend_12/*,pdfBkgBsDstDExtend_12*/));
 
   RooSuperCategory  supercategory_mass("supercategory_mass","supercategory_mass",RooArgList(catYear,catDDFinalStateParticles));
   RooAbsPdf*        pdfMass;
@@ -395,7 +428,7 @@ int main(int argc, char * argv[]){
     ((RooSimultaneous*)pdfMass)->addPdf(pdfMass_Kpipi,"Kpipi");
     ((RooSimultaneous*)pdfMass)->addPdf(pdfMass_KKpi,"KKpi");
   }
-  else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,pdfBkgDstDExtend));
+  else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,pdfBkgDstDExtend,pdfBkgBsDsDExtend/*,pdfBkgBsDstDExtend*/));
 
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
@@ -413,33 +446,33 @@ int main(int argc, char * argv[]){
   RooUnblindUniform   parSigTimeBlindedC("parSigTimeBlindedC","Blinding of #it{C_{D^{+}D^{-}}}","CB02DD3fb",2.,parSigTimeC);
 
   // Asymmetries
-  RooRealVar          parSigEtaDeltaProd_11("parSigEtaDeltaProd_11","B0/B0bar production asymmetry",-0.0066,-0.05,0.02);
+  RooRealVar          parSigEtaDeltaProd_11("parSigEtaDeltaProd_11","A_{P}^{11}",-0.0066,-0.05,0.02);
   RooRealVar          parSigEtaDeltaProdMean_11("parSigEtaDeltaProdMean_11","#bar{#mu}",-0.0066);
   RooRealVar          parSigEtaDeltaProdSigma_11("parSigEtaDeltaProdSigma_11","#sigma_{#bar{mu}}",0.0026);
 
-  RooRealVar          parSigEtaDeltaProdOffset("parSigEtaDeltaProdOffset","difference between 2011 and 2012 B0/B0bar production asymmetry",0.0004,-0.01,0.01);
+  RooRealVar          parSigEtaDeltaProdOffset("parSigEtaDeltaProdOffset","#Delta A_{P}",0.0004,-0.01,0.01);
   RooRealVar          parSigEtaDeltaProdOffsetMean("parSigEtaDeltaProdOffsetMean","#bar{#mu}",0.0004);
   RooRealVar          parSigEtaDeltaProdOffsetSigma("parSigEtaDeltaProdOffsetSigma","#sigma_{#bar{mu}}",0.0018);
   RooAddition         parSigEtaDeltaProd_12("parSigEtaDeltaProd_12","B0/B0bar production asymmetry 2012",RooArgList(parSigEtaDeltaProd_11,parSigEtaDeltaProdOffset));
 
   // OS tags
-  RooRealVar          parSigEtaDeltaP0_OS("parSigEtaDeltaP0_OS","delta mistag probability",0.0140,0.,0.03);
+  RooRealVar          parSigEtaDeltaP0_OS("parSigEtaDeltaP0_OS","#Delta p_{0}^{OS}",0.0140,0.,0.03);
   RooRealVar          parSigEtaDeltaP0Mean_OS("parSigEtaDeltaP0Mean_OS","#bar{#delta p_{0}}",0.0148);
   RooRealVar          parSigEtaDeltaP0Sigma_OS("parSigEtaDeltaP0Sigma_OS","#sigma_{#bar{#delta p_{0}}}",0.0012);  // B+ value 0.0016  Kstar 0.0031
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_OS);
 
-  RooRealVar          parSigEtaDeltaP1_OS("parSigEtaDeltaP1_OS","delta scale calibration parameter probability",0.066,0.,0.1);
+  RooRealVar          parSigEtaDeltaP1_OS("parSigEtaDeltaP1_OS","#Delta p_{1}^{OS}",0.066,0.,0.1);
   RooRealVar          parSigEtaDeltaP1Mean_OS("parSigEtaDeltaP1Mean_OS","#bar{#delta p_{1}}",0.070);
   RooRealVar          parSigEtaDeltaP1Sigma_OS("parSigEtaDeltaP1Sigma_OS","#sigma_{#bar{#delta p_{1}}}",0.012);   // B+ value 0.018   Kstar 0.035
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_OS);
 
   // SS tags
-  RooRealVar          parSigEtaDeltaP0_SS("parSigEtaDeltaP0_SS","delta mistag probability",-0.003,-0.02,0.02);
+  RooRealVar          parSigEtaDeltaP0_SS("parSigEtaDeltaP0_SS","#Delta p_{0}^{SS}",-0.003,-0.02,0.02);
   RooRealVar          parSigEtaDeltaP0Mean_SS("parSigEtaDeltaP0Mean_SS","#bar{#delta p_{0}}",-0.0026);
   RooRealVar          parSigEtaDeltaP0Sigma_SS("parSigEtaDeltaP0Sigma_SS","#sigma_{#bar{#delta p_{0}}}",0.0044);
   if (SS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_SS);
 
-  RooRealVar          parSigEtaDeltaP1_SS("parSigEtaDeltaP1_SS","delta scale calibration parameter probability",-0.18,-0.7,0.3);
+  RooRealVar          parSigEtaDeltaP1_SS("parSigEtaDeltaP1_SS","#Delta p_{1}^{SS}",-0.18,-0.7,0.3);
   RooRealVar          parSigEtaDeltaP1Mean_SS("parSigEtaDeltaP1Mean_SS","#bar{#delta p_{1}}",-0.18);
   RooRealVar          parSigEtaDeltaP1Sigma_SS("parSigEtaDeltaP1Sigma_SS","#sigma_{#bar{#delta p_{1}}}",0.10);
   if (SS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_SS);
@@ -475,7 +508,8 @@ int main(int argc, char * argv[]){
   RooRealVar*       parSigTimeAccCSpline;
   for (int i = 1; i <= (knots.size()+2) ; i++) {
     std::string binname = "parSigTimeAccCSpline" + boost::lexical_cast<std::string>(i);
-    parSigTimeAccCSpline = new RooRealVar(binname.c_str(),binname.c_str(),1,0,2);
+    std::string bintitle = "h_{" + boost::lexical_cast<std::string>(i) + "}";
+    parSigTimeAccCSpline = new RooRealVar(binname.c_str(),bintitle.c_str(),1,0,2);
     listofsplinecoefficients.add(*parSigTimeAccCSpline);
   }
 
@@ -490,34 +524,41 @@ int main(int argc, char * argv[]){
 //=========================================================================================================================================================================================================================
 
   // Tagging calibration
-  RooRealVar          parSigEtaP0_OS("parSigEtaP0_OS","Offset on per-event mistag",0.3815,0.0,0.1);
+  RooRealVar          parSigEtaP0_OS("parSigEtaP0_OS","p_{0}^{OS}",0.3815,0.0,0.1);
   RooRealVar          parSigEtaP0Mean_OS("parSigEtaP0Mean_OS","#bar{p}_{0}",0.3815);
   RooRealVar          parSigEtaP0Sigma_OS("parSigEtaP0Sigma_OS","#sigma_{#bar{p}_{0}}",0.0019);   // B+ value 0.0011  Kstar 0.0022
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaP0Sigma_OS);
 
-  RooRealVar          parSigEtaP1_OS("parSigEtaP1_OS","Offset on per-event mistag",0.978,0.9,1.1);
-  RooRealVar          parSigEtaP1Mean_OS("parSigEtaP1Mean_OS","#bar{p}_{0}",0.978);
-  RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{0}}",0.007);  // B+ value 0.012   Kstar 0.024
+  RooRealVar          parSigEtaP1_OS("parSigEtaP1_OS","p_{1}^{OS}",0.978,0.9,1.1);
+  RooRealVar          parSigEtaP1Mean_OS("parSigEtaP1Mean_OS","#bar{p}_{1}",0.978);
+  RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{1}}",0.007);  // B+ value 0.012   Kstar 0.024
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",0.10);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",0.001);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_OS("parSigEtaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between p0 and Delta p1 OS",0.001);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",0.001);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",0.001);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.001);
+
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
-  RooRealVar          parSigEtaP0_SS("parSigEtaP0_SS","Offset on per-event mistag",0.4228,0.3,0.5);
+  RooRealVar          parSigEtaP0_SS("parSigEtaP0_SS","p_{0}^{SS}",0.4228,0.3,0.5);
   RooRealVar          parSigEtaP0Mean_SS("parSigEtaP0Mean_SS","#bar{p}_{0}",0.4232);
   RooRealVar          parSigEtaP0Sigma_SS("parSigEtaP0Sigma_SS","#sigma_{#bar{p}_{0}}",0.0029);
   if (SS_tagging) Gaussian_Constraints.add(parSigEtaP0Sigma_SS);
 
-  RooRealVar          parSigEtaP1_SS("parSigEtaP1_SS","Offset on per-event mistag",1.01,0.7,1.1);
-  RooRealVar          parSigEtaP1Mean_SS("parSigEtaP1Mean_SS","#bar{p}_{0}",1.011);
-  RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{0}}",0.064);
+  RooRealVar          parSigEtaP1_SS("parSigEtaP1_SS","p_{1}^{SS}",1.01,0.7,1.1);
+  RooRealVar          parSigEtaP1Mean_SS("parSigEtaP1Mean_SS","#bar{p}_{1}",1.011);
+  RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{1}}",0.064);
   if (SS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
 
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.030);
-  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",-0.007);
-  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",0.0016);
-  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",0.0004);
-  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",-0.006);
-  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.04);
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",-0.053);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",0.001);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",0.001);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",0.001);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",0.001);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.001);
 
   RooRealVar          parSigEtaMean_SS("parSigEtaMean_SS","Mean on per-event mistag",0.42484);
 
@@ -594,13 +635,12 @@ int main(int argc, char * argv[]){
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
   Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
-  // pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.txt");
+
   pdf.Print();
 
-  RooRealVar            parSigEtaDeltaP0P1CorrelationCoeff_OS("parSigEtaDeltaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 or Delta p0 and Delta p1 for OS",0.14);   // B+ value 0.14  Kstar 0.07
-  TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
-  RooRealVar            parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 for OS",0.14);   // B+ value 0.14  Kstar -0.0025
+  TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
   TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
+  // TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
   TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
 
   RooArgSet             constrainingPdfs("constrainingPdfs");
@@ -636,7 +676,6 @@ int main(int argc, char * argv[]){
   while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
     constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
     constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
-    // constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.txt");
   }
 
   pdf.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.new");
@@ -696,21 +735,21 @@ int main(int argc, char * argv[]){
       RooRealVar SigWeight_single("parSigYield_sw","signal weight",-10,10);
       if (split_years) {
             if (split_final_state) {
-              set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi));
-              set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi));
-              set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi));
-              set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi));
+              set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
+              set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
+              set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
+              set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
             }
             else {
-              set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11));
-              set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12));
+              set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgDstDYield_11,parBkgBsDsDYield_11));
+              set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgDstDYield_12,parBkgBsDsDYield_12));
             }
           }
           else if (split_final_state) {
-            set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi));
-            set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi));
+            set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi,parBkgDstDYield_Kpipi,parBkgBsDsDYield_Kpipi));
+            set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi,parBkgDstDYield_KKpi,parBkgBsDsDYield_KKpi));
           }
-          else set_of_yields.add(parSigYield);
+          else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield,parBkgDstDYield,parBkgBsDsDYield));
 
       for (int i = 0; i < 20 ; ++i) {
         cout  <<  i <<  endl;
@@ -747,12 +786,6 @@ int main(int argc, char * argv[]){
             data_bootstrapped_sweighted = new RooDataSet("data_bootstrapped_sweighted","data_bootstrapped_sweighted",data_bootstrapped,*(data_bootstrapped->get()),TString(catTag.GetName())+"!=0","parSigYield_sw");
           }
           data_bootstrapped_sweighted->Print();
-          // pdf.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines_fixed.txt");
-          // TIterator*  iterator = constrainingPdfs.createIterator();
-          // RooAbsPdf*  constrainingPdf;
-          // while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          //   constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Bootstrapping/WithMass/generation.par");
-          // }
           stopwatch.Start(true);
           fit_result = pdf.fitTo(*data_bootstrapped_sweighted,fitting_args);
           stopwatch.Stop();
@@ -778,8 +811,9 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
+    fitting_args.Print("v");
     RooFitResult* fit_result = pdfMass->fitTo(*data, fitting_args);
-    doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+    doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
     pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/Mass/FitResults_"+config.getString("identifier")+".txt"));
 
@@ -789,10 +823,11 @@ int main(int argc, char * argv[]){
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
     // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{unofficial}");
     std::vector<std::string> components_mass;
-    components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgDstDExtend.*";
+    components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgDstDExtend.*", "pdfBkgBsDsDExtend.*";
     Plot* Mass;
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, *data, *pdfMass, components_mass, "obsMass");
+    // else Mass = new Plot(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
     Mass->set_scaletype_x(kLinear);
     Mass->set_scaletype_y(kBoth);
     Mass->PlotIt();
@@ -803,18 +838,18 @@ int main(int argc, char * argv[]){
       if (split_years) {
         splot_observables.add(catYear);
         if (split_final_state) {
-          set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi));
-          set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi));
-          set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi));
-          set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi));
+          set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
+          set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
+          set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
+          set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
           splot_observables.add(catDDFinalStateParticles);
         }
         else {
-          set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11));
-          set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12));
+          set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgDstDYield_11,parBkgBsDsDYield_11));
+          set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgDstDYield_12,parBkgBsDsDYield_12));
         }
       }
-      else set_of_yields.add(parSigYield);
+      else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield,parBkgDstDYield,parBkgBsDsDYield));
 
       SPlotFit2 splotfit(*pdfMass,*data,set_of_yields);
       splotfit.set_use_minos(false);
@@ -826,7 +861,8 @@ int main(int argc, char * argv[]){
       spr.set_output_file_path(config.getString("sweights_tuple"));
     
       spr.set_output_tree_path("B02DD");
-      spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&"+string(cut));
+      if (cut.empty()) spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax()));
+      else spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&"+string(cut));
       spr.set_plot_directory(string("/home/fmeier/storage03/b02dd/run/Reducer/Plots"));
       RooMsgService::instance().setStreamStatus(0, false);
       RooMsgService::instance().setStreamStatus(1, false);
@@ -895,7 +931,7 @@ int main(int argc, char * argv[]){
     RooFitResult* fit_result = pdf.fitTo(*data,fitting_args);
     pdf.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
     fit_result->Print("v");
-    doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+    doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
     fit_result->correlationMatrix().Print();
     TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"recreate");
@@ -904,7 +940,10 @@ int main(int argc, char * argv[]){
 
     // Plots
     pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
-    PlotAcceptance(&accspline);
+    PlotAcceptance(&accspline, fit_result);
+
+    doofit::plotting::correlations::CorrelationPlot cplot(*fit_result);
+    cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
 
     PlotConfig cfg_plot_time("cfg_plot_time");
     cfg_plot_time.set_plot_appendix("");
@@ -941,6 +980,20 @@ int main(int argc, char * argv[]){
     hist_Bkg_SS_eta->Write();
     file_mistag_histograms->Close();
   }
+  if (plot_acceptance) {
+    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"read");
+    RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
+    pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
+    PlotAcceptance(&accspline, read_in_fit_result);
+    fitresultfile.Close();
+  }
+  if (plot_correlation_matrix) {
+    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"read");
+    RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
+    doofit::plotting::correlations::CorrelationPlot cplot(*read_in_fit_result);
+    cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
+  }
+
   return 0;
 }
 
@@ -967,7 +1020,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
@@ -977,7 +1030,8 @@ void PlotAcceptance(RooAbsReal* acceptance){
 
   RooPlot* plot = obsTime.frame();
   c.SetLogx(true);
-  acceptance->plotOn(plot);
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
+  acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
@@ -986,20 +1040,12 @@ void PlotAcceptance(RooAbsReal* acceptance){
 
   c.SetLogx(false);
   plot = obsTime.frame();
-  acceptance->plotOn(plot);
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
+  acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_nolog.pdf");
-
-  // c.SetLogx(true);
-  // plot = obsTime.frame();
-  // acceptance->plotOn(plot);
-  // plot->SetMinimum(0.);
-  // plot->SetMaximum(0.7);
-  // plot->GetYaxis()->SetTitle("acceptance");
-  // plot->Draw();
-  // c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_zoomed.pdf");
 }
 

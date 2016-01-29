@@ -36,7 +36,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -135,7 +135,7 @@ int main(int argc, char * argv[]){
   RooFitResult* fit_result = pdf.fitTo(*data,fitting_args);
   pdf.getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".txt"));
   fit_result->Print("v");
-  doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+  doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
   fit_result->correlationMatrix().Print();
   TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".root"),"recreate");

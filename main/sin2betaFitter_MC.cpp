@@ -62,7 +62,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -78,7 +78,7 @@ using namespace doofit::roofit::pdfs;
 
 void PlotTimeErr(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
 void PlotTime(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
-void PlotAcceptance(RooAbsReal* acceptance);
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result);
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -115,9 +115,11 @@ int main(int argc, char * argv[]){
   catTag.defineType("OS",1);
   catTag.defineType("SSPion",-1);
   catTag.defineType("both",10);
-  // catTag.defineType("untagged",0);
+  if (!cp_fit)  catTag.defineType("untagged",0);
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("signal",0);
+  RooCategory       idxPV("idxPV","idxPV");
+  idxPV.defineType("signal",0);
   
   RooArgSet         observables(obsTime,"observables");
   if (pereventresolution) observables.add(obsTimeErr);
@@ -128,7 +130,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagSSPion);
   }
   if (truetag) observables.add(obsTag_True);
-  RooArgSet         categories(catYear,catBkg,"categories");
+  RooArgSet         categories(catYear,catBkg,idxPV,"categories");
   if (!truetag) categories.add(catTag);
   
   // Get data set
@@ -300,6 +302,8 @@ int main(int argc, char * argv[]){
   RooAbsPdf*        pdfSigTime_12_SS;
   RooAbsPdf*        pdfSigTime_11_BS;
   RooAbsPdf*        pdfSigTime_12_BS;
+  RooDecay*         pdfSigTime_11_UT;
+  RooDecay*         pdfSigTime_12_UT;
   RooAbsPdf*        pdfSigTime_True;
 
   if (cp_fit) {
@@ -322,6 +326,8 @@ int main(int argc, char * argv[]){
     pdfSigTime_12_SS = new RooDecay("pdfSigTime_12_SS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
     pdfSigTime_11_BS = new RooDecay("pdfSigTime_11_BS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
     pdfSigTime_12_BS = new RooDecay("pdfSigTime_12_BS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
+    pdfSigTime_11_UT = new RooDecay("pdfSigTime_11_UT","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
+    pdfSigTime_12_UT = new RooDecay("pdfSigTime_12_UT","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
   }
   
 //========================================================================================================================================================================================================================
@@ -339,6 +345,9 @@ int main(int argc, char * argv[]){
     pdf->addPdf(*pdfSigTime_12_OS,"{2012;OS}");
     pdf->addPdf(*pdfSigTime_12_SS,"{2012;SSPion}");
     pdf->addPdf(*pdfSigTime_12_BS,"{2012;both}");
+    if (!cp_fit) pdf->addPdf(*pdfSigTime_11_UT,"{2011;untagged}");
+    if (!cp_fit) pdf->addPdf(*pdfSigTime_12_UT,"{2012;untagged}");
+
     cout  <<  "simultaneous PDF built"  <<  endl;
   // }
 
@@ -404,7 +413,7 @@ int main(int argc, char * argv[]){
   RooFitResult* fit_result = pdf->fitTo(*data,fitting_args);
   pdf->getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.txt");
   fit_result->Print("v");
-  doofit::plotting::fitresult::FitResultPrinter fitresultprinter(*fit_result);
+  doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
   fit_result->correlationMatrix().Print();
   TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"recreate");
@@ -413,7 +422,7 @@ int main(int argc, char * argv[]){
 
   // Plots
   pdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.txt");
-  PlotAcceptance(&accspline);
+  PlotAcceptance(&accspline, fit_result);
  
   PlotConfig cfg_plot_time("cfg_plot_time");
   cfg_plot_time.set_plot_appendix("");
@@ -456,7 +465,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
@@ -466,6 +475,7 @@ void PlotAcceptance(RooAbsReal* acceptance){
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
 
   RooPlot* plot = obsTime.frame();
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
@@ -475,6 +485,7 @@ void PlotAcceptance(RooAbsReal* acceptance){
   
   c.SetLogx(false);
   plot = obsTime.frame();
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
