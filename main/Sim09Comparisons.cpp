@@ -4,6 +4,7 @@
 
 // ROOT
 #include "TROOT.h"
+#include "TStyle.h"
 #include "TFile.h"
 #include "TString.h"
 #include "TRandom3.h"
@@ -19,6 +20,7 @@
 #include "RooArgSet.h"
 #include "RooFitResult.h"
 #include "RooPlot.h"
+#include "RooFormulaVar.h"
 
 // RooFit PDFs
 #include "RooCBShape.h"
@@ -104,6 +106,9 @@ int main(int argc, const char * argv[]){
   RooRealVar        parSigDMassFraction("parSigDMassFraction","parSigDMassFraction",0.5);
   RooAddPdf         pdfSigDMass("pdfSigDMass","pdfSigDMass",RooArgList(pdfSigDMass1,pdfSigDMass2),parSigDMassFraction);
 
+  RooFormulaVar     B0MassResolution("B0MassResolution","B0MassResolution","sqrt(0.5*@0*@0+0.5*@1*@1)",RooArgList(parSigMassSigma1,parSigMassSigma2));
+  RooFormulaVar     DMassResolution("DMassResolution","DMassResolution","sqrt(0.5*@0*@0+0.5*@1*@1)",RooArgList(parSigDMassSigma1,parSigDMassSigma2));
+
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
@@ -117,9 +122,11 @@ int main(int argc, const char * argv[]){
 
   RooFitResult* fit_result_Sim08 = pdfSigMass.fitTo(Sim08_data, fitting_args);
   pdfSigMass.getParameters(Sim08_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim08.txt");
+  cout << "B0 Mass resolution Sim08: "  <<  B0MassResolution.getVal() <<  " pm "  <<  B0MassResolution.getPropagatedError(*fit_result_Sim08)  <<  endl;
 
   RooFitResult* fit_result_Sim09 = pdfSigMass.fitTo(Sim09_data, fitting_args);
   pdfSigMass.getParameters(Sim09_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim09.txt");
+  cout << "B0 Mass resolution Sim09: "  <<  B0MassResolution.getVal() <<  " pm "  <<  B0MassResolution.getPropagatedError(*fit_result_Sim09)  <<  endl;
 
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter_Sim08(*fit_result_Sim08);
   fitresultprinter_Sim08.Print();
@@ -128,9 +135,11 @@ int main(int argc, const char * argv[]){
 
   fit_result_Sim08 = pdfSigDMass.fitTo(Sim08_data, fitting_args);
   pdfSigDMass.getParameters(Sim08_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim08.txt");
+  cout << "D Mass resolution Sim08: "  <<  DMassResolution.getVal() <<  " pm "  <<  DMassResolution.getPropagatedError(*fit_result_Sim08)  <<  endl;
 
   fit_result_Sim09 = pdfSigDMass.fitTo(Sim09_data, fitting_args);
   pdfSigDMass.getParameters(Sim09_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim09.txt");
+  cout << "D Mass resolution Sim09: "  <<  DMassResolution.getVal() <<  " pm "  <<  DMassResolution.getPropagatedError(*fit_result_Sim09)  <<  endl;
 
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter_Sim08_DMass(*fit_result_Sim08);
   fitresultprinter_Sim08_DMass.Print();
@@ -148,6 +157,7 @@ int main(int argc, const char * argv[]){
   pdfSigMass.getParameters(Sim09_data)->readFromFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim09.txt");
   pdfSigMass.plotOn(plot, LineColor(4), Normalization(1./Sim09_data.numEntries()));
   plot->SetMaximum(0.1);
+  plot->GetYaxis()->SetTitle("Arbitrary units");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/MCComparison/PlotMass/B0Mass.pdf");
 
@@ -159,6 +169,8 @@ int main(int argc, const char * argv[]){
   pdfSigDMass.getParameters(Sim09_data)->readFromFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim09.txt");
   pdfSigDMass.plotOn(plot, LineColor(4), Normalization(1./Sim09_data.numEntries()));
   plot->SetMaximum(0.04);
+  plot->GetYaxis()->SetTitle("Arbitrary units");
+  gStyle->SetLabelOffset(1.5,"y");
   plot->Draw();
   c.SaveAs("/home/fmeier/storage03/b02dd/run/MCComparison/PlotMass/DMass.pdf");  
 

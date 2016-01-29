@@ -126,9 +126,9 @@ def create_plot(general_dict, input_dicts, plot_dict):
                    tlegend)
     
     hist_array.sort(key=get_max, reverse=True)
-    hist_array[0].Draw()
+    hist_array[0].DrawNormalized("E")
     for hist in hist_array[1:]:
-        hist.Draw("Same")
+        hist.DrawNormalized("ESame")
     
     # label generation
     label_x = 0.65
@@ -170,15 +170,15 @@ def plot_hist(tree, varname, cut, binning,
     hist = TH1D("hist"+str(varname),"hist"+str(varname),binning,x_range_min,x_range_max)
     tree.Draw(varname+">>hist"+str(varname),cut)
     
-    if drawnorm:
-      norm = hist.GetSumOfWeights()
-      hist.Scale(1./norm)
+    # if drawnorm:
+    #   norm = hist.GetSumOfWeights()
+    #   hist.Scale(1./norm)
     
     hist.SetLineColor(color);
     hist.SetMarkerColor(color);
 
     hist.GetXaxis().SetTitle(create_x_axis_label(x_title, x_unit))
-    hist.GetYaxis().SetTitle(create_y_axis_label(x_range_min, x_range_max, binning, x_unit)) 
+    hist.GetYaxis().SetTitle(create_y_axis_label(x_range_min, x_range_max, binning, x_unit, drawnorm)) 
 
     
 
@@ -197,15 +197,26 @@ def create_x_axis_label(x_title, x_unit):
         x_axis_title += " (" + x_unit +")"
     return x_axis_title
 
-def create_y_axis_label(x_range_min, x_range_max, binning, x_unit):
+def create_y_axis_label(x_range_min, x_range_max, binning, x_unit, normalise):
     bin_width_label = get_bin_width_label(x_range_min,x_range_max,binning)
     if x_unit:
-       bin_width_label += "("+bin_width_label+" "+x_unit +")"
-    return "Candidates / "+bin_width_label
+        bin_width_label = "("+bin_width_label+" "+x_unit +")"
+    if normalise:
+      return "Arbitrary units"
+    else:
+      return "Candidates / "+bin_width_label
 
 def get_bin_width_label(x_range_min,x_range_max,binning):
     normbinwidth = (x_range_max-x_range_min)/binning
-    if normbinwidth<1:
+    if normbinwidth<0.0001:
+      normbinwidth = round(normbinwidth,7)
+    elif normbinwidth<0.001:
+      normbinwidth = round(normbinwidth,6)
+    elif normbinwidth<0.01:
+      normbinwidth = round(normbinwidth,5)
+    elif normbinwidth<0.1:
+      normbinwidth = round(normbinwidth,4)
+    elif normbinwidth<1:
       normbinwidth = round(normbinwidth,3)
     elif normbinwidth<10:
       normbinwidth = round(normbinwidth,2)
@@ -215,7 +226,9 @@ def get_bin_width_label(x_range_min,x_range_max,binning):
       normbinwidth = round(normbinwidth,0)
     
     bin_width_label = 0
-    if math.log10(normbinwidth) < 0: 
+    if math.log10(normbinwidth)<-10: 
+      bin_width_label = '%.7f' %normbinwidth # taking the digit before the comma, the comma itself and seven behind it
+    elif math.log10(normbinwidth)<0: 
       bin_width_label = '%.3f' %normbinwidth # taking the digit before the comma, the comma itself and three behind it
     elif math.log10(normbinwidth)<1: 
       bin_width_label = '%.2f' %normbinwidth # taking the digit before the comma, the comma itself and two behind it
