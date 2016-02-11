@@ -877,7 +877,7 @@ int main(int argc, char * argv[]){
     set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDLowYield_11_KKpi,parBkgDstDHighYield_11_KKpi));
     set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDLowYield_12_Kpipi,parBkgDstDHighYield_12_Kpipi));
     set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDLowYield_12_KKpi,parBkgDstDHighYield_12_KKpi));
-    for (int i = 0; i < 1 ; ++i) {
+    for (int i = 0; i < 5 ; ++i) {
       cout  <<  i <<  endl;
       try {
         data = tfac.Generate();
@@ -895,7 +895,7 @@ int main(int argc, char * argv[]){
         stopwatch.Stop();
         RooMsgService::instance().setStreamStatus(0, true);
         RooMsgService::instance().setStreamStatus(1, true);
-
+        delete splotfit;
         data->addColumn(sum_of_signal_weights_year_finalstate);
         // data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year_finalstate");
         data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),"","sum_of_signal_weights_year_finalstate");
