@@ -682,12 +682,10 @@ void TaggingRdcr::UpdateSpecialLeaves(){
 
   // ______________________________________________________________________________________
   // SS COMBINATION ({obsTag,obsEta,catTagged}SS)
-  // SSPion BDT (excl) + SSProton (excl) + standard combination
+  // SSPion BDT + SSProton
   // Categories:
   //   0: untagged
-  //  +1: SSPion BDT excl tagged
-  //  -1: SSProton excl tagged
-  //  10: SSPion BDT + SSProton combination
+  //  -1: tagged
   // ______________________________________________________________________________________
 
   if ((*var_tag_ss_pion_bdt_==0) && (*var_tag_ss_proton_==0)){           // if pion and proton tags are 0, set everything to untagged
@@ -702,7 +700,7 @@ void TaggingRdcr::UpdateSpecialLeaves(){
     *var_tag_ss_comb_babar_value_  = -(*var_tag_ss_pion_bdt_);
     *var_tag_ss_comb_nozero_value_ = *var_tag_ss_pion_bdt_;
     *var_tag_eta_ss_comb_value_    = *var_tag_eta_ss_pion_bdt_;
-    *cat_tagged_ss_comb_value_     = 1;
+    *cat_tagged_ss_comb_value_     = -1;
   }
   else if ((*var_tag_ss_pion_bdt_==0) && (*var_tag_ss_proton_!=0)){      // if proton tagger exclusively has tag, write proton tag to combination
     *var_tag_ss_comb_value_        = *var_tag_ss_proton_;
@@ -745,7 +743,7 @@ void TaggingRdcr::UpdateSpecialLeaves(){
     *var_tag_eta_ss_comb_value_ = 1. - comb_prob;
 
     // tag category
-    *cat_tagged_ss_comb_value_ = 10;
+    *cat_tagged_ss_comb_value_ = -1;
 
     if (debug){
       std::cout << "" << std::endl;
