@@ -186,10 +186,10 @@ int main(int argc, const char * argv[]){
   CreateScatterPlot(*signaldata_BS, "Correlation_OS_SS", 40, "obsEtaOSwCharm", "obsEtaSS", "#it{#eta}_{OS}", "#it{#eta}_{SS}", 0.1, 0.5, 0.1, 0.5);
 
   // profile histograms
-  CreateProfileHistogram(*signaldata_BS, "Profile_OS_SS", 40, "obsEtaOSwCharm", "obsEtaSS", "#it{#eta}_{OS}", "#it{#eta}_{SS}", 0, 0.5, 0, 0.6);
-  CreateProfileHistogram(*signaldata_BS, "Profile_SS_OS", 40, "obsEtaSS", "obsEtaOSwCharm", "#it{#eta}_{SS}", "#it{#eta}_{OS}", 0, 0.5, 0, 0.6);
+  CreateProfileHistogram(*signaldata_BS, "Profile_OS_SS", 40, "obsEtaOSwCharm", "obsEtaSS", "#it{#eta}_{OS}", "#it{#eta}_{SS}", 0.1, 0.5, 0, 0.6);
+  CreateProfileHistogram(*signaldata_BS, "Profile_SS_OS", 40, "obsEtaSS", "obsEtaOSwCharm", "#it{#eta}_{SS}", "#it{#eta}_{OS}", 0.1, 0.5, 0, 0.6);
   CreateProfileHistogram(*signaldata_allOS, "Profile_DecayTime_OS", 100, "obsTime", "obsEtaOSwCharm", "#it{t}", "#it{#eta}_{OS}", 0.25, 10.25, 0, 0.6);
-  CreateProfileHistogram(*signaldata_allSS, "Profile_DecayTime_SS", 100, "obsTime", "obsEtaSS", "#it{t}", "#it{#eta}_{SS}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
+  CreateProfileHistogram(*signaldata_allSS, "Profile_DecayTime_SS", 100, "obsTime", "obsEtaSS", "#it{t}", "#it{#eta}_{SS}", 0.25, 10.25, 0, 0.6, true, 0.25, 8.25);
   CreateProfileHistogram(*signaldata_SSPion, "Profile_DecayTime_SSPion", 100, "obsTime", "obsEtaSSPion", "#it{t}", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
   CreateProfileHistogram(*signaldata_SSPionBDT, "Profile_DecayTime_SSPionBDT", 20, "obsTime", "obsEtaSSPionBDT", "#it{t}", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0.3, 0.5, true, 2.25, 8.25);
   CreateProfileHistogram(*signaldata_SSProton, "Profile_DecayTime_SSProton", 100, "obsTime", "obsEtaSSProton", "#it{t}", "#it{#eta}_{SS#p}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
@@ -238,6 +238,8 @@ void CreateProfileHistogram(RooDataSet& data, TString profile_name, int nbins, T
   profile->SetYTitle(y_title);
   profile->SetMinimum(y_min);
   profile->SetMaximum(y_max);
+  profile->SetMarkerColor(1);
+  profile->SetLineColor(1);
   profile->FillN(x_values.size(), &x_values[0], &y_values[0], &weights[0]);
   if (linear_fit) {
     TF1* fit_function = new TF1("fit_function","[0]+[1]*x",x_min_fit,x_max_fit);
