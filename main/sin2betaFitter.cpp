@@ -157,9 +157,9 @@ int main(int argc, char * argv[]){
   RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
   catDDFinalStateParticles.defineType("Kpipi",1);
   catDDFinalStateParticles.defineType("KKpi",0);
-  RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
-  catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
-  catTriggerSetTopo234BodyBBDT.defineType("not triggered",0);
+  RooCategory       catMag("catMag","catMag");
+  catMag.defineType("up",1);
+  catMag.defineType("down",-1);
 
   RooRealVar        BDT1_classifier("BDT1_classifier","BDT1_classifier",-1,1);
   RooRealVar        BDT2_classifier("BDT2_classifier","BDT2_classifier",-1,1);
@@ -178,7 +178,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagOS);
     observables.add(obsTagSS);
   }
-  RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catTriggerSetTopo234BodyBBDT,"categories");
+  RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catMag,"categories");
   if (decaytimefit || mistag_histograms) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
@@ -621,12 +621,12 @@ int main(int argc, char * argv[]){
   // Build Simultaneous PDF
   RooSuperCategory  supercategory_time("supercategory_time","supercategory_time",RooArgSet(catYear,catTag));
   RooSimultaneous   pdf("pdf","P",supercategory_time);
-  if(OS_tagging) pdf.addPdf(*pdfSigTime_11_OS,"{2011;OS}");
-  if(SS_tagging) pdf.addPdf(*pdfSigTime_11_SS,"{2011;SS}");
-  if(OS_tagging && SS_tagging) pdf.addPdf(*pdfSigTime_11_BS,"{2011;both}");
-  if(OS_tagging) pdf.addPdf(*pdfSigTime_12_OS,"{2012;OS}");
-  if(SS_tagging) pdf.addPdf(*pdfSigTime_12_SS,"{2012;SS}");
-  if(OS_tagging && SS_tagging) pdf.addPdf(*pdfSigTime_12_BS,"{2012;both}");
+  if(OS_tagging && data->sumEntries("catYear==2011") > 0) pdf.addPdf(*pdfSigTime_11_OS,"{2011;OS}");
+  if(SS_tagging && data->sumEntries("catYear==2011") > 0) pdf.addPdf(*pdfSigTime_11_SS,"{2011;SS}");
+  if(OS_tagging && SS_tagging && data->sumEntries("catYear==2011") > 0) pdf.addPdf(*pdfSigTime_11_BS,"{2011;both}");
+  if(OS_tagging && data->sumEntries("catYear==2012") > 0) pdf.addPdf(*pdfSigTime_12_OS,"{2012;OS}");
+  if(SS_tagging && data->sumEntries("catYear==2012") > 0) pdf.addPdf(*pdfSigTime_12_SS,"{2012;SS}");
+  if(OS_tagging && SS_tagging && data->sumEntries("catYear==2012") > 0) pdf.addPdf(*pdfSigTime_12_BS,"{2012;both}");
 
   cout  <<  "simultaneous PDF built"  <<  endl;
 
@@ -664,7 +664,7 @@ int main(int argc, char * argv[]){
   if (cp_fit) {
     constrainingPdfs.add(conpdfSigTimeDeltaM);
     constrainingPdfs.add(conpdfSigEtaDeltaProd_11);
-    constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
+    if (data->sumEntries("catYear==2012") > 0)  constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
     if (OS_tagging)  constrainingPdfs.add(conpdfSigEta_OS);
     if (SS_tagging)  constrainingPdfs.add(conpdfSigEta_SS);
     if (OS_tagging)  constrainingPdfs.add(conpdfSigEtaDelta_OS);
@@ -827,7 +827,7 @@ int main(int argc, char * argv[]){
     Plot* Mass;
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, *data, *pdfMass, components_mass, "obsMass");
-    // else Mass = new Plot(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
+    // Mass = new Plot(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
     Mass->set_scaletype_x(kLinear);
     Mass->set_scaletype_y(kBoth);
     Mass->PlotIt();
@@ -929,7 +929,7 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
     fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
     RooFitResult* fit_result = pdf.fitTo(*data,fitting_args);
-    pdf.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
+    pdf.getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     fit_result->Print("v");
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
@@ -939,14 +939,14 @@ int main(int argc, char * argv[]){
     fitresultwritetofile.Close();
 
     // Plots
-    pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
+    pdf.getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     PlotAcceptance(&accspline, fit_result);
 
     doofit::plotting::correlations::CorrelationPlot cplot(*fit_result);
     cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
 
     PlotConfig cfg_plot_time("cfg_plot_time");
-    cfg_plot_time.set_plot_appendix("");
+    cfg_plot_time.set_plot_appendix(config.getString("identifier"));
     cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
     cfg_plot_time.set_label_text("");
     std::vector<std::string> components_time;
@@ -961,7 +961,7 @@ int main(int argc, char * argv[]){
     Time.AddPlotArg(ProjWData(projargset,*data,true));
     Time.set_scaletype_x(kLinear);
     Time.set_scaletype_y(kLogarithmic);
-    if (!pereventresolution)  Time.PlotIt();
+    /*if (!pereventresolution)*/  Time.PlotIt();
   }
   if (mistag_histograms) {
     TFile* file_mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","recreate");
