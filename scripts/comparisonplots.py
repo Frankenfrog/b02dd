@@ -126,9 +126,9 @@ def create_plot(general_dict, input_dicts, plot_dict):
                    tlegend)
     
     hist_array.sort(key=get_max, reverse=True)
-    hist_array[0].DrawNormalized("E")
+    hist_array[0].Draw("E")
     for hist in hist_array[1:]:
-        hist.DrawNormalized("ESame")
+        hist.Draw("ESame")
     
     # label generation
     label_x = 0.65
@@ -170,9 +170,10 @@ def plot_hist(tree, varname, cut, binning,
     hist = TH1D("hist"+str(varname),"hist"+str(varname),binning,x_range_min,x_range_max)
     tree.Draw(varname+">>hist"+str(varname),cut)
     
-    # if drawnorm:
-    #   norm = hist.GetSumOfWeights()
-    #   hist.Scale(1./norm)
+    if drawnorm:
+      norm = hist.GetSumOfWeights()
+      hist.Sumw2()
+      hist.Scale(1./norm)
     
     hist.SetLineColor(color);
     hist.SetMarkerColor(color);
