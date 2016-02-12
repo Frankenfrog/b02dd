@@ -1,3 +1,4 @@
+// standard calibration from FT WG
 // parSigEtaDeltaP0_OS      =  0.0140 L(0 - 0.03)
 // parSigEtaDeltaP0Mean_OS  =  0.0140 C
 // parSigEtaDeltaP0Sigma_OS =  0.0012 C
@@ -12,6 +13,37 @@
 // parSigEtaP1Mean_OS       =  0.982  C
 // parSigEtaP1Sigma_OS      =  0.007  C
 
+// 2011 only values
+// parSigEtaDeltaP0_OS      =  0.008 C L(-0.03 - 0.03)
+// parSigEtaDeltaP0Mean_OS  =  0.008 C
+// parSigEtaDeltaP0Sigma_OS =  0.021 C
+// parSigEtaDeltaP1_OS      =  0.02  C L(-0.2 - 0.2)
+// parSigEtaDeltaP1Mean_OS  =  0.02  C
+// parSigEtaDeltaP1Sigma_OS =  0.17  C
+// parSigEtaMean_OS         =  0.35917 C
+// parSigEtaP0_OS           =  0.372 C L(0 - 0.4)
+// parSigEtaP0Mean_OS       =  0.372 C
+// parSigEtaP0Sigma_OS      =  0.014 C
+// parSigEtaP1_OS           =  1.06  C L(0.9 - 1.2)
+// parSigEtaP1Mean_OS       =  1.06  C
+// parSigEtaP1Sigma_OS      =  0.11  C
+
+// 2012 only values
+// parSigEtaDeltaP0_OS      = -0.005  L(-0.03 - 0.03)
+// parSigEtaDeltaP0Mean_OS  = -0.005  C
+// parSigEtaDeltaP0Sigma_OS =  0.021  C
+// parSigEtaDeltaP1_OS      =  0.05   L(-0.3 - 0.3)
+// parSigEtaDeltaP1Mean_OS  =  0.05   C
+// parSigEtaDeltaP1Sigma_OS =  0.20   C
+// parSigEtaMean_OS         =  0.36404 C
+// parSigEtaP0_OS           =  0.350  L(0 - 0.4)
+// parSigEtaP0Mean_OS       =  0.350  C
+// parSigEtaP0Sigma_OS      =  0.014  C
+// parSigEtaP1_OS           =  0.82   L(0.7 - 1.1)
+// parSigEtaP1Mean_OS       =  0.82   C
+// parSigEtaP1Sigma_OS      =  0.15   C
+
+// combined 2011 + 2012 values
 parSigEtaDeltaP0_OS      =  0.003  L(-0.03 - 0.03)
 parSigEtaDeltaP0Mean_OS  =  0.003  C
 parSigEtaDeltaP0Sigma_OS =  0.012  C
@@ -22,10 +54,41 @@ parSigEtaMean_OS         =  0.3617 C
 parSigEtaP0_OS           =  0.375  L(0 - 0.4)
 parSigEtaP0Mean_OS       =  0.375  C
 parSigEtaP0Sigma_OS      =  0.008  C
-parSigEtaP1_OS           =  0.94   L(0.9 - 1.1)
+parSigEtaP1_OS           =  0.94   L(0.8 - 1.1)
 parSigEtaP1Mean_OS       =  0.94   C
 parSigEtaP1Sigma_OS      =  0.07   C
 
+// 2011 only values
+// parSigEtaDeltaP0_SS      = -0.0003 C L(-0.02 - 0.02)
+// parSigEtaDeltaP0Mean_SS  = -0.0003 C
+// parSigEtaDeltaP0Sigma_SS =  0.016  C
+// parSigEtaDeltaP1_SS      = -0.21   C L(-0.5 - 0.5)
+// parSigEtaDeltaP1Mean_SS  = -0.21   C
+// parSigEtaDeltaP1Sigma_SS =  0.45   C
+// parSigEtaP0_SS           =  0.429  C L(0.3 - 0.5)
+// parSigEtaP0Mean_SS       =  0.429  C
+// parSigEtaP0Sigma_SS      =  0.011  C
+// parSigEtaP1_SS           =  0.86   C L(0.6 - 1.2)
+// parSigEtaP1Mean_SS       =  0.86   C
+// parSigEtaP1Sigma_SS      =  0.16   C
+// parSigEtaMean_SS         =  0.42771 C
+
+// 2012 only values
+// parSigEtaDeltaP0_SS      = 0.017  C L(-0.02 - 0.02)
+// parSigEtaDeltaP0Mean_SS  = 0.017  C
+// parSigEtaDeltaP0Sigma_SS = 0.016  C
+// parSigEtaDeltaP1_SS      = 0.30   C L(-0.3 - 0.3)
+// parSigEtaDeltaP1Mean_SS  = 0.30   C
+// parSigEtaDeltaP1Sigma_SS = 0.46   C
+// parSigEtaP0_SS           = 0.426  C L(0.3 - 0.5)
+// parSigEtaP0Mean_SS       = 0.426  C
+// parSigEtaP0Sigma_SS      = 0.011  C
+// parSigEtaP1_SS           = 0.81   C L(0.6 - 1.2)
+// parSigEtaP1Mean_SS       = 0.81   C
+// parSigEtaP1Sigma_SS      = 0.16   C
+// parSigEtaMean_SS         = 0.42881 C
+
+// combined 2011 + 2012 values
 parSigEtaDeltaP0_SS      = 0.0002 L(-0.02 - 0.02)
 parSigEtaDeltaP0Mean_SS  = 0.0002 C
 parSigEtaDeltaP0Sigma_SS = 0.009  C
