@@ -849,6 +849,11 @@ int main(int argc, char * argv[]){
           set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgDstDYield_12,parBkgBsDsDYield_12));
         }
       }
+      else if (split_final_state) {
+        set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi,parBkgDstDYield_Kpipi,parBkgBsDsDYield_Kpipi));
+        set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi,parBkgDstDYield_KKpi,parBkgBsDsDYield_KKpi));
+        splot_observables.add(catDDFinalStateParticles);
+      }
       else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield,parBkgDstDYield,parBkgBsDsDYield));
 
       SPlotFit2 splotfit(*pdfMass,*data,set_of_yields);
