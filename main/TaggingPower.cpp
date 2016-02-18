@@ -47,11 +47,14 @@ int main(int argc, const char * argv[]){
   obsTagSS.defineType("B0",1);
   obsTagSS.defineType("B0bar",-1);
   obsTagSS.defineType("no Tag",0);
+  RooCategory       catYear("catYear","catYear");
+  catYear.defineType("2011",2011);
+  catYear.defineType("2012",2012);
   RooRealVar        obsEtaOS(OS_mistag_observable,"#eta_{OS}",0,0.5);
   RooRealVar        obsEtaSS(SS_mistag_observable,"#eta_{SS}",0,0.5);
   RooRealVar        SigWeight(sweightname,"Signal weight",-10,10);
 
-  RooArgSet         observables(obsTagOS,obsTagSS,SigWeight,obsEtaOS,obsEtaSS,"observables");
+  RooArgSet         observables(obsTagOS,obsTagSS,SigWeight,obsEtaOS,obsEtaSS,catYear,"observables");
 
   EasyTuple         sweighted_tuple(config.getString("tuple"),config.getString("tree"),observables);
   sweighted_tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
@@ -66,14 +69,35 @@ int main(int argc, const char * argv[]){
   signaldata_BS.Print();
   RooDataSet        signaldata_allOS("signaldata_allOS","signaldata_allOS",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1"),WeightVar(sweightname));
   signaldata_allOS.Print();
+  RooDataSet        signaldata_allOS_11("signaldata_allOS_11","signaldata_allOS_11",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1&&catYear==2011"),WeightVar(sweightname));
+  RooDataSet        signaldata_allOS_12("signaldata_allOS_12","signaldata_allOS_12",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1&&catYear==2012"),WeightVar(sweightname));
   RooDataSet        signaldata_allSS("signaldata_allSS","signaldata_allSS",observables,Import(signaldata),Cut("abs("+SS_tag_observable+")==1"),WeightVar(sweightname));
   signaldata_allSS.Print();
+  RooDataSet        signaldata_allSS_11("signaldata_allSS_11","signaldata_allSS_11",observables,Import(signaldata),Cut("abs("+SS_tag_observable+")==1&&catYear==2011"),WeightVar(sweightname));
+  RooDataSet        signaldata_allSS_12("signaldata_allSS_12","signaldata_allSS_12",observables,Import(signaldata),Cut("abs("+SS_tag_observable+")==1&&catYear==2012"),WeightVar(sweightname));
   RooDataSet        signaldata_tagged("signaldata_tagged","signaldata_tagged",observables,Import(signaldata),Cut("abs("+SS_tag_observable+")==1||abs("+OS_tag_observable+")==1"),WeightVar(sweightname));
   signaldata_tagged.Print();
 
   double            mean_mistag_OS = signaldata_allOS.mean(obsEtaOS);
   double            mean_mistag_OS_error = 1./sqrt(signaldata_allOS.sumEntries());
+  double            mean_mistag_OS_2011 = signaldata_allOS_11.mean(obsEtaOS);
+  double            mean_mistag_OS_2012 = signaldata_allOS_12.mean(obsEtaOS);
+  double            mean_mistag_OS_2011_error = 1./sqrt(signaldata_allOS_11.sumEntries());
+  double            mean_mistag_OS_2012_error = 1./sqrt(signaldata_allOS_12.sumEntries());
+
+  double            mean_mistag_SS = signaldata_allSS.mean(obsEtaSS);
+  double            mean_mistag_SS_error = 1./sqrt(signaldata_allSS.sumEntries());
+  double            mean_mistag_SS_2011 = signaldata_allSS_11.mean(obsEtaSS);
+  double            mean_mistag_SS_2012 = signaldata_allSS_12.mean(obsEtaSS);
+  double            mean_mistag_SS_2011_error = 1./sqrt(signaldata_allSS_11.sumEntries());
+  double            mean_mistag_SS_2012_error = 1./sqrt(signaldata_allSS_12.sumEntries());
+
   cout  <<  "Mean mistag OS: "  <<  mean_mistag_OS  <<  " pm "  <<  mean_mistag_OS_error <<  endl;
+  cout  <<  "Mean mistag OS 2011: "  <<  mean_mistag_OS_2011  <<  " pm "  <<  mean_mistag_OS_2011_error <<  endl;
+  cout  <<  "Mean mistag OS 2012: "  <<  mean_mistag_OS_2012  <<  " pm "  <<  mean_mistag_OS_2012_error <<  endl;
+  cout  <<  "Mean mistag SS: "  <<  mean_mistag_SS  <<  " pm "  <<  mean_mistag_SS_error <<  endl;
+  cout  <<  "Mean mistag SS 2011: "  <<  mean_mistag_SS_2011  <<  " pm "  <<  mean_mistag_SS_2011_error <<  endl;
+  cout  <<  "Mean mistag SS 2012: "  <<  mean_mistag_SS_2012  <<  " pm "  <<  mean_mistag_SS_2012_error <<  endl;
   cout  <<  "OS tagging efficiency: "  <<  signaldata_allOS.sumEntries()/signaldata.sumEntries()  <<  " pm " << sqrt(signaldata_allOS.sumEntries()/signaldata.sumEntries()*(1-signaldata_allOS.sumEntries()/signaldata.sumEntries())/signaldata.sumEntries()) <<  endl;
   cout  <<  "exclusive OS tagging efficiency: "  <<  signaldata_OS.sumEntries()/signaldata.sumEntries()  <<  " pm " << sqrt(signaldata_OS.sumEntries()/signaldata.sumEntries()*(1-signaldata_OS.sumEntries()/signaldata.sumEntries())/signaldata.sumEntries()) <<  endl;
   cout  <<  "exclusive SS tagging efficiency: "  <<  signaldata_SS.sumEntries()/signaldata.sumEntries()  <<  " pm " << sqrt(signaldata_SS.sumEntries()/signaldata.sumEntries()*(1-signaldata_SS.sumEntries()/signaldata.sumEntries())/signaldata.sumEntries()) <<  endl;
