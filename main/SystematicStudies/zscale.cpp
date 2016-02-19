@@ -175,12 +175,13 @@ int main(int argc, char * argv[]){
 //=========================================================================================================================================================================================================================
 
   // Resolution model
-  RooFormulaVar             parResMean_generate("parResMean_generate","parResMean_generate","0.00022*@0",obsTime);
-  RooRealVar                parResMean_fit("parResMean_fit","parResMean_fit",-0.0032);
+  RooRealVar                parResMean("parResMean","parResMean",-0.0032);
   RooRealVar                parResCorrectionOffset1("parResCorrectionOffset1","Offset of linear decay time error correction",0.);
   RooRealVar                parResCorrectionOffset2("parResCorrectionOffset2","Offset of linear decay time error correction",0.);
   RooRealVar                parResSigmaCorrectionFactor1("parResSigmaCorrectionFactor1","Correctionfactor of Proper Time Errors 1",1.);
   RooRealVar                parResSigmaCorrectionFactor2("parResSigmaCorrectionFactor2","Correctionfactor of Proper Time Errors 2",1.);
+  RooFormulaVar             parResSigmaCorrection_withzscale1("parResSigmaCorrection_withzscale1","Offset of linear decay time error correction inclduign z-scale uncertainty","@0+0.00022*@1+@2*@3",RooArgList(parResCorrectionOffset1,obsTime,parResSigmaCorrectionFactor1,obsTimeErr));
+  RooFormulaVar             parResSigmaCorrection_withzscale2("parResSigmaCorrection_withzscale2","Offset of linear decay time error correction inclduign z-scale uncertainty","@0+0.00022*@1+@2*@3",RooArgList(parResCorrectionOffset2,obsTime,parResSigmaCorrectionFactor1,obsTimeErr));
   LinearFunctionWithOffset  parResSigmaCorrection1("parResSigmaCorrection1",obsTimeErr,parResSigmaCorrectionFactor1,parResCorrectionOffset1);
   LinearFunctionWithOffset  parResSigmaCorrection2("parResSigmaCorrection2",obsTimeErr,parResSigmaCorrectionFactor2,parResCorrectionOffset2);
   RooRealVar                parResSigma_wrongPV("parResSigma_wrongPV","Width of wrong PV component",1,0,5);
@@ -188,11 +189,12 @@ int main(int argc, char * argv[]){
   RooRealVar                parResFraction2("parResFraction2","Fraction of second per event Gauss model",0.5);
   RooRealVar                parResFraction_wrongPV("parResFraction_wrongPV","Fraction of wrong PV Gauss model",0.1);
 
-  RooGaussModel             respereventGauss1_generate("respereventGauss1_generate","Gaussmodel for generation 1",obsTime,parResMean_generate,parResSigmaCorrection1);
-  RooGaussModel             respereventGauss2_generate("respereventGauss2_generate","Gaussmodel for generation 2",obsTime,parResMean_generate,parResSigmaCorrection2);
-  RooGaussModel             respereventGauss3_generate("respereventGauss3_generate","Gaussmodel for generation 3",obsTime,parResMean_generate,parResSigma_wrongPV);
+  RooGaussModel             respereventGauss1_generate("respereventGauss1_generate","Gaussmodel for generation 1",obsTime,parResMean,parResSigmaCorrection_withzscale1);
+  RooGaussModel             respereventGauss2_generate("respereventGauss2_generate","Gaussmodel for generation 2",obsTime,parResMean,parResSigmaCorrection_withzscale2);
+  RooGaussModel             respereventGauss3_generate("respereventGauss3_generate","Gaussmodel for generation 3",obsTime,parResMean,parResSigma_wrongPV);
   RooAddModel               respereventGauss_generate("respereventGauss_generate","Gaussmodel for generation",RooArgList(respereventGauss3_generate,respereventGauss2_generate,respereventGauss1_generate),RooArgList(parResFraction_wrongPV,parResFraction2));
-  RooGaussModel             resModel_generate("resModel_generate","resModel_generate",obsTime,parResMean_generate,RooConst(0.05));
+  RooFormulaVar             parResMeanSigma_withzscale("parResMeanSigma_withzscale","parResMeanSigma_withzscale","0.05+0.00022*@0",RooArgList(obsTime));
+  RooGaussModel             resModel_generate("resModel_generate","resModel_generate",obsTime,parResMean,parResMeanSigma_withzscale);
 
 //=========================================================================================================================================================================================================================
 
@@ -211,10 +213,10 @@ int main(int argc, char * argv[]){
 
   RooCubicSplineFun       accspline("accspline","Spline Acceptance",obsTime,knots,listofsplinecoefficients);
   RooResolutionModel*     efficiencymodel;
-  RooGaussEfficiencyModel efficiencymodel1("efficiencymodel1","Gaussefficiencymodel 1",obsTime,accspline,parResMean_fit,parResSigmaCorrection1);
-  RooGaussEfficiencyModel efficiencymodel2("efficiencymodel2","Gaussefficiencymodel 2",obsTime,accspline,parResMean_fit,parResSigmaCorrection2);
-  RooGaussEfficiencyModel efficiencymodel3("efficiencymodel3","Gaussefficiencymodel 3",obsTime,accspline,parResMean_fit,parResSigma_wrongPV);
-  if (!pereventresolution) efficiencymodel = new RooGaussEfficiencyModel("efficiencymodel","Gaussefficiencymodel",obsTime,accspline,parResMean_fit,RooConst(0.05));
+  RooGaussEfficiencyModel efficiencymodel1("efficiencymodel1","Gaussefficiencymodel 1",obsTime,accspline,parResMean,parResSigmaCorrection1);
+  RooGaussEfficiencyModel efficiencymodel2("efficiencymodel2","Gaussefficiencymodel 2",obsTime,accspline,parResMean,parResSigmaCorrection2);
+  RooGaussEfficiencyModel efficiencymodel3("efficiencymodel3","Gaussefficiencymodel 3",obsTime,accspline,parResMean,parResSigma_wrongPV);
+  if (!pereventresolution) efficiencymodel = new RooGaussEfficiencyModel("efficiencymodel","Gaussefficiencymodel",obsTime,accspline,parResMean,RooConst(0.05));
   else efficiencymodel = new RooEffResAddModel("efficiencymodel","Per event resolution efficiency model",RooArgList(efficiencymodel3,efficiencymodel2,efficiencymodel1),RooArgList(parResFraction_wrongPV,parResFraction2));
 
 //=========================================================================================================================================================================================================================
