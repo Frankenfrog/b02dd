@@ -1,0 +1,611 @@
+[fmeier@eve run]$ TMVAClassification ../config/TMVA/TMVA_Classification.cfg 
+
+RooFit v3.60 -- Developed by Wouter Verkerke and David Kirkby 
+                Copyright (C) 2000-2013 NIKHEF, University of California & Stanford University
+                All rights reserved, please read http://roofit.sourceforge.net/license.txt
+
+-warning- Target directory 'tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/Config' does not exists! Create directory....
+-debug- output file
+-debug- create factory
+--- Factory                  : You are running ROOT Version: 6.02/08, Apr 13, 2015
+--- Factory                  : 
+--- Factory                  : _/_/_/_/_/ _|      _|  _|      _|    _|_|   
+--- Factory                  :    _/      _|_|  _|_|  _|      _|  _|    _| 
+--- Factory                  :   _/       _|  _|  _|  _|      _|  _|_|_|_| 
+--- Factory                  :  _/        _|      _|    _|  _|    _|    _| 
+--- Factory                  : _/         _|      _|      _|      _|    _| 
+--- Factory                  : 
+--- Factory                  : ___________TMVA Version 4.2.0, Sep 19, 2013
+--- Factory                  : 
+-debug- add variables
+--- DataSetInfo              : Added class "Signal"	 with internal class number 0
+--- DataSetInfo              : Added class "Background"	 with internal class number 1
+-debug- use different input files for signal and background
+--- Factory                  : Add Tree B02DD of type Signal with 37146 events
+--- Factory                  : Add Tree B02DD of type Background with 18960 events
+-debug- prepare training and testing
+--- Factory                  : Preparing trees for training and testing...
+-debug- select mva methods
+TMVA::Types::kBDT/BDT_nCuts40/!V:NTrees=700:MaxDepth=3:MinNodeSize=3:nCuts=40:BoostType=AdaBoost:AdaBoostBeta=0.1
+-debug- Using method 'TMVA::Types::kBDT' with name 'BDT_nCuts40' and options '!V:NTrees=700:MaxDepth=3:MinNodeSize=3:nCuts=40:BoostType=AdaBoost:AdaBoostBeta=0.1'.
+--- Factory                  : Booking method: BDT_nCuts40
+--- DataSetFactory           : Splitmode is: "RANDOM" the mixmode is: "SAMEASSPLITMODE"
+--- DataSetFactory           : Create training and testing trees -- looping over class "Signal" ...
+--- DataSetFactory           : Weight expression for class 'Signal': ""
+--- DataSetFactory           : Create training and testing trees -- looping over class "Background" ...
+--- DataSetFactory           : Weight expression for class 'Background': ""
+--- DataSetFactory           : Number of events in input trees (after possible flattening of arrays):
+--- DataSetFactory           :     Signal          -- number of events       : 37146  / sum of weights: 37146
+--- DataSetFactory           :     Background      -- number of events       : 18960  / sum of weights: 18960
+--- DataSetFactory           :     Signal     tree -- total number of entries: 37146
+--- DataSetFactory           :     Background tree -- total number of entries: 18960
+--- DataSetFactory           : Preselection: (will NOT affect number of requested training and testing events)
+--- DataSetFactory           :     No preselection cuts applied on event classes
+--- DataSetFactory           : Weight renormalisation mode: "EqualNumEvents": renormalises all event classes ...
+--- DataSetFactory           :  such that the effective (weighted) number of events in each class is the same 
+--- DataSetFactory           :  (and equals the number of events (entries) given for class=0 )
+--- DataSetFactory           : ... i.e. such that Sum[i=1..N_j]{w_i} = N_classA, j=classA, classB, ...
+--- DataSetFactory           : ... (note that N_j is the sum of TRAINING events
+--- DataSetFactory           :  ..... Testing events are not renormalised nor included in the renormalisation factor!)
+--- DataSetFactory           : --> Rescale Signal     event weights by factor: 1
+--- DataSetFactory           : --> Rescale Background event weights by factor: 1.95918
+--- DataSetFactory           : Number of training and testing events after rescaling:
+--- DataSetFactory           : ------------------------------------------------------
+--- DataSetFactory           : Signal     -- training events            : 18573 (sum of weights: 18573) - requested were 0 events
+--- DataSetFactory           : Signal     -- testing events             : 18573 (sum of weights: 18573) - requested were 0 events
+--- DataSetFactory           : Signal     -- training and testing events: 37146 (sum of weights: 37146)
+--- DataSetFactory           : Background -- training events            : 9480 (sum of weights: 18573) - requested were 0 events
+--- DataSetFactory           : Background -- testing events             : 9480 (sum of weights: 9480) - requested were 0 events
+--- DataSetFactory           : Background -- training and testing events: 18960 (sum of weights: 28053)
+--- DataSetFactory           : Create internal training tree
+--- DataSetFactory           : Create internal testing tree
+--- DataSetInfo              : Correlation matrix (Signal):
+--- DataSetInfo              : -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- DataSetInfo              :                             varDTFChi2ndof_log varIPChi2_log varBDIRAOwnPV varDMinTauSignificance varKaonMinPT varPionOneMinPT varPionTwoMinPT varKaonMinVELOChi2ndof_log varKaonMinTChi2ndof_log varKaonMinMatchChi2_log varPionMinVELOChi2ndof_log varPionMinTChi2ndof_log varPionMinMatchChi2_log varKminus_PID varKplus_PID varPiOneminus_PID varPiOneplus_PID varPiTwominus_PID varPiTwoplus_PID
+--- DataSetInfo              :         varDTFChi2ndof_log:             +1.000        +0.349        -0.086                 +0.043       +0.055          +0.061          +0.059                     +0.006                  +0.003                  +0.006                     +0.009                  +0.008                  +0.004        -0.003       -0.004            +0.008           +0.013            +0.014           +0.022
+--- DataSetInfo              :              varIPChi2_log:             +0.349        +1.000        -0.215                 +0.057       +0.115          +0.098          +0.121                     +0.015                  -0.007                  -0.013                     +0.015                  +0.001                  -0.003        +0.021       +0.045            -0.003           +0.013            -0.003           +0.003
+--- DataSetInfo              :              varBDIRAOwnPV:             -0.086        -0.215        +1.000                 -0.009       +0.020          +0.003          +0.032                     +0.007                  +0.014                  +0.004                     +0.028                  +0.004                  +0.008        -0.029       -0.036            -0.002           +0.002            +0.021           +0.016
+--- DataSetInfo              :     varDMinTauSignificance:             +0.043        +0.057        -0.009                 +1.000       +0.179          +0.161          +0.173                     +0.019                  +0.001                  -0.009                     +0.018                  +0.014                  -0.005        +0.035       +0.037            +0.010           +0.007            +0.023           +0.028
+--- DataSetInfo              :               varKaonMinPT:             +0.055        +0.115        +0.020                 +0.179       +1.000          +0.152          +0.192                     +0.010                  +0.018                  -0.011                     +0.007                  +0.007                  +0.005        +0.047       +0.050            -0.007           -0.011            +0.045           +0.061
+--- DataSetInfo              :            varPionOneMinPT:             +0.061        +0.098        +0.003                 +0.161       +0.152          +1.000          +0.412                     -0.001                  +0.010                  +0.018                     +0.021                  +0.035                  -0.023        +0.017       +0.013            +0.048           +0.043            +0.046           +0.050
+--- DataSetInfo              :            varPionTwoMinPT:             +0.059        +0.121        +0.032                 +0.173       +0.192          +0.412          +1.000                     +0.010                  +0.012                  +0.006                     +0.011                  +0.014                  -0.008        +0.029       +0.025            +0.035           +0.015            +0.085           +0.091
+--- DataSetInfo              : varKaonMinVELOChi2ndof_log:             +0.006        +0.015        +0.007                 +0.019       +0.010          -0.001          +0.010                     +1.000                  -0.007                  +0.008                     +0.052                  +0.019                  +0.008        -0.005       +0.008            +0.009           +0.018            -0.008           -0.007
+--- DataSetInfo              :    varKaonMinTChi2ndof_log:             +0.003        -0.007        +0.014                 +0.001       +0.018          +0.010          +0.012                     -0.007                  +1.000                  +0.006                     +0.007                  +0.021                  +0.004        -0.017       +0.012            +0.003           +0.011            +0.001           -0.006
+--- DataSetInfo              :    varKaonMinMatchChi2_log:             +0.006        -0.013        +0.004                 -0.009       -0.011          +0.018          +0.006                     +0.008                  +0.006                  +1.000                     +0.007                  +0.013                  +0.001        -0.023       -0.019            -0.002           -0.003            -0.004           +0.015
+--- DataSetInfo              : varPionMinVELOChi2ndof_log:             +0.009        +0.015        +0.028                 +0.018       +0.007          +0.021          +0.011                     +0.052                  +0.007                  +0.007                     +1.000                  +0.003                  +0.008        -0.010       -0.021            +0.002           +0.014            +0.008           -0.004
+--- DataSetInfo              :    varPionMinTChi2ndof_log:             +0.008        +0.001        +0.004                 +0.014       +0.007          +0.035          +0.014                     +0.019                  +0.021                  +0.013                     +0.003                  +1.000                  +0.005        -0.005       -0.002            +0.015           +0.018            +0.007           -0.015
+--- DataSetInfo              :    varPionMinMatchChi2_log:             +0.004        -0.003        +0.008                 -0.005       +0.005          -0.023          -0.008                     +0.008                  +0.004                  +0.001                     +0.008                  +0.005                  +1.000        -0.017       -0.016            +0.000           +0.003            +0.005           +0.002
+--- DataSetInfo              :              varKminus_PID:             -0.003        +0.021        -0.029                 +0.035       +0.047          +0.017          +0.029                     -0.005                  -0.017                  -0.023                     -0.010                  -0.005                  -0.017        +1.000       +0.061            -0.014           -0.006            -0.028           -0.039
+--- DataSetInfo              :               varKplus_PID:             -0.004        +0.045        -0.036                 +0.037       +0.050          +0.013          +0.025                     +0.008                  +0.012                  -0.019                     -0.021                  -0.002                  -0.016        +0.061       +1.000            -0.002           -0.007            -0.033           -0.018
+--- DataSetInfo              :          varPiOneminus_PID:             +0.008        -0.003        -0.002                 +0.010       -0.007          +0.048          +0.035                     +0.009                  +0.003                  -0.002                     +0.002                  +0.015                  +0.000        -0.014       -0.002            +1.000           -0.018            -0.003           -0.009
+--- DataSetInfo              :           varPiOneplus_PID:             +0.013        +0.013        +0.002                 +0.007       -0.011          +0.043          +0.015                     +0.018                  +0.011                  -0.003                     +0.014                  +0.018                  +0.003        -0.006       -0.007            -0.018           +1.000            -0.018           -0.004
+--- DataSetInfo              :          varPiTwominus_PID:             +0.014        -0.003        +0.021                 +0.023       +0.045          +0.046          +0.085                     -0.008                  +0.001                  -0.004                     +0.008                  +0.007                  +0.005        -0.028       -0.033            -0.003           -0.018            +1.000           +0.005
+--- DataSetInfo              :           varPiTwoplus_PID:             +0.022        +0.003        +0.016                 +0.028       +0.061          +0.050          +0.091                     -0.007                  -0.006                  +0.015                     -0.004                  -0.015                  +0.002        -0.039       -0.018            -0.009           -0.004            +0.005           +1.000
+--- DataSetInfo              : -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- DataSetInfo              : Correlation matrix (Background):
+--- DataSetInfo              : -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- DataSetInfo              :                             varDTFChi2ndof_log varIPChi2_log varBDIRAOwnPV varDMinTauSignificance varKaonMinPT varPionOneMinPT varPionTwoMinPT varKaonMinVELOChi2ndof_log varKaonMinTChi2ndof_log varKaonMinMatchChi2_log varPionMinVELOChi2ndof_log varPionMinTChi2ndof_log varPionMinMatchChi2_log varKminus_PID varKplus_PID varPiOneminus_PID varPiOneplus_PID varPiTwominus_PID varPiTwoplus_PID
+--- DataSetInfo              :         varDTFChi2ndof_log:             +1.000        +0.513        -0.164                 +0.047       +0.051          -0.037          -0.003                     +0.024                  +0.014                  -0.009                     +0.036                  +0.037                  +0.014        -0.020       -0.027            +0.042           +0.029            +0.042           +0.049
+--- DataSetInfo              :              varIPChi2_log:             +0.513        +1.000        -0.297                 +0.118       +0.087          +0.046          +0.039                     +0.063                  +0.027                  +0.001                     +0.093                  +0.050                  -0.011        +0.030       +0.041            +0.003           +0.015            +0.024           +0.027
+--- DataSetInfo              :              varBDIRAOwnPV:             -0.164        -0.297        +1.000                 -0.153       -0.049          +0.047          +0.112                     -0.052                  -0.070                  -0.003                     -0.065                  -0.071                  -0.010        -0.059       -0.074            -0.020           +0.002            +0.018           +0.001
+--- DataSetInfo              :     varDMinTauSignificance:             +0.047        +0.118        -0.153                 +1.000       +0.167          +0.052          -0.027                     +0.005                  -0.012                  -0.020                     -0.003                  +0.023                  -0.010        +0.047       +0.052            +0.042           +0.055            +0.053           +0.070
+--- DataSetInfo              :               varKaonMinPT:             +0.051        +0.087        -0.049                 +0.167       +1.000          -0.102          -0.212                     +0.034                  -0.038                  -0.072                     -0.011                  +0.011                  +0.031        +0.175       +0.154            -0.004           +0.015            +0.048           +0.064
+--- DataSetInfo              :            varPionOneMinPT:             -0.037        +0.046        +0.047                 +0.052       -0.102          +1.000          +0.352                     +0.040                  +0.021                  +0.017                     +0.038                  +0.006                  -0.042        -0.044       -0.018            +0.006           +0.017            -0.000           -0.006
+--- DataSetInfo              :            varPionTwoMinPT:             -0.003        +0.039        +0.112                 -0.027       -0.212          +0.352          +1.000                     +0.036                  +0.043                  +0.035                     +0.021                  +0.013                  -0.057        -0.081       -0.070            -0.016           +0.000            +0.023           +0.006
+--- DataSetInfo              : varKaonMinVELOChi2ndof_log:             +0.024        +0.063        -0.052                 +0.005       +0.034          +0.040          +0.036                     +1.000                  +0.044                  +0.018                     +0.127                  +0.034                  -0.005        +0.005       +0.031            +0.004           -0.009            -0.017           -0.005
+--- DataSetInfo              :    varKaonMinTChi2ndof_log:             +0.014        +0.027        -0.070                 -0.012       -0.038          +0.021          +0.043                     +0.044                  +1.000                  +0.034                     +0.030                  +0.063                  -0.018        -0.013       +0.013            +0.005           -0.007            -0.026           +0.001
+--- DataSetInfo              :    varKaonMinMatchChi2_log:             -0.009        +0.001        -0.003                 -0.020       -0.072          +0.017          +0.035                     +0.018                  +0.034                  +1.000                     +0.001                  +0.020                  +0.002        -0.041       -0.023            +0.002           +0.003            -0.012           +0.003
+--- DataSetInfo              : varPionMinVELOChi2ndof_log:             +0.036        +0.093        -0.065                 -0.003       -0.011          +0.038          +0.021                     +0.127                  +0.030                  +0.001                     +1.000                  +0.070                  -0.011        +0.002       +0.017            -0.002           -0.010            -0.029           -0.020
+--- DataSetInfo              :    varPionMinTChi2ndof_log:             +0.037        +0.050        -0.071                 +0.023       +0.011          +0.006          +0.013                     +0.034                  +0.063                  +0.020                     +0.070                  +1.000                  +0.017        +0.015       -0.003            -0.004           -0.005            +0.003           +0.010
+--- DataSetInfo              :    varPionMinMatchChi2_log:             +0.014        -0.011        -0.010                 -0.010       +0.031          -0.042          -0.057                     -0.005                  -0.018                  +0.002                     -0.011                  +0.017                  +1.000        -0.007       -0.014            +0.017           +0.000            +0.011           -0.006
+--- DataSetInfo              :              varKminus_PID:             -0.020        +0.030        -0.059                 +0.047       +0.175          -0.044          -0.081                     +0.005                  -0.013                  -0.041                     +0.002                  +0.015                  -0.007        +1.000       -0.223            +0.008           -0.047            -0.063           -0.018
+--- DataSetInfo              :               varKplus_PID:             -0.027        +0.041        -0.074                 +0.052       +0.154          -0.018          -0.070                     +0.031                  +0.013                  -0.023                     +0.017                  -0.003                  -0.014        -0.223       +1.000            -0.069           +0.021            -0.013           -0.043
+--- DataSetInfo              :          varPiOneminus_PID:             +0.042        +0.003        -0.020                 +0.042       -0.004          +0.006          -0.016                     +0.004                  +0.005                  +0.002                     -0.002                  -0.004                  +0.017        +0.008       -0.069            +1.000           +0.005            +0.051           +0.019
+--- DataSetInfo              :           varPiOneplus_PID:             +0.029        +0.015        +0.002                 +0.055       +0.015          +0.017          +0.000                     -0.009                  -0.007                  +0.003                     -0.010                  -0.005                  +0.000        -0.047       +0.021            +0.005           +1.000            +0.021           +0.021
+--- DataSetInfo              :          varPiTwominus_PID:             +0.042        +0.024        +0.018                 +0.053       +0.048          -0.000          +0.023                     -0.017                  -0.026                  -0.012                     -0.029                  +0.003                  +0.011        -0.063       -0.013            +0.051           +0.021            +1.000           +0.044
+--- DataSetInfo              :           varPiTwoplus_PID:             +0.049        +0.027        +0.001                 +0.070       +0.064          -0.006          +0.006                     -0.005                  +0.001                  +0.003                     -0.020                  +0.010                  -0.006        -0.018       -0.043            +0.019           +0.021            +0.044           +1.000
+--- DataSetInfo              : -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- DataSetFactory           :  
+-debug- train, test, and evaluate
+-debug- Start training
+--- Factory                  : 
+--- Factory                  : current transformation string: 'I'
+--- Factory                  : Create Transformation "I" with events from all classes.
+--- Id                       : Transformation, Variable selection : 
+--- Id                       : Input : variable 'varDTFChi2ndof_log' (index=0).   <---> Output : variable 'varDTFChi2ndof_log' (index=0).
+--- Id                       : Input : variable 'varIPChi2_log' (index=1).   <---> Output : variable 'varIPChi2_log' (index=1).
+--- Id                       : Input : variable 'varBDIRAOwnPV' (index=2).   <---> Output : variable 'varBDIRAOwnPV' (index=2).
+--- Id                       : Input : variable 'varDMinTauSignificance' (index=3).   <---> Output : variable 'varDMinTauSignificance' (index=3).
+--- Id                       : Input : variable 'varKaonMinPT' (index=4).   <---> Output : variable 'varKaonMinPT' (index=4).
+--- Id                       : Input : variable 'varPionOneMinPT' (index=5).   <---> Output : variable 'varPionOneMinPT' (index=5).
+--- Id                       : Input : variable 'varPionTwoMinPT' (index=6).   <---> Output : variable 'varPionTwoMinPT' (index=6).
+--- Id                       : Input : variable 'varKaonMinVELOChi2ndof_log' (index=7).   <---> Output : variable 'varKaonMinVELOChi2ndof_log' (index=7).
+--- Id                       : Input : variable 'varKaonMinTChi2ndof_log' (index=8).   <---> Output : variable 'varKaonMinTChi2ndof_log' (index=8).
+--- Id                       : Input : variable 'varKaonMinMatchChi2_log' (index=9).   <---> Output : variable 'varKaonMinMatchChi2_log' (index=9).
+--- Id                       : Input : variable 'varPionMinVELOChi2ndof_log' (index=10).   <---> Output : variable 'varPionMinVELOChi2ndof_log' (index=10).
+--- Id                       : Input : variable 'varPionMinTChi2ndof_log' (index=11).   <---> Output : variable 'varPionMinTChi2ndof_log' (index=11).
+--- Id                       : Input : variable 'varPionMinMatchChi2_log' (index=12).   <---> Output : variable 'varPionMinMatchChi2_log' (index=12).
+--- Id                       : Input : variable 'varKminus_PID' (index=13).   <---> Output : variable 'varKminus_PID' (index=13).
+--- Id                       : Input : variable 'varKplus_PID' (index=14).   <---> Output : variable 'varKplus_PID' (index=14).
+--- Id                       : Input : variable 'varPiOneminus_PID' (index=15).   <---> Output : variable 'varPiOneminus_PID' (index=15).
+--- Id                       : Input : variable 'varPiOneplus_PID' (index=16).   <---> Output : variable 'varPiOneplus_PID' (index=16).
+--- Id                       : Input : variable 'varPiTwominus_PID' (index=17).   <---> Output : variable 'varPiTwominus_PID' (index=17).
+--- Id                       : Input : variable 'varPiTwoplus_PID' (index=18).   <---> Output : variable 'varPiTwoplus_PID' (index=18).
+--- Factory                  : 
+--- Factory                  : current transformation string: 'D'
+--- Factory                  : Create Transformation "D" with events from all classes.
+--- Deco                     : Transformation, Variable selection : 
+--- Deco                     : Input : variable 'varDTFChi2ndof_log' (index=0).   <---> Output : variable 'varDTFChi2ndof_log' (index=0).
+--- Deco                     : Input : variable 'varIPChi2_log' (index=1).   <---> Output : variable 'varIPChi2_log' (index=1).
+--- Deco                     : Input : variable 'varBDIRAOwnPV' (index=2).   <---> Output : variable 'varBDIRAOwnPV' (index=2).
+--- Deco                     : Input : variable 'varDMinTauSignificance' (index=3).   <---> Output : variable 'varDMinTauSignificance' (index=3).
+--- Deco                     : Input : variable 'varKaonMinPT' (index=4).   <---> Output : variable 'varKaonMinPT' (index=4).
+--- Deco                     : Input : variable 'varPionOneMinPT' (index=5).   <---> Output : variable 'varPionOneMinPT' (index=5).
+--- Deco                     : Input : variable 'varPionTwoMinPT' (index=6).   <---> Output : variable 'varPionTwoMinPT' (index=6).
+--- Deco                     : Input : variable 'varKaonMinVELOChi2ndof_log' (index=7).   <---> Output : variable 'varKaonMinVELOChi2ndof_log' (index=7).
+--- Deco                     : Input : variable 'varKaonMinTChi2ndof_log' (index=8).   <---> Output : variable 'varKaonMinTChi2ndof_log' (index=8).
+--- Deco                     : Input : variable 'varKaonMinMatchChi2_log' (index=9).   <---> Output : variable 'varKaonMinMatchChi2_log' (index=9).
+--- Deco                     : Input : variable 'varPionMinVELOChi2ndof_log' (index=10).   <---> Output : variable 'varPionMinVELOChi2ndof_log' (index=10).
+--- Deco                     : Input : variable 'varPionMinTChi2ndof_log' (index=11).   <---> Output : variable 'varPionMinTChi2ndof_log' (index=11).
+--- Deco                     : Input : variable 'varPionMinMatchChi2_log' (index=12).   <---> Output : variable 'varPionMinMatchChi2_log' (index=12).
+--- Deco                     : Input : variable 'varKminus_PID' (index=13).   <---> Output : variable 'varKminus_PID' (index=13).
+--- Deco                     : Input : variable 'varKplus_PID' (index=14).   <---> Output : variable 'varKplus_PID' (index=14).
+--- Deco                     : Input : variable 'varPiOneminus_PID' (index=15).   <---> Output : variable 'varPiOneminus_PID' (index=15).
+--- Deco                     : Input : variable 'varPiOneplus_PID' (index=16).   <---> Output : variable 'varPiOneplus_PID' (index=16).
+--- Deco                     : Input : variable 'varPiTwominus_PID' (index=17).   <---> Output : variable 'varPiTwominus_PID' (index=17).
+--- Deco                     : Input : variable 'varPiTwoplus_PID' (index=18).   <---> Output : variable 'varPiTwoplus_PID' (index=18).
+--- Factory                  : 
+--- Factory                  : current transformation string: 'P'
+--- Factory                  : Create Transformation "P" with events from all classes.
+--- PCA                      : Transformation, Variable selection : 
+--- PCA                      : Input : variable 'varDTFChi2ndof_log' (index=0).   <---> Output : variable 'varDTFChi2ndof_log' (index=0).
+--- PCA                      : Input : variable 'varIPChi2_log' (index=1).   <---> Output : variable 'varIPChi2_log' (index=1).
+--- PCA                      : Input : variable 'varBDIRAOwnPV' (index=2).   <---> Output : variable 'varBDIRAOwnPV' (index=2).
+--- PCA                      : Input : variable 'varDMinTauSignificance' (index=3).   <---> Output : variable 'varDMinTauSignificance' (index=3).
+--- PCA                      : Input : variable 'varKaonMinPT' (index=4).   <---> Output : variable 'varKaonMinPT' (index=4).
+--- PCA                      : Input : variable 'varPionOneMinPT' (index=5).   <---> Output : variable 'varPionOneMinPT' (index=5).
+--- PCA                      : Input : variable 'varPionTwoMinPT' (index=6).   <---> Output : variable 'varPionTwoMinPT' (index=6).
+--- PCA                      : Input : variable 'varKaonMinVELOChi2ndof_log' (index=7).   <---> Output : variable 'varKaonMinVELOChi2ndof_log' (index=7).
+--- PCA                      : Input : variable 'varKaonMinTChi2ndof_log' (index=8).   <---> Output : variable 'varKaonMinTChi2ndof_log' (index=8).
+--- PCA                      : Input : variable 'varKaonMinMatchChi2_log' (index=9).   <---> Output : variable 'varKaonMinMatchChi2_log' (index=9).
+--- PCA                      : Input : variable 'varPionMinVELOChi2ndof_log' (index=10).   <---> Output : variable 'varPionMinVELOChi2ndof_log' (index=10).
+--- PCA                      : Input : variable 'varPionMinTChi2ndof_log' (index=11).   <---> Output : variable 'varPionMinTChi2ndof_log' (index=11).
+--- PCA                      : Input : variable 'varPionMinMatchChi2_log' (index=12).   <---> Output : variable 'varPionMinMatchChi2_log' (index=12).
+--- PCA                      : Input : variable 'varKminus_PID' (index=13).   <---> Output : variable 'varKminus_PID' (index=13).
+--- PCA                      : Input : variable 'varKplus_PID' (index=14).   <---> Output : variable 'varKplus_PID' (index=14).
+--- PCA                      : Input : variable 'varPiOneminus_PID' (index=15).   <---> Output : variable 'varPiOneminus_PID' (index=15).
+--- PCA                      : Input : variable 'varPiOneplus_PID' (index=16).   <---> Output : variable 'varPiOneplus_PID' (index=16).
+--- PCA                      : Input : variable 'varPiTwominus_PID' (index=17).   <---> Output : variable 'varPiTwominus_PID' (index=17).
+--- PCA                      : Input : variable 'varPiTwoplus_PID' (index=18).   <---> Output : variable 'varPiTwoplus_PID' (index=18).
+--- Factory                  : 
+--- Factory                  : current transformation string: 'D'
+--- Factory                  : Create Transformation "D" with events from all classes.
+--- Deco                     : Transformation, Variable selection : 
+--- Deco                     : Input : variable 'varDTFChi2ndof_log' (index=0).   <---> Output : variable 'varDTFChi2ndof_log' (index=0).
+--- Deco                     : Input : variable 'varIPChi2_log' (index=1).   <---> Output : variable 'varIPChi2_log' (index=1).
+--- Deco                     : Input : variable 'varBDIRAOwnPV' (index=2).   <---> Output : variable 'varBDIRAOwnPV' (index=2).
+--- Deco                     : Input : variable 'varDMinTauSignificance' (index=3).   <---> Output : variable 'varDMinTauSignificance' (index=3).
+--- Deco                     : Input : variable 'varKaonMinPT' (index=4).   <---> Output : variable 'varKaonMinPT' (index=4).
+--- Deco                     : Input : variable 'varPionOneMinPT' (index=5).   <---> Output : variable 'varPionOneMinPT' (index=5).
+--- Deco                     : Input : variable 'varPionTwoMinPT' (index=6).   <---> Output : variable 'varPionTwoMinPT' (index=6).
+--- Deco                     : Input : variable 'varKaonMinVELOChi2ndof_log' (index=7).   <---> Output : variable 'varKaonMinVELOChi2ndof_log' (index=7).
+--- Deco                     : Input : variable 'varKaonMinTChi2ndof_log' (index=8).   <---> Output : variable 'varKaonMinTChi2ndof_log' (index=8).
+--- Deco                     : Input : variable 'varKaonMinMatchChi2_log' (index=9).   <---> Output : variable 'varKaonMinMatchChi2_log' (index=9).
+--- Deco                     : Input : variable 'varPionMinVELOChi2ndof_log' (index=10).   <---> Output : variable 'varPionMinVELOChi2ndof_log' (index=10).
+--- Deco                     : Input : variable 'varPionMinTChi2ndof_log' (index=11).   <---> Output : variable 'varPionMinTChi2ndof_log' (index=11).
+--- Deco                     : Input : variable 'varPionMinMatchChi2_log' (index=12).   <---> Output : variable 'varPionMinMatchChi2_log' (index=12).
+--- Deco                     : Input : variable 'varKminus_PID' (index=13).   <---> Output : variable 'varKminus_PID' (index=13).
+--- Deco                     : Input : variable 'varKplus_PID' (index=14).   <---> Output : variable 'varKplus_PID' (index=14).
+--- Deco                     : Input : variable 'varPiOneminus_PID' (index=15).   <---> Output : variable 'varPiOneminus_PID' (index=15).
+--- Deco                     : Input : variable 'varPiOneplus_PID' (index=16).   <---> Output : variable 'varPiOneplus_PID' (index=16).
+--- Deco                     : Input : variable 'varPiTwominus_PID' (index=17).   <---> Output : variable 'varPiTwominus_PID' (index=17).
+--- Deco                     : Input : variable 'varPiTwoplus_PID' (index=18).   <---> Output : variable 'varPiTwoplus_PID' (index=18).
+--- Id                       : Preparing the Identity transformation...
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :                   Variable                          Mean                          RMS                  [        Min                          Max ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :         varDTFChi2ndof_log:                     0.57868                     0.61632   [                     -2.6873                      2.1198 ]
+--- TFHandler_Factory        :              varIPChi2_log:                    -0.39088                      1.5368   [                     -9.7569                      3.0924 ]
+--- TFHandler_Factory        :              varBDIRAOwnPV:                     0.99995                  0.00012849   [                     0.99900                      1.0000 ]
+--- TFHandler_Factory        :     varDMinTauSignificance:                      8.7160                      9.7730   [                   0.0024192                      140.93 ]
+--- TFHandler_Factory        :               varKaonMinPT:                      1100.7                      878.57   [                      100.41                      21019. ]
+--- TFHandler_Factory        :            varPionOneMinPT:                      565.40                      430.40   [                      100.02                      5484.8 ]
+--- TFHandler_Factory        :            varPionTwoMinPT:                      1641.0                      951.32   [                      116.24                      15705. ]
+--- TFHandler_Factory        : varKaonMinVELOChi2ndof_log:                    -0.40754                     0.60746   [                     -6.3772                      1.3376 ]
+--- TFHandler_Factory        :    varKaonMinTChi2ndof_log:                    -0.19767                     0.38127   [                     -3.9258                      1.0553 ]
+--- TFHandler_Factory        :    varKaonMinMatchChi2_log:                      1.1743                     0.71044   [                     -3.1470                      3.6810 ]
+--- TFHandler_Factory        : varPionMinVELOChi2ndof_log:                    -0.71521                     0.62107   [                     -6.2031                     0.68747 ]
+--- TFHandler_Factory        :    varPionMinTChi2ndof_log:                    -0.40086                     0.36931   [                     -4.7285                     0.57243 ]
+--- TFHandler_Factory        :    varPionMinMatchChi2_log:                     0.79644                     0.65411   [                     -3.2876                      2.7328 ]
+--- TFHandler_Factory        :              varKminus_PID:                     0.62198                     0.37973   [                  0.00023388                      1.0000 ]
+--- TFHandler_Factory        :               varKplus_PID:                     0.62901                     0.37691   [                  0.00033792                      1.0000 ]
+--- TFHandler_Factory        :          varPiOneminus_PID:                    0.076037                     0.18499   [                  1.3921e-06                     0.99997 ]
+--- TFHandler_Factory        :           varPiOneplus_PID:                    0.076499                     0.18734   [                  3.6674e-06                      1.0000 ]
+--- TFHandler_Factory        :          varPiTwominus_PID:                     0.10820                     0.22395   [                  3.0206e-06                      1.0000 ]
+--- TFHandler_Factory        :           varPiTwoplus_PID:                     0.10902                     0.22545   [                  4.0439e-06                     0.99999 ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        : Plot event variables for Id
+--- TFHandler_Factory        : Create scatter and profile plots in target-file directory: 
+--- TFHandler_Factory        : tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/InputVariables_Id/CorrelationPlots
+--- Deco                     : Preparing the Decorrelation transformation...
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :                   Variable                          Mean                          RMS                  [        Min                          Max ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :         varDTFChi2ndof_log:                      1.8902                      1.0000   [                     -3.6819                      5.6071 ]
+--- TFHandler_Factory        :              varIPChi2_log:                    -0.32923                      1.0000   [                     -6.8685                      1.9132 ]
+--- TFHandler_Factory        :              varBDIRAOwnPV:                      8480.1                      1.0000   [                      8472.1                      8481.5 ]
+--- TFHandler_Factory        :     varDMinTauSignificance:                     0.26522                      1.0000   [                     -6.7086                      13.643 ]
+--- TFHandler_Factory        :               varKaonMinPT:                      1.1115                      1.0000   [                    -0.14005                      23.926 ]
+--- TFHandler_Factory        :            varPionOneMinPT:                     0.77206                      1.0000   [                     -2.8057                      11.278 ]
+--- TFHandler_Factory        :            varPionTwoMinPT:                      1.5683                      1.0000   [                    -0.11314                      16.528 ]
+--- TFHandler_Factory        : varKaonMinVELOChi2ndof_log:                    -0.94682                      1.0000   [                     -11.422                      2.2564 ]
+--- TFHandler_Factory        :    varKaonMinTChi2ndof_log:                    -0.19665                      1.0000   [                     -10.334                      2.9652 ]
+--- TFHandler_Factory        :    varKaonMinMatchChi2_log:                      1.8841                      1.0000   [                     -4.1678                      5.3349 ]
+--- TFHandler_Factory        : varPionMinVELOChi2ndof_log:                     -1.4429                      1.0000   [                     -10.491                      1.2326 ]
+--- TFHandler_Factory        :    varPionMinTChi2ndof_log:                    -0.80332                      1.0000   [                     -12.592                      1.8711 ]
+--- TFHandler_Factory        :    varPionMinMatchChi2_log:                      1.4401                      1.0000   [                     -4.7612                      4.3824 ]
+--- TFHandler_Factory        :              varKminus_PID:                      1.5896                      1.0000   [                     -3.1602                      3.6076 ]
+--- TFHandler_Factory        :               varKplus_PID:                      1.6675                      1.0000   [                     -2.3170                      3.7083 ]
+--- TFHandler_Factory        :          varPiOneminus_PID:                     0.60580                      1.0000   [                   -0.053808                      5.8487 ]
+--- TFHandler_Factory        :           varPiOneplus_PID:                     0.49892                      1.0000   [                    -0.14391                      5.6674 ]
+--- TFHandler_Factory        :          varPiTwominus_PID:                     0.46537                      1.0000   [                    -0.41815                      4.7656 ]
+--- TFHandler_Factory        :           varPiTwoplus_PID:                     0.49387                      1.0000   [                    -0.81510                      4.7516 ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        : Plot event variables for Deco
+--- TFHandler_Factory        : Create scatter and profile plots in target-file directory: 
+--- TFHandler_Factory        : tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/InputVariables_Deco/CorrelationPlots
+--- PCA                      : Preparing the Principle Component (PCA) transformation...
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :                   Variable                          Mean                          RMS                  [        Min                          Max ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :         varDTFChi2ndof_log:                     -123.07                      1005.4   [                     -1906.1                      13699. ]
+--- TFHandler_Factory        :              varIPChi2_log:                      57.373                      841.96   [                     -16892.                      4528.4 ]
+--- TFHandler_Factory        :              varBDIRAOwnPV:                      16.843                      377.44   [                     -3453.5                      2255.4 ]
+--- TFHandler_Factory        :     varDMinTauSignificance:                     0.63759                      9.1723   [                     -121.75                      62.467 ]
+--- TFHandler_Factory        :               varKaonMinPT:                    -0.15360                      1.5711   [                     -3.7993                      9.1016 ]
+--- TFHandler_Factory        :            varPionOneMinPT:                   -0.075503                     0.72211   [                     -3.3674                      3.7044 ]
+--- TFHandler_Factory        :            varPionTwoMinPT:                    0.055518                     0.66976   [                     -2.7640                      3.1218 ]
+--- TFHandler_Factory        : varKaonMinVELOChi2ndof_log:                   -0.045116                     0.63933   [                     -4.0945                      2.0751 ]
+--- TFHandler_Factory        :    varKaonMinTChi2ndof_log:                    0.010046                     0.55252   [                     -3.7747                      4.5203 ]
+--- TFHandler_Factory        :    varKaonMinMatchChi2_log:                    0.036033                     0.51045   [                     -2.8897                      2.2043 ]
+--- TFHandler_Factory        : varPionMinVELOChi2ndof_log:                   -0.021479                     0.38490   [                     -1.2332                      2.8180 ]
+--- TFHandler_Factory        :    varPionMinTChi2ndof_log:                   0.0064076                     0.35838   [                     -3.4129                      2.3023 ]
+--- TFHandler_Factory        :    varPionMinMatchChi2_log:                   -0.029749                     0.33113   [                     -1.4778                      1.1030 ]
+--- TFHandler_Factory        :              varKminus_PID:                   0.0026131                     0.34527   [                    -0.79310                     0.79456 ]
+--- TFHandler_Factory        :               varKplus_PID:                  0.00096643                     0.22317   [                    -0.36698                      1.2203 ]
+--- TFHandler_Factory        :          varPiOneminus_PID:                 -0.00015450                     0.21955   [                    -0.87748                     0.54611 ]
+--- TFHandler_Factory        :           varPiOneplus_PID:                   0.0011650                     0.18617   [                    -0.34744                     0.93729 ]
+--- TFHandler_Factory        :          varPiTwominus_PID:                   0.0015444                     0.18334   [                    -0.18713                      1.0967 ]
+--- TFHandler_Factory        :           varPiTwoplus_PID:                  5.2947e-06                  0.00011825   [                 -0.00015411                  0.00093610 ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        : Plot event variables for PCA
+--- TFHandler_Factory        : Create scatter and profile plots in target-file directory: 
+--- TFHandler_Factory        : tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/InputVariables_PCA/CorrelationPlots
+--- Deco                     : Preparing the Decorrelation transformation...
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :                   Variable                          Mean                          RMS                  [        Min                          Max ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        :         varDTFChi2ndof_log:                      1.8902                      1.0000   [                     -3.6819                      5.6071 ]
+--- TFHandler_Factory        :              varIPChi2_log:                    -0.32923                      1.0000   [                     -6.8685                      1.9132 ]
+--- TFHandler_Factory        :              varBDIRAOwnPV:                      8480.1                      1.0000   [                      8472.1                      8481.5 ]
+--- TFHandler_Factory        :     varDMinTauSignificance:                     0.26522                      1.0000   [                     -6.7086                      13.643 ]
+--- TFHandler_Factory        :               varKaonMinPT:                      1.1115                      1.0000   [                    -0.14005                      23.926 ]
+--- TFHandler_Factory        :            varPionOneMinPT:                     0.77206                      1.0000   [                     -2.8057                      11.278 ]
+--- TFHandler_Factory        :            varPionTwoMinPT:                      1.5683                      1.0000   [                    -0.11314                      16.528 ]
+--- TFHandler_Factory        : varKaonMinVELOChi2ndof_log:                    -0.94682                      1.0000   [                     -11.422                      2.2564 ]
+--- TFHandler_Factory        :    varKaonMinTChi2ndof_log:                    -0.19665                      1.0000   [                     -10.334                      2.9652 ]
+--- TFHandler_Factory        :    varKaonMinMatchChi2_log:                      1.8841                      1.0000   [                     -4.1678                      5.3349 ]
+--- TFHandler_Factory        : varPionMinVELOChi2ndof_log:                     -1.4429                      1.0000   [                     -10.491                      1.2326 ]
+--- TFHandler_Factory        :    varPionMinTChi2ndof_log:                    -0.80332                      1.0000   [                     -12.592                      1.8711 ]
+--- TFHandler_Factory        :    varPionMinMatchChi2_log:                      1.4401                      1.0000   [                     -4.7612                      4.3824 ]
+--- TFHandler_Factory        :              varKminus_PID:                      1.5896                      1.0000   [                     -3.1602                      3.6076 ]
+--- TFHandler_Factory        :               varKplus_PID:                      1.6675                      1.0000   [                     -2.3170                      3.7083 ]
+--- TFHandler_Factory        :          varPiOneminus_PID:                     0.60580                      1.0000   [                   -0.053808                      5.8487 ]
+--- TFHandler_Factory        :           varPiOneplus_PID:                     0.49892                      1.0000   [                    -0.14391                      5.6674 ]
+--- TFHandler_Factory        :          varPiTwominus_PID:                     0.46537                      1.0000   [                    -0.41815                      4.7656 ]
+--- TFHandler_Factory        :           varPiTwoplus_PID:                     0.49387                      1.0000   [                    -0.81510                      4.7516 ]
+--- TFHandler_Factory        : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_Factory        : Plot event variables for Deco
+--- TFHandler_Factory        : A TDirectoryFile with name InputVariables_Deco already exists in tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/, I will try with InputVariables_Deco_0.
+--- TFHandler_Factory        : Create scatter and profile plots in target-file directory: 
+--- TFHandler_Factory        : tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/InputVariables_Deco_0/CorrelationPlots
+--- TFHandler_Factory        :  
+--- TFHandler_Factory        : Ranking input variables (method unspecific)...
+--- IdTransformation         : Ranking result (top variable is best ranked)
+--- IdTransformation         : ---------------------------------------------------
+--- IdTransformation         : Rank : Variable                   : Separation
+--- IdTransformation         : ---------------------------------------------------
+--- IdTransformation         :    1 : varBDIRAOwnPV              : 3.242e-01
+--- IdTransformation         :    2 : varDTFChi2ndof_log         : 2.986e-01
+--- IdTransformation         :    3 : varKminus_PID              : 2.938e-01
+--- IdTransformation         :    4 : varKplus_PID               : 2.784e-01
+--- IdTransformation         :    5 : varKaonMinPT               : 2.263e-01
+--- IdTransformation         :    6 : varDMinTauSignificance     : 1.721e-01
+--- IdTransformation         :    7 : varPionMinVELOChi2ndof_log : 1.324e-01
+--- IdTransformation         :    8 : varKaonMinVELOChi2ndof_log : 1.122e-01
+--- IdTransformation         :    9 : varPionOneMinPT            : 1.059e-01
+--- IdTransformation         :   10 : varIPChi2_log              : 8.265e-02
+--- IdTransformation         :   11 : varPiOneplus_PID           : 6.705e-02
+--- IdTransformation         :   12 : varPionMinTChi2ndof_log    : 6.601e-02
+--- IdTransformation         :   13 : varPiOneminus_PID          : 6.441e-02
+--- IdTransformation         :   14 : varPionTwoMinPT            : 6.147e-02
+--- IdTransformation         :   15 : varKaonMinTChi2ndof_log    : 5.993e-02
+--- IdTransformation         :   16 : varPiTwominus_PID          : 5.045e-02
+--- IdTransformation         :   17 : varPiTwoplus_PID           : 4.741e-02
+--- IdTransformation         :   18 : varKaonMinMatchChi2_log    : 4.350e-02
+--- IdTransformation         :   19 : varPionMinMatchChi2_log    : 3.698e-02
+--- IdTransformation         : ---------------------------------------------------
+--- Factory                  :  
+--- Factory                  : Train all methods for Classification ...
+--- Factory                  : Train method: BDT_nCuts40 for Classification
+--- BDT_nCuts40              : Begin training
+--- BDT_nCuts40              :  found and suggest the following possible pre-selection cuts 
+--- BDT_nCuts40              : as option DoPreselection was not used, these cuts however will not be performed, but the training will see the full sample
+--- BDT_nCuts40              : <InitEventSample> For classification trees, 
+--- BDT_nCuts40              :  the effective number of backgrounds is scaled to match 
+--- BDT_nCuts40              :  the signal. Othersise the first boosting step would do 'just that'!
+--- BDT_nCuts40              : re-normlise events such that Sig and Bkg have respective sum of weights = 1
+--- BDT_nCuts40              :   sig->sig*0.755209ev. bkg->bkg*0.755209ev.
+--- BDT_nCuts40              : #events: (reweighted) sig: 14026.5 bkg: 14026.5
+--- BDT_nCuts40              : #events: (unweighted) sig: 18573 bkg: 9480
+--- BDT_nCuts40              : Training 700 Decision Trees ... patience please
+--- BinaryTree               : The minimal node size MinNodeSize=3 fMinNodeSize=3% is translated to an actual number of events = 841.59 for the training sample size of 28053
+--- BinaryTree               : Note: This number will be taken as absolute minimum in the node, 
+--- BinaryTree               :       in terms of 'weighted events' and unweighted ones !! 
+--- BDT_nCuts40              : <Train> elapsed time: 30.8 sec                              
+--- BDT_nCuts40              : <Train> average number of nodes (w/o pruning) : 8
+--- BDT_nCuts40              : End of training                                              
+--- BDT_nCuts40              : Elapsed time for training with 28053 events: 31 sec         
+--- BDT_nCuts40              : Create MVA output for classification on training sample
+--- BDT_nCuts40              : Evaluation of BDT_nCuts40 on training sample (28053 events)
+--- BDT_nCuts40              : Elapsed time for evaluation of 28053 events: 2.59 sec       
+--- BDT_nCuts40              : Creating weight file in xml format: tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/Weights/tmva_BDT_nCuts40.weights.xml
+--- BDT_nCuts40              : Creating standalone response class: tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/Weights/tmva_BDT_nCuts40.class.C
+--- BDT_nCuts40              : Write monitoring histograms to file: tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/Method_BDT/BDT_nCuts40
+--- Factory                  : Training finished
+--- Factory                  : 
+--- Factory                  : Ranking input variables (method specific)...
+--- BDT_nCuts40              : Ranking result (top variable is best ranked)
+--- BDT_nCuts40              : ------------------------------------------------------------
+--- BDT_nCuts40              : Rank : Variable                   : Variable Importance
+--- BDT_nCuts40              : ------------------------------------------------------------
+--- BDT_nCuts40              :    1 : varDTFChi2ndof_log         : 9.305e-02
+--- BDT_nCuts40              :    2 : varBDIRAOwnPV              : 9.216e-02
+--- BDT_nCuts40              :    3 : varKminus_PID              : 6.981e-02
+--- BDT_nCuts40              :    4 : varKplus_PID               : 6.904e-02
+--- BDT_nCuts40              :    5 : varDMinTauSignificance     : 6.783e-02
+--- BDT_nCuts40              :    6 : varPiTwoplus_PID           : 5.622e-02
+--- BDT_nCuts40              :    7 : varPiTwominus_PID          : 4.947e-02
+--- BDT_nCuts40              :    8 : varPionMinVELOChi2ndof_log : 4.940e-02
+--- BDT_nCuts40              :    9 : varPiOneminus_PID          : 4.874e-02
+--- BDT_nCuts40              :   10 : varKaonMinPT               : 4.628e-02
+--- BDT_nCuts40              :   11 : varIPChi2_log              : 4.384e-02
+--- BDT_nCuts40              :   12 : varKaonMinVELOChi2ndof_log : 4.293e-02
+--- BDT_nCuts40              :   13 : varPionOneMinPT            : 4.212e-02
+--- BDT_nCuts40              :   14 : varPionMinTChi2ndof_log    : 4.195e-02
+--- BDT_nCuts40              :   15 : varPionTwoMinPT            : 4.190e-02
+--- BDT_nCuts40              :   16 : varPiOneplus_PID           : 4.176e-02
+--- BDT_nCuts40              :   17 : varKaonMinTChi2ndof_log    : 3.626e-02
+--- BDT_nCuts40              :   18 : varPionMinMatchChi2_log    : 3.570e-02
+--- BDT_nCuts40              :   19 : varKaonMinMatchChi2_log    : 3.152e-02
+--- BDT_nCuts40              : ------------------------------------------------------------
+--- Factory                  : 
+--- Factory                  : === Destroy and recreate all methods via weight files for testing ===
+--- Factory                  : 
+--- MethodBase               : Reading weight file: tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/Weights/tmva_BDT_nCuts40.weights.xml
+--- BDT_nCuts40              : Read method "BDT_nCuts40" of type "BDT"
+--- BDT_nCuts40              : MVA method was trained with TMVA Version: 4.2.0
+--- BDT_nCuts40              : MVA method was trained with ROOT Version: 6.02/08
+-debug- Start testing
+--- Factory                  : Test all methods...
+--- Factory                  : Test method: BDT_nCuts40 for Classification performance
+--- BDT_nCuts40              : Evaluation of BDT_nCuts40 on testing sample (28053 events)
+--- BDT_nCuts40              : Elapsed time for evaluation of 28053 events: 2.42 sec       
+-debug- Start evaluation
+--- Factory                  : Evaluate all methods...
+--- Factory                  : Evaluate classifier: BDT_nCuts40
+--- BDT_nCuts40              : Loop over test events and fill histograms with classifier response...
+--- Factory                  : Write evaluation histograms to file
+--- TFHandler_BDT_nCuts40    : Plot event variables for BDT_nCuts40
+--- TFHandler_BDT_nCuts40    : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_BDT_nCuts40    :                   Variable                          Mean                          RMS                  [        Min                          Max ]
+--- TFHandler_BDT_nCuts40    : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_BDT_nCuts40    :         varDTFChi2ndof_log:                     0.47384                     0.62021   [                     -2.6522                      2.1802 ]
+--- TFHandler_BDT_nCuts40    :              varIPChi2_log:                    -0.50008                      1.5313   [                     -10.655                      3.0684 ]
+--- TFHandler_BDT_nCuts40    :              varBDIRAOwnPV:                     0.99996                  0.00010973   [                     0.99900                      1.0000 ]
+--- TFHandler_BDT_nCuts40    :     varDMinTauSignificance:                      9.8046                      10.556   [                  0.00071753                      177.31 ]
+--- TFHandler_BDT_nCuts40    :               varKaonMinPT:                      1215.5                      916.43   [                      100.03                      10410. ]
+--- TFHandler_BDT_nCuts40    :            varPionOneMinPT:                      611.00                      457.46   [                      100.19                      6810.0 ]
+--- TFHandler_BDT_nCuts40    :            varPionTwoMinPT:                      1698.4                      979.85   [                      121.34                      11238. ]
+--- TFHandler_BDT_nCuts40    : varKaonMinVELOChi2ndof_log:                    -0.34892                     0.59019   [                     -6.4883                      1.2474 ]
+--- TFHandler_BDT_nCuts40    :    varKaonMinTChi2ndof_log:                    -0.21992                     0.37767   [                     -4.0769                      1.0906 ]
+--- TFHandler_BDT_nCuts40    :    varKaonMinMatchChi2_log:                      1.1398                     0.70008   [                     -2.6173                      3.6527 ]
+--- TFHandler_BDT_nCuts40    : varPionMinVELOChi2ndof_log:                    -0.64596                     0.60899   [                     -7.7973                     0.79571 ]
+--- TFHandler_BDT_nCuts40    :    varPionMinTChi2ndof_log:                    -0.42345                     0.36108   [                     -4.6295                     0.62506 ]
+--- TFHandler_BDT_nCuts40    :    varPionMinMatchChi2_log:                     0.76345                     0.64854   [                     -3.8000                      3.0792 ]
+--- TFHandler_BDT_nCuts40    :              varKminus_PID:                     0.68990                     0.35285   [                  5.4256e-05                     0.99999 ]
+--- TFHandler_BDT_nCuts40    :               varKplus_PID:                     0.69089                     0.35054   [                  0.00017632                      1.0000 ]
+--- TFHandler_BDT_nCuts40    :          varPiOneminus_PID:                    0.069703                     0.18294   [                  4.4943e-06                      1.0000 ]
+--- TFHandler_BDT_nCuts40    :           varPiOneplus_PID:                    0.071183                     0.18587   [                  1.4527e-06                     0.99998 ]
+--- TFHandler_BDT_nCuts40    :          varPiTwominus_PID:                    0.098044                     0.21557   [                  2.3592e-06                     0.99999 ]
+--- TFHandler_BDT_nCuts40    :           varPiTwoplus_PID:                    0.096421                     0.21414   [                  2.6087e-06                      1.0000 ]
+--- TFHandler_BDT_nCuts40    : -----------------------------------------------------------------------------------------------------------------------------------------------------
+--- TFHandler_BDT_nCuts40    : Create scatter and profile plots in target-file directory: 
+--- TFHandler_BDT_nCuts40    : tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos/BDT/tmva_classification.root:/Method_BDT/BDT_nCuts40/CorrelationPlots
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (0, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (1, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (2, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 0)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 1)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 2)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 8)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 9)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 10)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 11)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 12)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 13)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 14)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 15)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 16)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 17)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 18)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 19)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (8, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (9, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (10, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (11, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (12, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (13, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (14, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (15, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (16, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (17, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (18, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (19, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (0, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (1, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 0)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 1)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 8)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 9)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 10)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 11)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 12)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 13)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 14)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 15)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 16)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 17)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 18)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (3, 19)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (8, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (9, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (10, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (11, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (12, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (13, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (14, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (15, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (16, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (17, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (18, 3)
+--- <WARNING> Tools                    : <GetCorrelationMatrix> zero variances for variables (19, 3)
+--- Factory                  : Correlations between input variables and MVA response (signal):
+--- Factory                  : ------------------------
+--- Factory                  :                             BDT_nCuts40
+--- Factory                  :         varDTFChi2ndof_log:      -0.275
+--- Factory                  :              varIPChi2_log:      -0.086
+--- Factory                  :              varBDIRAOwnPV:      +0.000
+--- Factory                  :     varDMinTauSignificance:      +0.354
+--- Factory                  :               varKaonMinPT:      +0.215
+--- Factory                  :            varPionOneMinPT:      +0.195
+--- Factory                  :            varPionTwoMinPT:      +0.168
+--- Factory                  : varKaonMinVELOChi2ndof_log:      +0.191
+--- Factory                  :    varKaonMinTChi2ndof_log:      -0.099
+--- Factory                  :    varKaonMinMatchChi2_log:      -0.101
+--- Factory                  : varPionMinVELOChi2ndof_log:      +0.233
+--- Factory                  :    varPionMinTChi2ndof_log:      -0.114
+--- Factory                  :    varPionMinMatchChi2_log:      -0.087
+--- Factory                  :              varKminus_PID:      +0.324
+--- Factory                  :               varKplus_PID:      +0.300
+--- Factory                  :          varPiOneminus_PID:      -0.064
+--- Factory                  :           varPiOneplus_PID:      -0.074
+--- Factory                  :          varPiTwominus_PID:      -0.099
+--- Factory                  :           varPiTwoplus_PID:      -0.077
+--- Factory                  : ------------------------
+--- Factory                  : 
+--- Factory                  : Correlations between input variables and MVA response (background):
+--- Factory                  : ------------------------
+--- Factory                  :                             BDT_nCuts40
+--- Factory                  :         varDTFChi2ndof_log:      -0.386
+--- Factory                  :              varIPChi2_log:      -0.195
+--- Factory                  :              varBDIRAOwnPV:      +0.000
+--- Factory                  :     varDMinTauSignificance:      +0.124
+--- Factory                  :               varKaonMinPT:      +0.205
+--- Factory                  :            varPionOneMinPT:      +0.191
+--- Factory                  :            varPionTwoMinPT:      +0.106
+--- Factory                  : varKaonMinVELOChi2ndof_log:      +0.137
+--- Factory                  :    varKaonMinTChi2ndof_log:      -0.128
+--- Factory                  :    varKaonMinMatchChi2_log:      -0.127
+--- Factory                  : varPionMinVELOChi2ndof_log:      +0.163
+--- Factory                  :    varPionMinTChi2ndof_log:      -0.158
+--- Factory                  :    varPionMinMatchChi2_log:      -0.079
+--- Factory                  :              varKminus_PID:      +0.340
+--- Factory                  :               varKplus_PID:      +0.280
+--- Factory                  :          varPiOneminus_PID:      -0.074
+--- Factory                  :           varPiOneplus_PID:      -0.097
+--- Factory                  :          varPiTwominus_PID:      -0.119
+--- Factory                  :           varPiTwoplus_PID:      -0.110
+--- Factory                  : ------------------------
+--- Factory                  : 
+--- Factory                  : The following "overlap" matrices contain the fraction of events for which 
+--- Factory                  : the MVAs 'i' and 'j' have returned conform answers about "signal-likeness"
+--- Factory                  : An event is signal-like, if its MVA output exceeds the following value:
+--- Factory                  : -------------------------
+--- Factory                  :      Method:   Cut value:
+--- Factory                  : -------------------------
+--- Factory                  : BDT_nCuts40:      +0.006
+--- Factory                  : -------------------------
+--- Factory                  : which correspond to the working point: eff(signal) = 1 - eff(background)
+--- Factory                  : 
+--- Factory                  : Evaluation results ranked by best signal efficiency and purity (area)
+--- Factory                  : --------------------------------------------------------------------------------
+--- Factory                  : MVA              Signal efficiency at bkg eff.(error):       | Sepa-    Signifi- 
+--- Factory                  : Method:          @B=0.01    @B=0.10    @B=0.30    ROC-integ. | ration:  cance:   
+--- Factory                  : --------------------------------------------------------------------------------
+--- Factory                  : BDT_nCuts40    : 0.872(02)  0.986(00)  1.000(00)    0.993    | 0.879    2.730
+--- Factory                  : --------------------------------------------------------------------------------
+--- Factory                  : 
+--- Factory                  : Testing efficiency compared to training efficiency (overtraining check)
+--- Factory                  : --------------------------------------------------------------------------------
+--- Factory                  : MVA              Signal efficiency: from test sample (from training sample) 
+--- Factory                  : Method:          @B=0.01             @B=0.10            @B=0.30   
+--- Factory                  : --------------------------------------------------------------------------------
+--- Factory                  : BDT_nCuts40    : 0.872 (0.906)       0.986 (0.987)      1.000 (1.000)
+--- Factory                  : --------------------------------------------------------------------------------
+--- Factory                  : 
+--- Dataset:Default          : Created tree 'TestTree' with 28053 events
+--- Dataset:Default          : Created tree 'TrainTree' with 28053 events
+--- Factory                  :   
+--- Factory                  : Thank you for using TMVA!
+--- Factory                  : For citation information, please visit: http://tmva.sf.net/citeTMVA.html
+RUNTIME: t(CPU) = 53.36 s; t(Real) = 55.827 s.
+- ==================== Summary ====================
+--- Config file 		 : true
+--- Job name    		 : BDT
+--- Debug mode  		 : 1
+- -------------------- Input --------------------
+--- Path			 : /fhgfs/groups/e5/lhcb/NTuples/B02DD/BDTTuples/
+--- Signal file name    	 : MC_Sim08g_20112012_Pythia8_B02DD_CPV_Stripping21r0r1_DVv36r6_20150530_fmeier_combined_TupleB_wMassVetos_ForBDT.root
+--- Signal tree name    	 : B02DD
+--- Background file name	 : DT20112012_B02DD_Stripping21r0r1_DVv36r5_20150909_pseyfert_combined_20150917_fmeier_TupleB_wMassVetos_ForBDT.root
+--- Background tree name	 : B02DD
+- -------------------- Output --------------------
+--- Path			 : tmva/B02DD1112_5500_bothFinalStates_TupleB_wMassVetos
+- -------------------- Factory --------------------
+--- Options     		 : !V:!Silent:Color:DrawProgressBar:AnalysisType=Classification:Transformations=I;D;P;D
+--- Split options       	 : !V:SplitSeed=0:nTrain_Signal=0:nTest_Signal=0:nTrain_Background=0:nTest_Background=0:NormMode=EqualNumEvents
+- -------------------- Variables --------------------
+---     			 : varDTFChi2ndof_log
+---     			 : varIPChi2_log
+---     			 : varBDIRAOwnPV
+---     			 : varDMinTauSignificance
+---     			 : varKaonMinPT
+---     			 : varPionOneMinPT
+---     			 : varPionTwoMinPT
+---     			 : varKaonMinVELOChi2ndof_log
+---     			 : varKaonMinTChi2ndof_log
+---     			 : varKaonMinMatchChi2_log
+---     			 : varPionMinVELOChi2ndof_log
+---     			 : varPionMinTChi2ndof_log
+---     			 : varPionMinMatchChi2_log
+---     			 : varKminus_PID
+---     			 : varKplus_PID
+---     			 : varPiOneminus_PID
+---     			 : varPiOneplus_PID
+---     			 : varPiTwominus_PID
+---     			 : varPiTwoplus_PID
+- -------------------- MVA methods --------------------
+--- BDT_nCuts40 		 : !V:NTrees=700:MaxDepth=3:MinNodeSize=3:nCuts=40:BoostType=AdaBoost:AdaBoostBeta=0.1
+The following files are added to the run summary (copied to summary): 
+ "../config/TMVA/TMVA_Classification.cfg"

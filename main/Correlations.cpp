@@ -40,50 +40,71 @@ int main(int argc, const char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
+  bool bootstrapping = config.getBool("bootstrapping");
+  bool Kpipi = config.getBool("Kpipi");
+  TString BDT_name = "BDT_wPIDs";
+  if (Kpipi) BDT_name += "_classifier";
+  else BDT_name += "_KKpi_classifier";
+
   RooRealVar        obsEtaOS("obsEtaOSwCharm","#eta_{OS}",0,0.5);
   RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0,0.5);
   RooRealVar        obsEtaSSPion("obsEtaSSPion","#eta_{SS#pi}",0,0.5);
   RooRealVar        obsEtaSSPionBDT("obsEtaSSPionBDT","#eta_{SS#pi}",0,0.5);
   RooRealVar        obsEtaSSProton("obsEtaSSProton","#eta_{SS#p}",0,0.5);
   RooRealVar        SigWeight("SigWeight","Signal weight",-10,10);
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5150,5600,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
+
+  RooRealVar        BDT_classifier(BDT_name,BDT_name,-1,1);
 
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("signal",0);
-  
+
+  RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
+  if (Kpipi)  catDDFinalStateParticles.defineType("Kpipi",1);
+  else  catDDFinalStateParticles.defineType("KKpi",0);
+
   RooArgSet         observables(obsTime,obsMass,"observables");
   observables.add(RooArgSet(obsEtaOS,obsEtaSS,obsEtaSSPion,obsEtaSSPionBDT,obsEtaSSProton));
+  observables.add(BDT_classifier);
+  if (config.getBool("Correlation_BDT_time")) observables.add(catDDFinalStateParticles);
   if (config.getBool("MC")) observables.add(catBkg);
   else observables.add(SigWeight);
   EasyTuple         sweighted_tuple(config.getString("tuple"),"B02DD",observables);
   sweighted_tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet&       data = sweighted_tuple.ConvertToDataSet();
   data.Print();
-  
+
+  RooDataSet*       signaldata;
   RooDataSet*       signaldata_BS;
-  if (config.getBool("MC")) signaldata_BS = new RooDataSet("signaldata_BS","signaldata_BS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5&&obsEtaSS!=0.5"));
-  else signaldata_BS = new RooDataSet("signaldata_BS","signaldata_BS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5&&obsEtaSS!=0.5"),WeightVar("SigWeight"));
-  signaldata_BS->Print();
   RooDataSet*       signaldata_allOS;
-  if (config.getBool("MC")) signaldata_allOS = new RooDataSet("signaldata_allOS","signaldata_allOS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5"));
-  else signaldata_allOS = new RooDataSet("signaldata_allOS","signaldata_allOS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5"),WeightVar("SigWeight"));
   RooDataSet*       signaldata_allSS;
-  if (config.getBool("MC")) signaldata_allSS = new RooDataSet("signaldata_allSS","signaldata_allSS",observables,Import(data),Cut("obsEtaSS!=0.5"));
-  else signaldata_allSS = new RooDataSet("signaldata_allSS","signaldata_allSS",observables,Import(data),Cut("obsEtaSS!=0.5"),WeightVar("SigWeight"));
   RooDataSet*       signaldata_tagged;
-  if (config.getBool("MC")) signaldata_tagged = new RooDataSet("signaldata_tagged","signaldata_tagged",observables,Import(data),Cut("obsEtaSS!=0.5||obsEtaOSwCharm!=0.5"));
-  else signaldata_tagged = new RooDataSet("signaldata_tagged","signaldata_tagged",observables,Import(data),Cut("obsEtaSS!=0.5||obsEtaOSwCharm!=0.5"),WeightVar("SigWeight"));
-  signaldata_tagged->Print();
   RooDataSet*       signaldata_SSPion;
-  if (config.getBool("MC")) signaldata_SSPion = new RooDataSet("signaldata_SSPion","signaldata_SSPion",observables,Import(data),Cut("obsEtaSSPion!=0.5"));
-  else signaldata_SSPion = new RooDataSet("signaldata_SSPion","signaldata_SSPion",observables,Import(data),Cut("obsEtaSSPion!=0.5"),WeightVar("SigWeight"));
   RooDataSet*       signaldata_SSPionBDT;
-  if (config.getBool("MC")) signaldata_SSPionBDT = new RooDataSet("signaldata_SSPionBDT","signaldata_SSPionBDT",observables,Import(data),Cut("obsEtaSSPionBDT!=0.5"));
-  else signaldata_SSPionBDT = new RooDataSet("signaldata_SSPionBDT","signaldata_SSPionBDT",observables,Import(data),Cut("obsEtaSSPionBDT!=0.5"),WeightVar("SigWeight"));
   RooDataSet*       signaldata_SSProton;
-  if (config.getBool("MC")) signaldata_SSProton = new RooDataSet("signaldata_SSProton","signaldata_SSProton",observables,Import(data),Cut("obsEtaSSProton!=0.5"));
-  else signaldata_SSProton = new RooDataSet("signaldata_SSProton","signaldata_SSProton",observables,Import(data),Cut("obsEtaSSProton!=0.5"),WeightVar("SigWeight"));
+  if (config.getBool("MC")) {
+    signaldata = &data;
+    signaldata_BS = new RooDataSet("signaldata_BS","signaldata_BS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5&&obsEtaSS!=0.5"));
+    signaldata_allOS = new RooDataSet("signaldata_allOS","signaldata_allOS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5"));
+    signaldata_allSS = new RooDataSet("signaldata_allSS","signaldata_allSS",observables,Import(data),Cut("obsEtaSS!=0.5"));
+    signaldata_tagged = new RooDataSet("signaldata_tagged","signaldata_tagged",observables,Import(data),Cut("obsEtaSS!=0.5||obsEtaOSwCharm!=0.5"));
+    signaldata_SSPion = new RooDataSet("signaldata_SSPion","signaldata_SSPion",observables,Import(data),Cut("obsEtaSSPion!=0.5"));
+    signaldata_SSPionBDT = new RooDataSet("signaldata_SSPionBDT","signaldata_SSPionBDT",observables,Import(data),Cut("obsEtaSSPionBDT!=0.5"));
+    signaldata_SSProton = new RooDataSet("signaldata_SSProton","signaldata_SSProton",observables,Import(data),Cut("obsEtaSSProton!=0.5"));
+  } 
+  else {
+    signaldata = new RooDataSet("signaldata","signaldata",observables,Import(data),WeightVar("SigWeight"));
+    signaldata_BS = new RooDataSet("signaldata_BS","signaldata_BS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5&&obsEtaSS!=0.5"),WeightVar("SigWeight"));
+    signaldata_allOS = new RooDataSet("signaldata_allOS","signaldata_allOS",observables,Import(data),Cut("obsEtaOSwCharm!=0.5"),WeightVar("SigWeight"));
+    signaldata_allSS = new RooDataSet("signaldata_allSS","signaldata_allSS",observables,Import(data),Cut("obsEtaSS!=0.5"),WeightVar("SigWeight"));
+    signaldata_tagged = new RooDataSet("signaldata_tagged","signaldata_tagged",observables,Import(data),Cut("obsEtaSS!=0.5||obsEtaOSwCharm!=0.5"),WeightVar("SigWeight"));
+    signaldata_SSPion = new RooDataSet("signaldata_SSPion","signaldata_SSPion",observables,Import(data),Cut("obsEtaSSPion!=0.5"),WeightVar("SigWeight"));
+    signaldata_SSPionBDT = new RooDataSet("signaldata_SSPionBDT","signaldata_SSPionBDT",observables,Import(data),Cut("obsEtaSSPionBDT!=0.5"),WeightVar("SigWeight"));
+    signaldata_SSProton = new RooDataSet("signaldata_SSProton","signaldata_SSProton",observables,Import(data),Cut("obsEtaSSProton!=0.5"),WeightVar("SigWeight"));
+  }
+  signaldata_BS->Print();
+  signaldata_tagged->Print();
 
   RooDataSet  bootstrapped_data("bootstrapped_data","bootstrapped_data",observables,Import(data),Cut("obsEtaSS!=0.5||obsEtaOSwCharm!=0.5"));
   RooDataSet* data_temp;
@@ -91,7 +112,7 @@ int main(int argc, const char * argv[]){
   TRandom3 random(0);
   int n_bootstrapped_toys = 10000;
 
-  if (config.getBool("Correlation_OS_SS")) {
+  if (config.getBool("Correlation_OS_SS") && bootstrapping) {
     std::vector<double> correlation;
     Progress p("Generate bootstrapped toys for correlation studies", n_bootstrapped_toys);
     for (int i = 0; i < n_bootstrapped_toys; ++i) {
@@ -113,7 +134,7 @@ int main(int argc, const char * argv[]){
     cout  <<  "95% confidence interval of correlation between OS and SS mistag: (" <<  correlation.at(0.025*n_bootstrapped_toys) <<  ", "  <<  correlation.at(0.975*n_bootstrapped_toys) <<  ")" <<  endl;
   }
 
-  if (config.getBool("Correlation_OS_time")) {
+  if (config.getBool("Correlation_OS_time") && bootstrapping) {
     RooDataSet  OS_data("OS_data","OS_data",observables,Import(data),Cut("obsEtaOSwCharm!=0.5"));
     std::vector<double> correlation_OS_time;
   
@@ -137,7 +158,7 @@ int main(int argc, const char * argv[]){
     cout  <<  "95% confidence interval of correlation between OS and decay time: (" <<  correlation_OS_time.at(0.025*n_bootstrapped_toys) <<  ", "  <<  correlation_OS_time.at(0.975*n_bootstrapped_toys) <<  ")" <<  endl;
   }
 
-  if (config.getBool("Correlation_SS_time")) {
+  if (config.getBool("Correlation_SS_time") && bootstrapping) {
     RooDataSet  SS_data("SS_data","SS_data",observables,Import(data),Cut("obsEtaSS!=0.5"));
     std::vector<double> correlation_SS_time;
   
@@ -161,7 +182,7 @@ int main(int argc, const char * argv[]){
     cout  <<  "95% confidence interval of correlation between SS and decay time: (" <<  correlation_SS_time.at(0.025*n_bootstrapped_toys) <<  ", "  <<  correlation_SS_time.at(0.975*n_bootstrapped_toys) <<  ")" <<  endl;  
   }
 
-  if (config.getBool("Correlation_mass_time")) {
+  if (config.getBool("Correlation_mass_time") && bootstrapping) {
     std::vector<double> correlation_mass_time;
   
     Progress p_mass_time("Generate bootstrapped toys for correlation studies between invariant mass and decay time", n_bootstrapped_toys);
@@ -182,17 +203,43 @@ int main(int argc, const char * argv[]){
     cout  <<  "95% confidence interval of correlation between invariant mass and decay time: (" <<  correlation_mass_time.at(0.025*n_bootstrapped_toys) <<  ", "  <<  correlation_mass_time.at(0.975*n_bootstrapped_toys) <<  ")" <<  endl;  
   }
 
+  if (config.getBool("Correlation_BDT_time") && bootstrapping) {
+    std::vector<double> correlation_BDT_time;
+  
+    Progress p_BDT_time("Generate bootstrapped toys for correlation studies between BDT classifier and decay time", n_bootstrapped_toys);
+    for (int i = 0; i < n_bootstrapped_toys; ++i) {
+      data_temp = new RooDataSet("data_temp","data_temp",RooArgSet(observables));
+      for (int j = 0; j < data.numEntries(); ++j) {
+        data.get(random.Rndm()*data.numEntries());
+        data_temp->add(*(data.get()));
+      }
+      // correlation_BDT_time += data_temp->correlation(BDTwPIDs_classifier,obsTime);
+      data_bootstrapped = new RooDataSet("data_bootstrapped","data_bootstrapped",data_temp,RooArgSet(BDT_classifier,obsTime,SigWeight),"","SigWeight");
+      correlation_BDT_time += data_bootstrapped->correlation(BDT_classifier,obsTime);
+      delete data_temp;
+      delete data_bootstrapped;
+      ++p_BDT_time;
+    }
+    p_BDT_time.Finish();
+  
+    sort(correlation_BDT_time.begin(), correlation_BDT_time.end());
+    cout  <<  "Correlation between BDT classifier and decay time is " <<  signaldata->correlation(BDT_classifier,obsTime)  <<  endl;
+    cout  <<  "95% confidence interval of correlation between BDT classifier and decay time: (" <<  correlation_BDT_time.at(0.025*n_bootstrapped_toys) <<  ", "  <<  correlation_BDT_time.at(0.975*n_bootstrapped_toys) <<  ")" <<  endl;  
+  }
+
   // scatter plots
   CreateScatterPlot(*signaldata_BS, "Correlation_OS_SS", 40, "obsEtaOSwCharm", "obsEtaSS", "#it{#eta}_{OS}", "#it{#eta}_{SS}", 0.1, 0.5, 0.1, 0.5);
 
   // profile histograms
   CreateProfileHistogram(*signaldata_BS, "Profile_OS_SS", 40, "obsEtaOSwCharm", "obsEtaSS", "#it{#eta}_{OS}", "#it{#eta}_{SS}", 0.1, 0.5, 0, 0.6);
   CreateProfileHistogram(*signaldata_BS, "Profile_SS_OS", 40, "obsEtaSS", "obsEtaOSwCharm", "#it{#eta}_{SS}", "#it{#eta}_{OS}", 0.1, 0.5, 0, 0.6);
-  CreateProfileHistogram(*signaldata_allOS, "Profile_DecayTime_OS", 100, "obsTime", "obsEtaOSwCharm", "#it{t}", "#it{#eta}_{OS}", 0.25, 10.25, 0, 0.6);
-  CreateProfileHistogram(*signaldata_allSS, "Profile_DecayTime_SS", 100, "obsTime", "obsEtaSS", "#it{t}", "#it{#eta}_{SS}", 0.25, 10.25, 0, 0.6, true, 0.25, 8.25);
-  CreateProfileHistogram(*signaldata_SSPion, "Profile_DecayTime_SSPion", 100, "obsTime", "obsEtaSSPion", "#it{t}", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
-  CreateProfileHistogram(*signaldata_SSPionBDT, "Profile_DecayTime_SSPionBDT", 20, "obsTime", "obsEtaSSPionBDT", "#it{t}", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0.3, 0.5, true, 2.25, 8.25);
-  CreateProfileHistogram(*signaldata_SSProton, "Profile_DecayTime_SSProton", 100, "obsTime", "obsEtaSSProton", "#it{t}", "#it{#eta}_{SS#p}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
+  CreateProfileHistogram(*signaldata_allOS, "Profile_DecayTime_OS", 100, "obsTime", "obsEtaOSwCharm", "#it{t} (ps)", "#it{#eta}_{OS}", 0.25, 10.25, 0, 0.6);
+  CreateProfileHistogram(*signaldata_allSS, "Profile_DecayTime_SS", 100, "obsTime", "obsEtaSS", "#it{t} (ps)", "#it{#eta}_{SS}", 0.25, 10.25, 0, 0.6, true, 0.25, 8.25);
+  CreateProfileHistogram(*signaldata_SSPion, "Profile_DecayTime_SSPion", 100, "obsTime", "obsEtaSSPion", "#it{t} (ps)", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
+  CreateProfileHistogram(*signaldata_SSPionBDT, "Profile_DecayTime_SSPionBDT", 20, "obsTime", "obsEtaSSPionBDT", "#it{t} (ps)", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0.3, 0.5, true, 2.25, 8.25);
+  CreateProfileHistogram(*signaldata_SSProton, "Profile_DecayTime_SSProton", 100, "obsTime", "obsEtaSSProton", "#it{t} (ps)", "#it{#eta}_{SS#p}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
+  if (config.getBool("Kpipi"))  CreateProfileHistogram(*signaldata, "Profile_DecayTime_BDT_Kpipi", 100, "obsTime", BDT_name, "#it{t} (ps)", "BDT_{K#pi#pi} classifier", 0.25, 10.25, -0.2, 1, false, 2.25, 8.25);
+  else CreateProfileHistogram(*signaldata, "Profile_DecayTime_BDT_KKpi", 100, "obsTime", BDT_name, "#it{t} (ps)", "BDT_{KK#pi} classifier", 0.25, 10.25, -0.2, 1, false, 2.25, 8.25);
 
   return 0;
 }

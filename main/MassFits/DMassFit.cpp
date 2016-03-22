@@ -79,7 +79,7 @@ int main(int argc, char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
-  RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),"#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),TString(config.getString("observable_title_DauOne")),1845,1895,"MeV/c^{2}");
   RooRealVar        obsMassDauTwo(TString(config.getString("observable_name_DauTwo")),TString(config.getString("observable_title_DauTwo")),1845,1895,"MeV/c^{2}");
   RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
 
@@ -189,24 +189,31 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
   }
   else {
-    RooFitResult* fit_result = pdfMass.fitTo(data, fitting_args);
-    pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResult_"+TString(config.getString("identifier"))+".txt");
-    doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
-    fitresultprinter.Print();
-  
     PlotConfig cfg_plot_mass("cfg_plot_mass");
     cfg_plot_mass.InitializeOptions();
     cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/sWeights/Plots");
 
     std::vector<std::string> components_Dplus;
     components_Dplus += "pdfSigDplusMass", "pdfBkgDplusMass";
-    Plot MassDplus(cfg_plot_mass, obsMassDauOne, data, pdfMass, components_Dplus, "obsMassDauOne_"+string(config.getString("identifier")));
-    MassDplus.PlotIt();
-  
     std::vector<std::string> components_Dminus;
     components_Dminus += "pdfSigDminusMass", "pdfBkgDminusMass";
-    Plot MassDminus(cfg_plot_mass, obsMassDauTwo, data, pdfMass, components_Dminus, "obsMassDauTwo_"+string(config.getString("identifier")));
-    MassDminus.PlotIt();
+
+    if (config.getBool("plot_pdf")) {
+      RooFitResult* fit_result = pdfMass.fitTo(data, fitting_args);
+      pdfMass.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/sWeights/FitResult_"+TString(config.getString("identifier"))+".txt");
+      doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
+      fitresultprinter.Print();
+      Plot MassDplus(cfg_plot_mass, obsMassDauOne, data, pdfMass, components_Dplus, "obsMassDauOne_"+string(config.getString("identifier")));
+      MassDplus.PlotIt();
+      Plot MassDminus(cfg_plot_mass, obsMassDauTwo, data, pdfMass, components_Dminus, "obsMassDauTwo_"+string(config.getString("identifier")));
+      MassDminus.PlotIt();
+    }
+    else {
+      Plot MassDplus(cfg_plot_mass, obsMassDauOne, data, RooArgList(), "obsMassDauOne_"+string(config.getString("identifier")));
+      MassDplus.PlotIt();
+      Plot MassDminus(cfg_plot_mass, obsMassDauTwo, data, RooArgList(), "obsMassDauTwo_"+string(config.getString("identifier")));
+      MassDminus.PlotIt();
+    }  
   }
 
   if (config.getBool("calculate_sweights")){

@@ -63,6 +63,7 @@
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"
 #include "doofit/fitter/splot/SPlotFit2.h"
+#include "Erasmus/RooHORNSdini.h"
 
 // from DooSelection
 #include "dooselection/reducer/Reducer.h"
@@ -121,6 +122,7 @@ int main(int argc, char * argv[]){
   bool more_knots = config.getBool("more_knots");
   bool plot_acceptance = config.getBool("plot_acceptance");
   bool plot_correlation_matrix = config.getBool("plot_correlation_matrix");
+  bool plot_mass_distribution = config.getBool("plot_mass_distribution");
 
   if (bootstrapping && argc < 3) {
     std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
@@ -157,6 +159,14 @@ int main(int argc, char * argv[]){
   RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
   catDDFinalStateParticles.defineType("Kpipi",1);
   catDDFinalStateParticles.defineType("KKpi",0);
+  RooCategory       catDplusFinalState("catDplusFinalState","catDplusFinalState");
+  catDplusFinalState.defineType("Kpipi",1);
+  catDplusFinalState.defineType("KKpi",3);
+  catDplusFinalState.defineType("KpiK",4);
+  RooCategory       catDminusFinalState("catDminusFinalState","catDminusFinalState");
+  catDminusFinalState.defineType("Kpipi",1);
+  catDminusFinalState.defineType("KKpi",3);
+  catDminusFinalState.defineType("KpiK",4);
   RooCategory       catMag("catMag","catMag");
   catMag.defineType("up",1);
   catMag.defineType("down",-1);
@@ -165,12 +175,46 @@ int main(int argc, char * argv[]){
   RooRealVar        BDT2_classifier("BDT2_classifier","BDT2_classifier",-1,1);
   RooRealVar        BDTG1_classifier("BDTG1_classifier","BDTG1_classifier",-1,1);
   RooRealVar        BDTG2_classifier("BDTG2_classifier","BDTG2_classifier",-1,1);
-  
+  RooRealVar        BDTwPIDs_classifier("BDT_wPIDs_Kpipi_classifier","BDT_wPIDs_Kpipi_classifier",-1,1);
+  RooRealVar        BDTwPIDs_KKpi_classifier("BDT_wPIDs_KKpi_classifier","BDT_wPIDs_KKpi_classifier",-1,1);
+  RooRealVar        idxRunNumber("idxRunNumber","idxRunNumber",0);
+
   RooRealVar        SigWeight("SigWeight","Signal weight",-10,10);
-  
+
+  RooRealVar        varKaonMaxP("varKaonMaxP","varKaonMaxP",0);
+  RooRealVar        varPionOneMaxP("varPionOneMaxP","varPionOneMaxP",0);
+  RooRealVar        varPionTwoMaxP("varPionTwoMaxP","varPionTwoMaxP",0);
+  RooRealVar        varDminusMassHypo_KpiK("varDminusMassHypo_KpiK","varDminusMassHypo_KpiK",0);
+  RooRealVar        varDplusMassHypo_KpiK("varDplusMassHypo_KpiK","varDplusMassHypo_KpiK",0);
+
+  RooCategory       Hlt2Topo2BodyBBDTDecision("Hlt2Topo2BodyBBDTDecision","Hlt2Topo2BodyBBDTDecision");
+  Hlt2Topo2BodyBBDTDecision.defineType("triggered",1);
+  Hlt2Topo2BodyBBDTDecision.defineType("not triggered",0);
+  RooCategory       Hlt2Topo3BodyBBDTDecision("Hlt2Topo3BodyBBDTDecision","Hlt2Topo3BodyBBDTDecision");
+  Hlt2Topo3BodyBBDTDecision.defineType("triggered",1);
+  Hlt2Topo3BodyBBDTDecision.defineType("not triggered",0);
+  RooCategory       Hlt2Topo4BodyBBDTDecision("Hlt2Topo4BodyBBDTDecision","Hlt2Topo4BodyBBDTDecision");
+  Hlt2Topo4BodyBBDTDecision.defineType("triggered",1);
+  Hlt2Topo4BodyBBDTDecision.defineType("not triggered",0);
+  RooCategory       Hlt2Topo2BodySimpleDecision("Hlt2Topo2BodySimpleDecision","Hlt2Topo2BodySimpleDecision");
+  Hlt2Topo2BodySimpleDecision.defineType("triggered",1);
+  Hlt2Topo2BodySimpleDecision.defineType("not triggered",0);
+  RooCategory       Hlt2Topo3BodySimpleDecision("Hlt2Topo3BodySimpleDecision","Hlt2Topo3BodySimpleDecision");
+  Hlt2Topo3BodySimpleDecision.defineType("triggered",1);
+  Hlt2Topo3BodySimpleDecision.defineType("not triggered",0);
+  RooCategory       Hlt2Topo4BodySimpleDecision("Hlt2Topo4BodySimpleDecision","Hlt2Topo4BodySimpleDecision");
+  Hlt2Topo4BodySimpleDecision.defineType("triggered",1);
+  Hlt2Topo4BodySimpleDecision.defineType("not triggered",0);
+  RooCategory       Hlt2IncPhiDecision("Hlt2IncPhiDecision","Hlt2IncPhiDecision");
+  Hlt2IncPhiDecision.defineType("triggered",1);
+  Hlt2IncPhiDecision.defineType("not triggered",0);
+
   RooArgSet         observables(obsTime,obsMass,"observables");
-  RooArgSet         BDT_classifier(BDT1_classifier,BDT2_classifier,BDTG1_classifier,BDTG2_classifier,"BDT_classifier");
-  observables.add(BDT_classifier);
+  observables.add(RooArgSet(Hlt2Topo2BodyBBDTDecision,Hlt2Topo3BodyBBDTDecision,Hlt2Topo4BodyBBDTDecision,Hlt2Topo2BodySimpleDecision,Hlt2Topo3BodySimpleDecision,Hlt2Topo4BodySimpleDecision,Hlt2IncPhiDecision));
+  observables.add(RooArgSet(varKaonMaxP,varPionOneMaxP,varPionTwoMaxP));
+  observables.add(RooArgSet(varDplusMassHypo_KpiK,varDminusMassHypo_KpiK));
+  observables.add(RooArgSet(BDT1_classifier,BDT2_classifier,BDTG1_classifier,BDTG2_classifier,BDTwPIDs_classifier,BDTwPIDs_KKpi_classifier));
+  observables.add(idxRunNumber);
   if (pereventresolution) observables.add(obsTimeErr);
   if (cp_fit){
     observables.add(obsEtaOS);
@@ -178,7 +222,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagOS);
     observables.add(obsTagSS);
   }
-  RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catMag,"categories");
+  RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catDminusFinalState,catDplusFinalState,catMag,"categories");
   if (decaytimefit || mistag_histograms) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
@@ -186,7 +230,7 @@ int main(int argc, char * argv[]){
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet*       data;
-  if (bootstrapping || massfit || calculate_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
   else if (decaytimefit || plot_acceptance || plot_correlation_matrix)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
   else {
     cout << "What do you want to do? No use case is activated right now!" <<  endl;
@@ -250,6 +294,15 @@ int main(int argc, char * argv[]){
 
   RooRealVar        parBkgDstDMassFraction("parBkgDstDMassFraction","fraction between low and high component",0.5,0,1);
   RooAddPdf         pdfBkgDstDMass("pdfBkgDstDMass","pdfBkgDstDMass",RooArgList(pdfBkgDstDLowMass,pdfBkgDstDHighMass),parBkgDstDMassFraction);
+
+  RooRealVar        parBkgDstDHornA("parBkgDstDHornA","parBkgDstDHornA",5000,5100);
+  RooRealVar        parBkgDstDHornB("parBkgDstDHornB","parBkgDstDHornB",5100,5200);
+  RooRealVar        parBkgDstDHornXi("parBkgDstDHornXi","parBkgDstDHornXi",0,1);
+  RooRealVar        parBkgDstDHornShift("parBkgDstDHornShift","parBkgDstDHornShift",-10,10);
+  RooRealVar        parBkgDstDHornSigma("parBkgDstDHornSigma","parBkgDstDHornSigma",10,1,20);
+  RooRealVar        parBkgDstDHornSigmaFactor("parBkgDstDHornSigmaFactor","parBkgDstDHornSigmaFactor",2,1,5);
+  RooRealVar        parBkgDstDHornFraction("parBkgDstDHornFraction","parBkgDstDHornFraction",0.5,0,1);
+  // RooHORNSdini      pdfBkgDstDMass("pdfBkgDstDMass","pdfBkgDstDMass",obsMass,parBkgDstDHornA,parBkgDstDHornB,parBkgDstDHornXi,parBkgDstDHornShift,parBkgDstDHornSigma,parBkgDstDHornSigmaFactor,parBkgDstDHornFraction);
 
   // Bs --> D*+ D- with D*+ --> D+ pi0 Background
   RooFormulaVar     parBkgBsDstDLowMassMean("parBkgBsDstDLowMassMean","Mean Mass","@0+87.35",RooArgList(parBkgDstDLowMassMean));
@@ -387,12 +440,12 @@ int main(int argc, char * argv[]){
   // RooExtendPdf      pdfBkgBsDstDExtend_11("pdfBkgBsDstDExtend_11","pdfBkgBsDstDExtend_11",pdfBkgBsDstDMass,parBkgBsDstDYield_11);
   // RooExtendPdf      pdfBkgBsDstDExtend_12("pdfBkgBsDstDExtend_12","pdfBkgBsDstDExtend_12",pdfBkgBsDstDMass,parBkgBsDstDYield_12);
   // RooExtendPdf      pdfBkgBsDstDExtend("pdfBkgBsDstDExtend","pdfBkgBsDstDExtend",pdfBkgBsDstDMass,parBkgBsDstDYield);
-  RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass_Kpipi,parBkgYield_11_Kpipi);
-  RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass_Kpipi,parBkgYield_12_Kpipi);
-  RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
-  RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass_KKpi,parBkgYield_12_KKpi);
-  RooExtendPdf      pdfBkgExtend_Kpipi("pdfBkgExtend_Kpipi","pdfBkgExtend_Kpipi",pdfBkgMass_Kpipi,parBkgYield_Kpipi);
-  RooExtendPdf      pdfBkgExtend_KKpi("pdfBkgExtend_KKpi","pdfBkgExtend_KKpi",pdfBkgMass_KKpi,parBkgYield_KKpi);
+  RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass,parBkgYield_11_Kpipi);
+  RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass,parBkgYield_12_Kpipi);
+  RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass,parBkgYield_11_KKpi);
+  RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass,parBkgYield_12_KKpi);
+  RooExtendPdf      pdfBkgExtend_Kpipi("pdfBkgExtend_Kpipi","pdfBkgExtend_Kpipi",pdfBkgMass,parBkgYield_Kpipi);
+  RooExtendPdf      pdfBkgExtend_KKpi("pdfBkgExtend_KKpi","pdfBkgExtend_KKpi",pdfBkgMass,parBkgYield_KKpi);
   RooExtendPdf      pdfBkgExtend_11("pdfBkgExtend_11","pdfBkgExtend_11",pdfBkgMass,parBkgYield_11);
   RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
@@ -534,12 +587,12 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{1}}",0.007);  // B+ value 0.012   Kstar 0.024
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",0.10);
-  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",0.001);
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",-0.102);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",0.036);
   RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_OS("parSigEtaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between p0 and Delta p1 OS",0.001);
-  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",0.001);
-  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",0.001);
-  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.001);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",-0.002);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",-0.037);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.059);
 
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
@@ -553,12 +606,12 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{1}}",0.064);
   if (SS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
 
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",-0.053);
-  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",0.001);
-  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",0.001);
-  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",0.001);
-  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",0.001);
-  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.001);
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.053);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",0.013);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",-0.009);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",-0.009);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",0.015);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.025);
 
   RooRealVar          parSigEtaMean_SS("parSigEtaMean_SS","Mean on per-event mistag",0.42484);
 
@@ -638,9 +691,7 @@ int main(int argc, char * argv[]){
 
   pdf.Print();
 
-  TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
-  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
-  // TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
+  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
   TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
 
   RooArgSet             constrainingPdfs("constrainingPdfs");
@@ -650,12 +701,11 @@ int main(int argc, char * argv[]){
   RooGaussian           conpdfSigEtaDeltaProd_12("conpdfSigEtaDeltaProd_12","Gaussian Constraint for production asymmetry 2012",parSigEtaDeltaProdOffset,parSigEtaDeltaProdOffsetMean,parSigEtaDeltaProdOffsetSigma);
   RooGaussian           conpdfSigEtaDeltaP0_OS("conpdfSigEtaDeltaP0_OS","conpdfSigEtaDeltaP0_OS",parSigEtaDeltaP0_OS,parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP0Sigma_OS);
   RooGaussian           conpdfSigEtaDeltaP1_OS("conpdfSigEtaDeltaP1_OS","conpdfSigEtaDeltaP1_OS",parSigEtaDeltaP1_OS,parSigEtaDeltaP1Mean_OS,parSigEtaDeltaP1Sigma_OS);
-  RooMultiVarGaussian   conpdfSigEtaDelta_OS("conpdfSigEtaDelta_OS","constraint for Delta p0 and Delta p1 of OS FT calibration",RooArgList(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),RooArgList(parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP1Mean_OS),covariancematrixSigEtaDelta_OS);
   RooGaussian           conpdfSigEtaDeltaP0_SS("conpdfSigEtaDeltaP0_SS","conpdfSigEtaDeltaP0_SS",parSigEtaDeltaP0_SS,parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP0Sigma_SS);
   RooGaussian           conpdfSigEtaDeltaP1_SS("conpdfSigEtaDeltaP1_SS","conpdfSigEtaDeltaP1_SS",parSigEtaDeltaP1_SS,parSigEtaDeltaP1Mean_SS,parSigEtaDeltaP1Sigma_SS);  
   RooGaussian           conpdfSigEtaP0_OS("conpdfSigEtaP0_OS","Gaussian Constraint for Offset parameter",parSigEtaP0_OS,parSigEtaP0Mean_OS,parSigEtaP0Sigma_OS);
   RooGaussian           conpdfSigEtaP1_OS("conpdfSigEtaP1_OS","Gaussian Constraint for Scale parameter",parSigEtaP1_OS,parSigEtaP1Mean_OS,parSigEtaP1Sigma_OS);
-  RooMultiVarGaussian   conpdfSigEta_OS("conpdfSigEta_OS","constraint for p0 and p1 of OS FT calibration",RooArgList(parSigEtaP0_OS,parSigEtaP1_OS),RooArgList(parSigEtaP0Mean_OS,parSigEtaP1Mean_OS),covariancematrixSigEta_OS);
+  RooMultiVarGaussian   conpdfSigEta_OS("conpdfSigEta_OS","constraint for p0 and p1 of OS FT calibration",RooArgList(parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),RooArgList(parSigEtaP0Mean_OS,parSigEtaP1Mean_OS,parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP1Mean_OS),covariancematrixSigEta_OS);
   RooGaussian           conpdfSigEtaP0_SS("conpdfSigEtaP0_SS","Gaussian Constraint for Offset parameter",parSigEtaP0_SS,parSigEtaP0Mean_SS,parSigEtaP0Sigma_SS);
   RooGaussian           conpdfSigEtaP1_SS("conpdfSigEtaP1_SS","Gaussian Constraint for Scale parameter",parSigEtaP1_SS,parSigEtaP1Mean_SS,parSigEtaP1Sigma_SS);
   RooMultiVarGaussian   conpdfSigEta_SS("conpdfSigEta_SS","constraint for SS FT calibration",RooArgList(parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),RooArgList(parSigEtaP0Mean_SS,parSigEtaP1Mean_SS,parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP1Mean_SS),covariancematrixSigEta_SS);  
@@ -667,7 +717,6 @@ int main(int argc, char * argv[]){
     if (data->sumEntries("catYear==2012") > 0)  constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
     if (OS_tagging)  constrainingPdfs.add(conpdfSigEta_OS);
     if (SS_tagging)  constrainingPdfs.add(conpdfSigEta_SS);
-    if (OS_tagging)  constrainingPdfs.add(conpdfSigEtaDelta_OS);
   }
   cout  <<  "Constraints added" <<  endl;
 
@@ -811,7 +860,6 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
-    fitting_args.Print("v");
     RooFitResult* fit_result = pdfMass->fitTo(*data, fitting_args);
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
@@ -821,13 +869,13 @@ int main(int argc, char * argv[]){
     cfg_plot_mass.InitializeOptions();
     cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots/"+config.getString("identifier"));
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
-    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{unofficial}");
+    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+    // cfg_plot_mass.set_y_axis_label("Kandidaten");
     std::vector<std::string> components_mass;
     components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgDstDExtend.*", "pdfBkgBsDsDExtend.*";
     Plot* Mass;
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, *data, *pdfMass, components_mass, "obsMass");
-    // Mass = new Plot(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
     Mass->set_scaletype_x(kLinear);
     Mass->set_scaletype_y(kBoth);
     Mass->PlotIt();
@@ -953,7 +1001,8 @@ int main(int argc, char * argv[]){
     PlotConfig cfg_plot_time("cfg_plot_time");
     cfg_plot_time.set_plot_appendix(config.getString("identifier"));
     cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
-    cfg_plot_time.set_label_text("");
+    cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+    cfg_plot_time.set_y_axis_label("Kandidaten");
     std::vector<std::string> components_time;
     PlotSimultaneous Time(cfg_plot_time, obsTime, *data, pdf, components_time);
     RooDataSet proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
@@ -998,6 +1047,18 @@ int main(int argc, char * argv[]){
     doofit::plotting::correlations::CorrelationPlot cplot(*read_in_fit_result);
     cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
   }
+  if (plot_mass_distribution) {
+    PlotConfig cfg_plot_mass("cfg_plot_mass");
+    cfg_plot_mass.InitializeOptions();
+    cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots/"+config.getString("identifier"));
+    cfg_plot_mass.set_simultaneous_plot_all_categories(true);
+    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+    // cfg_plot_mass.set_y_axis_label("Kandidaten");
+    Plot Mass(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
+    Mass.set_scaletype_x(kLinear);
+    Mass.set_scaletype_y(kBoth);
+    Mass.PlotIt();
+  }
 
   return 0;
 }
@@ -1030,6 +1091,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
+  TLatex label(3,0.2,"#splitline{LHCb 3fb^{-1}}{inoffiziell}");
 
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
 
@@ -1039,8 +1101,9 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
-  plot->GetYaxis()->SetTitle("acceptance");
+  plot->GetYaxis()->SetTitle("Akzeptanz");
   plot->Draw();
+  label.Draw("same");
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline.pdf");
 
   c.SetLogx(false);
@@ -1049,8 +1112,10 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
-  plot->GetYaxis()->SetTitle("acceptance");
+  plot->GetYaxis()->SetTitle("Akzeptanz");
   plot->Draw();
+  label.SetX(7);
+  label.Draw("same");
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_nolog.pdf");
 }
 

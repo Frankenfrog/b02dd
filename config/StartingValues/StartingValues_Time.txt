@@ -1,4 +1,4 @@
-parSigTimeC                   =  1.7   L(-2 - 2.5)
+parSigTimeC                   =  1.6   L(-2 - 2.5)
 parSigEtaDeltaG               =  0.000 C
 parSigTimeDeltaM              =  0.510 L(0.4 - 0.7)
 parSigTimeDeltaMMean          =  0.510 C

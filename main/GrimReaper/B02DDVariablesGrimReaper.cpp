@@ -50,12 +50,12 @@ class B02DDVariablesReducer : public Reducer {
   Int_t* DDFinalState;
   Int_t* DDFinalStateParticles;
 
-  Float_t* Dplus_P0_ID;
-  Float_t* Dplus_P1_ID;
-  Float_t* Dplus_P2_ID;
-  Float_t* Dminus_P0_ID;
-  Float_t* Dminus_P1_ID;
-  Float_t* Dminus_P2_ID;
+  Int_t* Dplus_Kminus_or_piminus_ID;
+  Int_t* Dplus_piplus_or_Kplus_One_ID;
+  Int_t* Dplus_piplus_or_Kplus_Two_ID;
+  Int_t* Dminus_Kplus_or_piplus_ID;
+  Int_t* Dminus_piminus_or_Kminus_One_ID;
+  Int_t* Dminus_piminus_or_Kminus_Two_ID;
 
   ReducerLeaf<Double_t>* obsMassDau_Kpipi;
   ReducerLeaf<Double_t>* obsMassDau_KKpi;
@@ -94,6 +94,26 @@ class B02DDVariablesReducer : public Reducer {
   ReducerLeaf<Double_t>* varPiTwoplus_SumProbNNppi;
   ReducerLeaf<Double_t>* varPiTwoplus_PID;
   ReducerLeaf<Double_t>* varPiTwoplus_PIDp;
+
+  ReducerLeaf<Double_t>* varKaon_PID;
+  ReducerLeaf<Double_t>* varPion_PID;
+  ReducerLeaf<Double_t>* varPiHigh_PID;
+  ReducerLeaf<Double_t>* varPiLow_PID;
+
+  ReducerLeaf<Double_t>* varKaon_PT;
+  ReducerLeaf<Double_t>* varPion_PT;
+  ReducerLeaf<Double_t>* varPiHigh_PT;
+  ReducerLeaf<Double_t>* varPiLow_PT;  
+
+  Double_t* varKaon_PID_value;
+  Double_t* varPion_PID_value;
+  Double_t* varPiHigh_PID_value;
+  Double_t* varPiLow_PID_value;
+
+  Double_t* varKaon_PT_value;
+  Double_t* varPion_PT_value;
+  Double_t* varPiHigh_PT_value;
+  Double_t* varPiLow_PT_value;  
 
   Double_t* varPiOneminus_ProbNNk_value;
   Double_t* varPiOneminus_ProbNNpi_value;
@@ -151,13 +171,38 @@ class B02DDVariablesReducer : public Reducer {
   Double_t* B0_PY;
   Double_t* B0_PZ;
 
+  ReducerLeaf<Double_t>* varDplus_Kminus_or_piminus_ETA;
+  Double_t* varDplus_Kminus_or_piminus_ETA_value;
+  Double_t* Dplus_Kminus_or_piminus_P;
+  Double_t* Dplus_Kminus_or_piminus_PZ;
+  ReducerLeaf<Double_t>* varDplus_piplus_or_Kplus_One_ETA;
+  Double_t* varDplus_piplus_or_Kplus_One_ETA_value;
+  Double_t* Dplus_piplus_or_Kplus_One_P;
+  Double_t* Dplus_piplus_or_Kplus_One_PZ;
+  ReducerLeaf<Double_t>* varDplus_piplus_or_Kplus_Two_ETA;
+  Double_t* varDplus_piplus_or_Kplus_Two_ETA_value;
+  Double_t* Dplus_piplus_or_Kplus_Two_P;
+  Double_t* Dplus_piplus_or_Kplus_Two_PZ;
+  ReducerLeaf<Double_t>* varDminus_Kplus_or_piplus_ETA;
+  Double_t* varDminus_Kplus_or_piplus_ETA_value;
+  Double_t* Dminus_Kplus_or_piplus_P;
+  Double_t* Dminus_Kplus_or_piplus_PZ;
+  ReducerLeaf<Double_t>* varDminus_piminus_or_Kminus_One_ETA;
+  Double_t* varDminus_piminus_or_Kminus_One_ETA_value;
+  Double_t* Dminus_piminus_or_Kminus_One_P;
+  Double_t* Dminus_piminus_or_Kminus_One_PZ;
+  ReducerLeaf<Double_t>* varDminus_piminus_or_Kminus_Two_ETA;
+  Double_t* varDminus_piminus_or_Kminus_Two_ETA_value;
+  Double_t* Dminus_piminus_or_Kminus_Two_P;
+  Double_t* Dminus_piminus_or_Kminus_Two_PZ;
+
   void CreateSpecialBranches() {
-    Dplus_P0_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P0_ID").branch_address();
-    Dplus_P1_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P1_ID").branch_address();
-    Dplus_P2_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dplus_P2_ID").branch_address();
-    Dminus_P0_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dminus_P0_ID").branch_address();
-    Dminus_P1_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dminus_P1_ID").branch_address();
-    Dminus_P2_ID = (Float_t*)GetInterimLeafByName("B0_FitDDPVConst_Dminus_P2_ID").branch_address();
+    Dplus_Kminus_or_piminus_ID = (Int_t*)GetInterimLeafByName("Dplus_Kminus_or_piminus_ID").branch_address();
+    Dplus_piplus_or_Kplus_One_ID = (Int_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_One_ID").branch_address();
+    Dplus_piplus_or_Kplus_Two_ID = (Int_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_ID").branch_address();
+    Dminus_Kplus_or_piplus_ID = (Int_t*)GetInterimLeafByName("Dminus_Kplus_or_piplus_ID").branch_address();
+    Dminus_piminus_or_Kminus_One_ID = (Int_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_ID").branch_address();
+    Dminus_piminus_or_Kminus_Two_ID = (Int_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_ID").branch_address();
 
     catDplusFinalState = &(CreateIntLeaf("catDplusFinalState", -10));
     catDminusFinalState = &(CreateIntLeaf("catDminusFinalState", -10));
@@ -224,6 +269,16 @@ class B02DDVariablesReducer : public Reducer {
     varPiTwoplus_PID = &(CreateDoubleLeaf("varPiTwoplus_PID", -999999));
     varPiTwoplus_PIDp = &(CreateDoubleLeaf("varPiTwoplus_PIDp", -999999));
 
+    varKaon_PID = &(CreateDoubleLeaf("varKaon_PID", -999999));
+    varPion_PID = &(CreateDoubleLeaf("varPion_PID", -999999));
+    varPiHigh_PID = &(CreateDoubleLeaf("varPiHigh_PID", -999999));
+    varPiLow_PID = &(CreateDoubleLeaf("varPiLow_PID", -999999));
+
+    varKaon_PT = &(CreateDoubleLeaf("varKaon_PT", -999999));
+    varPion_PT = &(CreateDoubleLeaf("varPion_PT", -999999));
+    varPiHigh_PT = &(CreateDoubleLeaf("varPiHigh_PT", -999999));
+    varPiLow_PT = &(CreateDoubleLeaf("varPiLow_PT", -999999));
+
     varPiOneminus_ProbNNk_value = (Double_t*)varPiOneminus_ProbNNk->branch_address();
     varPiOneminus_ProbNNpi_value = (Double_t*)varPiOneminus_ProbNNpi->branch_address();
     varPiOneminus_ProbNNp_value = (Double_t*)varPiOneminus_ProbNNp->branch_address();
@@ -253,6 +308,16 @@ class B02DDVariablesReducer : public Reducer {
     varPiTwoplus_PID_value = (Double_t*)varPiTwoplus_PID->branch_address();
     varPiTwoplus_PIDp_value = (Double_t*)varPiTwoplus_PIDp->branch_address();
 
+    varKaon_PID_value = (Double_t*)varKaon_PID->branch_address();
+    varPion_PID_value = (Double_t*)varPion_PID->branch_address();
+    varPiHigh_PID_value = (Double_t*)varPiHigh_PID->branch_address();
+    varPiLow_PID_value = (Double_t*)varPiLow_PID->branch_address();
+
+    varKaon_PT_value = (Double_t*)varKaon_PT->branch_address();
+    varPion_PT_value = (Double_t*)varPion_PT->branch_address();
+    varPiHigh_PT_value = (Double_t*)varPiHigh_PT->branch_address();
+    varPiLow_PT_value = (Double_t*)varPiLow_PT->branch_address();
+
     B0_P = (Double_t*)GetInterimLeafByName("B0_P").branch_address();
     B0_PX = (Double_t*)GetInterimLeafByName("B0_PX").branch_address();
     B0_PY = (Double_t*)GetInterimLeafByName("B0_PY").branch_address();
@@ -261,18 +326,43 @@ class B02DDVariablesReducer : public Reducer {
     pseudorapidity = (Double_t*)varPseudorapidity->branch_address();
     varPhi = &(CreateDoubleLeaf("varPhi", -999999));
     phi = (Double_t*)varPhi->branch_address();
+
+    Dplus_Kminus_or_piminus_P = (Double_t*)GetInterimLeafByName("Dplus_Kminus_or_piminus_P").branch_address();
+    Dplus_Kminus_or_piminus_PZ = (Double_t*)GetInterimLeafByName("Dplus_Kminus_or_piminus_PZ").branch_address();
+    varDplus_Kminus_or_piminus_ETA = &(CreateDoubleLeaf("varDplus_Kminus_or_piminus_ETA", -999999));
+    varDplus_Kminus_or_piminus_ETA_value = (Double_t*)varDplus_Kminus_or_piminus_ETA->branch_address();
+    Dplus_piplus_or_Kplus_One_P = (Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_One_P").branch_address();
+    Dplus_piplus_or_Kplus_One_PZ = (Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_One_PZ").branch_address();
+    varDplus_piplus_or_Kplus_One_ETA = &(CreateDoubleLeaf("varDplus_piplus_or_Kplus_One_ETA", -999999));
+    varDplus_piplus_or_Kplus_One_ETA_value = (Double_t*)varDplus_piplus_or_Kplus_One_ETA->branch_address();
+    Dplus_piplus_or_Kplus_Two_P = (Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_P").branch_address();
+    Dplus_piplus_or_Kplus_Two_PZ = (Double_t*)GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_PZ").branch_address();
+    varDplus_piplus_or_Kplus_Two_ETA = &(CreateDoubleLeaf("varDplus_piplus_or_Kplus_Two_ETA", -999999));
+    varDplus_piplus_or_Kplus_Two_ETA_value = (Double_t*)varDplus_piplus_or_Kplus_Two_ETA->branch_address();
+    Dminus_Kplus_or_piplus_P = (Double_t*)GetInterimLeafByName("Dminus_Kplus_or_piplus_P").branch_address();
+    Dminus_Kplus_or_piplus_PZ = (Double_t*)GetInterimLeafByName("Dminus_Kplus_or_piplus_PZ").branch_address();
+    varDminus_Kplus_or_piplus_ETA = &(CreateDoubleLeaf("varDminus_Kplus_or_piplus_ETA", -999999));
+    varDminus_Kplus_or_piplus_ETA_value = (Double_t*)varDminus_Kplus_or_piplus_ETA->branch_address();
+    Dminus_piminus_or_Kminus_One_P = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_P").branch_address();
+    Dminus_piminus_or_Kminus_One_PZ = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_PZ").branch_address();
+    varDminus_piminus_or_Kminus_One_ETA = &(CreateDoubleLeaf("varDminus_piminus_or_Kminus_One_ETA", -999999));
+    varDminus_piminus_or_Kminus_One_ETA_value = (Double_t*)varDminus_piminus_or_Kminus_One_ETA->branch_address();
+    Dminus_piminus_or_Kminus_Two_P = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_P").branch_address();
+    Dminus_piminus_or_Kminus_Two_PZ = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_PZ").branch_address();
+    varDminus_piminus_or_Kminus_Two_ETA = &(CreateDoubleLeaf("varDminus_piminus_or_Kminus_Two_ETA", -999999));
+    varDminus_piminus_or_Kminus_Two_ETA_value = (Double_t*)varDminus_piminus_or_Kminus_Two_ETA->branch_address();
   }
 
   void UpdateSpecialLeaves() {
-    if (*Dplus_P0_ID == 211 && *Dplus_P1_ID == 211 && *Dplus_P2_ID == -321) *DplusFinalState = 1;
-    if (*Dplus_P0_ID == 211 && *Dplus_P1_ID == 211 && *Dplus_P2_ID == -211) *DplusFinalState = 2;
-    if (*Dplus_P0_ID == 321 && *Dplus_P1_ID == 211 && *Dplus_P2_ID == -321) *DplusFinalState = 3;
-    if (*Dplus_P0_ID == 211 && *Dplus_P1_ID == 321 && *Dplus_P2_ID == -321) *DplusFinalState = 4;
+    if (*Dplus_Kminus_or_piminus_ID == -321 && *Dplus_piplus_or_Kplus_One_ID == 211 && *Dplus_piplus_or_Kplus_Two_ID == 211) *DplusFinalState = 1;
+    if (*Dplus_Kminus_or_piminus_ID == -211 && *Dplus_piplus_or_Kplus_One_ID == 211 && *Dplus_piplus_or_Kplus_Two_ID == 211) *DplusFinalState = 2;
+    if (*Dplus_Kminus_or_piminus_ID == -321 && *Dplus_piplus_or_Kplus_One_ID == 321 && *Dplus_piplus_or_Kplus_Two_ID == 211) *DplusFinalState = 3;
+    if (*Dplus_Kminus_or_piminus_ID == -321 && *Dplus_piplus_or_Kplus_One_ID == 211 && *Dplus_piplus_or_Kplus_Two_ID == 321) *DplusFinalState = 4;
 
-    if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 321) *DminusFinalState = 1;
-    if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 211) *DminusFinalState = 2;
-    if (*Dminus_P0_ID == -321 && *Dminus_P1_ID == -211 && *Dminus_P2_ID == 321) *DminusFinalState = 3;
-    if (*Dminus_P0_ID == -211 && *Dminus_P1_ID == -321 && *Dminus_P2_ID == 321) *DminusFinalState = 4;
+    if (*Dminus_Kplus_or_piplus_ID == 321 && *Dminus_piminus_or_Kminus_One_ID == -211 && *Dminus_piminus_or_Kminus_Two_ID == -211) *DminusFinalState = 1;
+    if (*Dminus_Kplus_or_piplus_ID == 211 && *Dminus_piminus_or_Kminus_One_ID == -211 && *Dminus_piminus_or_Kminus_Two_ID == -211) *DminusFinalState = 2;
+    if (*Dminus_Kplus_or_piplus_ID == 321 && *Dminus_piminus_or_Kminus_One_ID == -321 && *Dminus_piminus_or_Kminus_Two_ID == -211) *DminusFinalState = 3;
+    if (*Dminus_Kplus_or_piplus_ID == 321 && *Dminus_piminus_or_Kminus_One_ID == -211 && *Dminus_piminus_or_Kminus_Two_ID == -321) *DminusFinalState = 4;
 
     if (*DplusFinalState == 1 && *DminusFinalState == 1) {
       *DDFinalState = 11;
@@ -291,14 +381,18 @@ class B02DDVariablesReducer : public Reducer {
       *obsMassDau_Kpipi_value = *B0_FitPVConst_Dplus_M;
       *obsMassDau_KKpi_value  = *B0_FitPVConst_Dminus_M;
       *DDFinalStateParticles = 0;
+      *varPiHigh_PT_value = std::max(*Dplus_piplus_or_Kplus_One_PT,*Dplus_piplus_or_Kplus_Two_PT);
+      *varPiLow_PT_value = std::min(*Dplus_piplus_or_Kplus_One_PT,*Dplus_piplus_or_Kplus_Two_PT);
     }
     if (*DDFinalState == 31 || *DDFinalState == 41) {
       *obsMassDau_Kpipi_value = *B0_FitPVConst_Dminus_M;
       *obsMassDau_KKpi_value  = *B0_FitPVConst_Dplus_M;
       *DDFinalStateParticles = 0;
+      *varPiHigh_PT_value = std::max(*Dminus_piminus_or_Kminus_One_PT,*Dminus_piminus_or_Kminus_Two_PT);
+      *varPiLow_PT_value = std::min(*Dminus_piminus_or_Kminus_One_PT,*Dminus_piminus_or_Kminus_Two_PT);
     }
 
-    if (*Dminus_piminus_or_Kminus_One_PT > *Dminus_piminus_or_Kminus_Two_PT) {
+    if ((*Dminus_piminus_or_Kminus_One_PT > *Dminus_piminus_or_Kminus_Two_PT) && (*DminusFinalState == 1)) {
       *varPiOneminus_ProbNNk_value = *Dminus_piminus_or_Kminus_Two_ProbNNk;
       *varPiOneminus_ProbNNpi_value = *Dminus_piminus_or_Kminus_Two_ProbNNpi;
       *varPiOneminus_ProbNNp_value = *Dminus_piminus_or_Kminus_Two_ProbNNp;
@@ -315,7 +409,7 @@ class B02DDVariablesReducer : public Reducer {
       *varPiTwominus_ProbNNp_value = *Dminus_piminus_or_Kminus_Two_ProbNNp;
     }
     
-    if (*Dplus_piplus_or_Kplus_One_PT > *Dplus_piplus_or_Kplus_Two_PT) {
+    if ((*Dplus_piplus_or_Kplus_One_PT > *Dplus_piplus_or_Kplus_Two_PT) && (*DplusFinalState == 1)) {
       *varPiOneplus_ProbNNk_value = *Dplus_piplus_or_Kplus_Two_ProbNNk;
       *varPiOneplus_ProbNNpi_value = *Dplus_piplus_or_Kplus_Two_ProbNNpi;
       *varPiOneplus_ProbNNp_value = *Dplus_piplus_or_Kplus_Two_ProbNNp;
@@ -349,10 +443,50 @@ class B02DDVariablesReducer : public Reducer {
     *varPiTwoplus_PID_value = *varPiTwoplus_ProbNNk_value / *varPiTwoplus_SumProbNNkpi_value;
     *varPiTwoplus_PIDp_value = *varPiTwoplus_ProbNNp_value / *varPiTwoplus_SumProbNNppi_value;
 
+    if (*DDFinalState == 13) {
+      *varKaon_PID_value = *Dminus_piminus_or_Kminus_One_ProbNNk / (*Dminus_piminus_or_Kminus_One_ProbNNk + *Dminus_piminus_or_Kminus_One_ProbNNpi);
+      *varPion_PID_value = *Dminus_piminus_or_Kminus_Two_ProbNNk / (*Dminus_piminus_or_Kminus_Two_ProbNNk + *Dminus_piminus_or_Kminus_Two_ProbNNpi);
+      *varPiHigh_PID_value = *varPiOneplus_PID_value;
+      *varPiLow_PID_value = *varPiTwoplus_PID_value;
+      *varKaon_PT_value = *Dminus_piminus_or_Kminus_One_PT;
+      *varPion_PT_value = *Dminus_piminus_or_Kminus_Two_PT;
+    }
+    if (*DDFinalState == 14) {
+      *varKaon_PID_value = *Dminus_piminus_or_Kminus_Two_ProbNNk / (*Dminus_piminus_or_Kminus_Two_ProbNNk + *Dminus_piminus_or_Kminus_Two_ProbNNpi);
+      *varPion_PID_value = *Dminus_piminus_or_Kminus_One_ProbNNk / (*Dminus_piminus_or_Kminus_One_ProbNNk + *Dminus_piminus_or_Kminus_One_ProbNNpi);
+      *varPiHigh_PID_value = *varPiOneplus_PID_value;
+      *varPiLow_PID_value = *varPiTwoplus_PID_value;
+      *varKaon_PT_value = *Dminus_piminus_or_Kminus_Two_PT;
+      *varPion_PT_value = *Dminus_piminus_or_Kminus_One_PT;
+    }
+    if (*DDFinalState == 31) {
+      *varKaon_PID_value = *Dplus_piplus_or_Kplus_One_ProbNNk / (*Dplus_piplus_or_Kplus_One_ProbNNk + *Dplus_piplus_or_Kplus_One_ProbNNpi);
+      *varPion_PID_value = *Dplus_piplus_or_Kplus_Two_ProbNNk / (*Dplus_piplus_or_Kplus_Two_ProbNNk + *Dplus_piplus_or_Kplus_Two_ProbNNpi);
+      *varPiHigh_PID_value = *varPiOneminus_PID_value;
+      *varPiLow_PID_value = *varPiTwominus_PID_value;
+      *varKaon_PT_value = *Dplus_piplus_or_Kplus_One_PT;
+      *varPion_PT_value = *Dplus_piplus_or_Kplus_Two_PT;
+    }
+    if (*DDFinalState == 41) {
+      *varKaon_PID_value = *Dplus_piplus_or_Kplus_Two_ProbNNk / (*Dplus_piplus_or_Kplus_Two_ProbNNk + *Dplus_piplus_or_Kplus_Two_ProbNNpi);
+      *varPion_PID_value = *Dplus_piplus_or_Kplus_One_ProbNNk / (*Dplus_piplus_or_Kplus_One_ProbNNk + *Dplus_piplus_or_Kplus_One_ProbNNpi);
+      *varPiHigh_PID_value = *varPiOneminus_PID_value;
+      *varPiLow_PID_value = *varPiTwominus_PID_value;
+      *varKaon_PT_value = *Dplus_piplus_or_Kplus_Two_PT;
+      *varPion_PT_value = *Dplus_piplus_or_Kplus_One_PT;
+    }
+
     *pseudorapidity = TMath::ATanH(*B0_PZ / *B0_P);
     if (*B0_PX>0) *phi = TMath::ATan(*B0_PY / *B0_PX);
     else if (*B0_PY>0) *phi = TMath::ATan(*B0_PY / *B0_PX) + TMath::Pi();
     else *phi = TMath::ATan(*B0_PY / *B0_PX) - TMath::Pi();
+
+    *varDplus_Kminus_or_piminus_ETA_value = TMath::ATanH(*Dplus_Kminus_or_piminus_PZ / *Dplus_Kminus_or_piminus_P);
+    *varDplus_piplus_or_Kplus_One_ETA_value = TMath::ATanH(*Dplus_piplus_or_Kplus_One_PZ / *Dplus_piplus_or_Kplus_One_P);
+    *varDplus_piplus_or_Kplus_Two_ETA_value = TMath::ATanH(*Dplus_piplus_or_Kplus_Two_PZ / *Dplus_piplus_or_Kplus_Two_P);
+    *varDminus_Kplus_or_piplus_ETA_value = TMath::ATanH(*Dminus_Kplus_or_piplus_PZ / *Dminus_Kplus_or_piplus_P);
+    *varDminus_piminus_or_Kminus_One_ETA_value = TMath::ATanH(*Dminus_piminus_or_Kminus_One_PZ / *Dminus_piminus_or_Kminus_One_P);
+    *varDminus_piminus_or_Kminus_Two_ETA_value = TMath::ATanH(*Dminus_piminus_or_Kminus_Two_PZ / *Dminus_piminus_or_Kminus_Two_P);
   }
 
   bool EntryPassesSpecialCuts() {
@@ -390,7 +524,8 @@ int main(int argc, char * argv[]){
   reducer->set_input_tree_path(inputtree);
   reducer->set_output_file_path(outputfile);
   reducer->set_output_tree_path(outputtree);
-  // reducer->set_num_events_process(100000);
+  // reducer->set_num_events_process(1000);
+  reducer->OverwriteExistingLeaves(false);
 
   reducer->Initialize();
 
@@ -1830,4 +1965,14 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   ReducerLeaf<Double_t>& varKplus_SumProbNNkpi = _rdcr->CreateDoubleLeaf("varKplus_SumProbNNkpi", -999999.);
   varKplus_SumProbNNkpi.Add(varKplus_ProbNNk, varKplus_ProbNNpi);
   _rdcr->CreateDoubleLeaf("varKplus_PID", -999999.).Divide(varKplus_ProbNNk, varKplus_SumProbNNkpi);
+
+  // Eta variables
+  if (_rdcr->LeafExists("Dplus_Kminus_or_piminus_LOKI_ETA")) {
+    _rdcr->CreateDoubleCopyLeaf("Dplus_Kminus_or_piminus_ETA", _rdcr->GetInterimLeafByName("Dplus_Kminus_or_piminus_LOKI_ETA"));
+    _rdcr->CreateDoubleCopyLeaf("Dplus_piplus_or_Kplus_One_ETA", _rdcr->GetInterimLeafByName("Dplus_piplus_or_Kplus_One_LOKI_ETA"));
+    _rdcr->CreateDoubleCopyLeaf("Dplus_piplus_or_Kplus_Two_ETA", _rdcr->GetInterimLeafByName("Dplus_piplus_or_Kplus_Two_LOKI_ETA"));
+    _rdcr->CreateDoubleCopyLeaf("Dminus_Kplus_or_piplus_ETA", _rdcr->GetInterimLeafByName("Dminus_Kplus_or_piplus_LOKI_ETA"));
+    _rdcr->CreateDoubleCopyLeaf("Dminus_piminus_or_Kminus_One_ETA", _rdcr->GetInterimLeafByName("Dminus_piminus_or_Kminus_One_LOKI_ETA"));
+    _rdcr->CreateDoubleCopyLeaf("Dminus_piminus_or_Kminus_Two_ETA", _rdcr->GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_LOKI_ETA"));
+  }
 }

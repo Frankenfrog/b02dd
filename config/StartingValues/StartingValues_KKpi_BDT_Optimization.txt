@@ -1,0 +1,24 @@
+parBkgExponent       = -0.0025 L(-0.1 - 0.1)
+parSigMassCB1Alpha   =  1.28   C L(-INF - +INF)
+parSigMassCB1Expo    =  10.0   C L(-INF - +INF)
+parSigMassCB2Alpha   = -1.32   C L(-INF - +INF)
+parSigMassCB2Expo    =  10.0   C L(-INF - +INF)
+parSigMassCBFraction =  0.50   C L(0 - 1)
+parSigMassMean       =  5279.11 C L(5270 - 5290) // [MeV/c^{2}]
+parSigMassSigma1     =  9.8    C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigma2     =  7.5    C L(1 - 30) // [MeV/c^{2}]
+
+parBkgDsDMassCB1Alpha   =  0.47 C L(0.01 - 2)
+parBkgDsDMassCB1Expo    =  10   C L(1 - 100)
+parBkgDsDMassCB2Alpha   = -1.34 C L(-5 - -0.1)
+parBkgDsDMassCB2Expo    =  10   C L(1 - 100)
+parBkgDsDMassCBFraction =  0.5  C L(0 - 1)
+parBkgDsDMassMean       =  5220.2 C L(5150 - 5300) // [MeV/c^{2}]
+parBkgDsDMassSigma1     =  12.8 C L(5 - 30) // [MeV/c^{2}]
+parBkgDsDMassSigma2     =  19.8 C L(5 - 30) // [MeV/c^{2}]
+
+parBkgDstDHighMassMean       =  5113.7 C L(5100 - 5140) // [MeV/c^{2}]
+parBkgDstDHighMassSigma      =  10.6   C L(1 - 20) // [MeV/c^{2}]
+parBkgDstDLowMassMean        =  5062.1 C L(5050 - 5070) // [MeV/c^{2}]
+parBkgDstDLowMassSigma       =  12.9   C L(1 - 20) // [MeV/c^{2}]
+parBkgDstDMassFraction       =  0.6    L(0 - 1)

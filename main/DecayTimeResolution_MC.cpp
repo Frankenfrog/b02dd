@@ -64,10 +64,6 @@ int main(int argc, char * argv[]){
   RooRealVar        obsTimeErr_True("obsTimeErr_True_ps","#it{t-t}_{true}",-0.4,0.4,"ps");
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
   
-  RooCategory       catYear("catYear","year of data taking");
-  catYear.defineType("2011",2011);
-  catYear.defineType("2012",2012);
-  
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("signal",0);
   RooCategory       idxPV("idxPV","idxPV");
@@ -76,7 +72,7 @@ int main(int argc, char * argv[]){
   RooArgSet         observables(obsTimeErr_True,"observables");
   if (pereventresolution) observables.add(obsTimeErr);
   
-  RooArgSet         categories(catYear,catBkg,idxPV,"categories");
+  RooArgSet         categories(catBkg,idxPV,"categories");
   
   // Get data set
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
@@ -103,13 +99,6 @@ int main(int argc, char * argv[]){
   RooAddPdf                 pdf("pdf","pdf",RooArgList(pdfGauss_wrongPV,respereventGauss2,respereventGauss1),RooArgList(parResFraction_wrongPV,parResFraction2));
   
 //========================================================================================================================================================================================================================
-  
-  // Build Simultaneous PDF
-  // RooSimultaneous   pdf("pdf","P",catYear);
-  // pdf.addPdf(*pdfSigTime_11,"2011");
-  // pdf.addPdf(*pdfSigTime_12,"2012");
-
-  // cout  <<  "simultaneous PDF built"  <<  endl;
 
   // Get Starting Values and Fit PDF to data
   pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");

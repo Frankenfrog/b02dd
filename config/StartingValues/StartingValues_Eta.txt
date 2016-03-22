@@ -47,7 +47,7 @@
 parSigEtaDeltaP0_OS      =  0.003  L(-0.03 - 0.03)
 parSigEtaDeltaP0Mean_OS  =  0.003  C
 parSigEtaDeltaP0Sigma_OS =  0.012  C
-parSigEtaDeltaP1_OS      = -0.02   L(-0.3 - 0.3)
+parSigEtaDeltaP1_OS      = -0.02   L(-0.1 - 0.1)
 parSigEtaDeltaP1Mean_OS  = -0.02   C
 parSigEtaDeltaP1Sigma_OS =  0.11   C
 parSigEtaMean_OS         =  0.3617 C

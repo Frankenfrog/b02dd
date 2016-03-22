@@ -29,14 +29,192 @@ using namespace dooselection::reducer;
 using namespace doocore::io;
 
 // forward declarations
-// typedef tuple: head, daughters, stable particles, isMC, isFlat
-typedef std::tuple<std::string, std::list<std::string>, std::list<std::string>, bool, bool> cfg_tuple;
+// typedef tuple: head, daughters, stable particles, isFlat
+typedef std::tuple<std::string, std::list<std::string>, std::list<std::string>, bool> cfg_tuple;
 cfg_tuple Configure(Reducer* _rdcr, std::string& _channel);
 void MassLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 void TimeLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 void TriggerLeaves(Reducer* _rdcr);
 void VetoLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg);
+
+class B02DDVariablesReducer : public Reducer {
+
+  ReducerLeaf<Int_t>* catD1FinalState;
+  ReducerLeaf<Int_t>* catD2FinalState;
+  ReducerLeaf<Int_t>* catDDFinalState;
+  ReducerLeaf<Int_t>* catDDFinalStateParticles;
+
+  Int_t* D1FinalState;
+  Int_t* D2FinalState;
+  Int_t* DDFinalState;
+  Int_t* DDFinalStateParticles;
+
+  Int_t* Dplus1_Kminus_or_piminus_ID;
+  Int_t* Dplus1_piplus_or_Kplus_One_ID;
+  Int_t* Dplus1_piplus_or_Kplus_Two_ID;
+  Int_t* Dplus2_Kminus_or_piminus_ID;
+  Int_t* Dplus2_piplus_or_Kplus_One_ID;
+  Int_t* Dplus2_piplus_or_Kplus_Two_ID;
+
+  ReducerLeaf<Double_t>* obsMassDau_Kpipi;
+  ReducerLeaf<Double_t>* obsMassDau_KKpi;
+
+  Double_t* obsMassDau_Kpipi_value;
+  Double_t* obsMassDau_KKpi_value;
+
+  Float_t* B0_FitPVConst_Dplus_M;
+  Float_t* B0_FitPVConst_Dplus0_M;
+
+  ReducerLeaf<Double_t>* varPseudorapidity;
+  Double_t* pseudorapidity;
+  ReducerLeaf<Double_t>* varPhi;
+  Double_t* phi;
+  Double_t* B0_P;
+  Double_t* B0_PX;
+  Double_t* B0_PY;
+  Double_t* B0_PZ;
+
+  ReducerLeaf<Double_t>* varDplus1_Kminus_or_piminus_ETA;
+  Double_t* varDplus1_Kminus_or_piminus_ETA_value;
+  Double_t* Dplus1_Kminus_or_piminus_P;
+  Double_t* Dplus1_Kminus_or_piminus_PZ;
+  ReducerLeaf<Double_t>* varDplus1_piplus_or_Kplus_One_ETA;
+  Double_t* varDplus1_piplus_or_Kplus_One_ETA_value;
+  Double_t* Dplus1_piplus_or_Kplus_One_P;
+  Double_t* Dplus1_piplus_or_Kplus_One_PZ;
+  ReducerLeaf<Double_t>* varDplus1_piplus_or_Kplus_Two_ETA;
+  Double_t* varDplus1_piplus_or_Kplus_Two_ETA_value;
+  Double_t* Dplus1_piplus_or_Kplus_Two_P;
+  Double_t* Dplus1_piplus_or_Kplus_Two_PZ;
+  ReducerLeaf<Double_t>* varDplus2_Kminus_or_piminus_ETA;
+  Double_t* varDplus2_Kminus_or_piminus_ETA_value;
+  Double_t* Dplus2_Kminus_or_piminus_P;
+  Double_t* Dplus2_Kminus_or_piminus_PZ;
+  ReducerLeaf<Double_t>* varDplus2_piplus_or_Kplus_One_ETA;
+  Double_t* varDplus2_piplus_or_Kplus_One_ETA_value;
+  Double_t* Dplus2_piplus_or_Kplus_One_P;
+  Double_t* Dplus2_piplus_or_Kplus_One_PZ;
+  ReducerLeaf<Double_t>* varDplus2_piplus_or_Kplus_Two_ETA;
+  Double_t* varDplus2_piplus_or_Kplus_Two_ETA_value;
+  Double_t* Dplus2_piplus_or_Kplus_Two_P;
+  Double_t* Dplus2_piplus_or_Kplus_Two_PZ;
+
+  void CreateSpecialBranches() {
+    Dplus1_Kminus_or_piminus_ID = (Int_t*)GetInterimLeafByName("Dplus1_Kminus_or_piminus_ID").branch_address();
+    Dplus1_piplus_or_Kplus_One_ID = (Int_t*)GetInterimLeafByName("Dplus1_piplus_or_Kplus_One_ID").branch_address();
+    Dplus1_piplus_or_Kplus_Two_ID = (Int_t*)GetInterimLeafByName("Dplus1_piplus_or_Kplus_Two_ID").branch_address();
+    Dplus2_Kminus_or_piminus_ID = (Int_t*)GetInterimLeafByName("Dplus2_Kminus_or_piminus_ID").branch_address();
+    Dplus2_piplus_or_Kplus_One_ID = (Int_t*)GetInterimLeafByName("Dplus2_piplus_or_Kplus_One_ID").branch_address();
+    Dplus2_piplus_or_Kplus_Two_ID = (Int_t*)GetInterimLeafByName("Dplus2_piplus_or_Kplus_Two_ID").branch_address();
+
+    catD1FinalState = &(CreateIntLeaf("catD1FinalState", -10));
+    catD2FinalState = &(CreateIntLeaf("catD2FinalState", -10));
+    catDDFinalState = &(CreateIntLeaf("catDDFinalState", -10));
+    catDDFinalStateParticles = &(CreateIntLeaf("catDDFinalStateParticles", -10));
+
+    D1FinalState = (Int_t*)catD1FinalState->branch_address();
+    D2FinalState = (Int_t*)catD2FinalState->branch_address();
+    DDFinalState = (Int_t*)catDDFinalState->branch_address();
+    DDFinalStateParticles = (Int_t*)catDDFinalStateParticles->branch_address();
+
+    obsMassDau_Kpipi = &(CreateDoubleLeaf("obsMassDau_Kpipi", -1000.));
+    obsMassDau_KKpi  = &(CreateDoubleLeaf("obsMassDau_KKpi", -1000.));
+
+    obsMassDau_Kpipi_value = (Double_t*)obsMassDau_Kpipi->branch_address();
+    obsMassDau_KKpi_value  = (Double_t*)obsMassDau_KKpi->branch_address();
+
+    B0_FitPVConst_Dplus_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus_M").branch_address();
+    B0_FitPVConst_Dplus0_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus0_M").branch_address();
+
+    B0_P = (Double_t*)GetInterimLeafByName("B0_P").branch_address();
+    B0_PX = (Double_t*)GetInterimLeafByName("B0_PX").branch_address();
+    B0_PY = (Double_t*)GetInterimLeafByName("B0_PY").branch_address();
+    B0_PZ = (Double_t*)GetInterimLeafByName("B0_PZ").branch_address();
+    varPseudorapidity = &(CreateDoubleLeaf("varPseudorapidity", -999999));
+    pseudorapidity = (Double_t*)varPseudorapidity->branch_address();
+    varPhi = &(CreateDoubleLeaf("varPhi", -999999));
+    phi = (Double_t*)varPhi->branch_address();
+
+    Dplus1_Kminus_or_piminus_P = (Double_t*)GetInterimLeafByName("Dplus1_Kminus_or_piminus_P").branch_address();
+    Dplus1_Kminus_or_piminus_PZ = (Double_t*)GetInterimLeafByName("Dplus1_Kminus_or_piminus_PZ").branch_address();
+    varDplus1_Kminus_or_piminus_ETA = &(CreateDoubleLeaf("varDplus1_Kminus_or_piminus_ETA", -999999));
+    varDplus1_Kminus_or_piminus_ETA_value = (Double_t*)varDplus1_Kminus_or_piminus_ETA->branch_address();
+    Dplus1_piplus_or_Kplus_One_P = (Double_t*)GetInterimLeafByName("Dplus1_piplus_or_Kplus_One_P").branch_address();
+    Dplus1_piplus_or_Kplus_One_PZ = (Double_t*)GetInterimLeafByName("Dplus1_piplus_or_Kplus_One_PZ").branch_address();
+    varDplus1_piplus_or_Kplus_One_ETA = &(CreateDoubleLeaf("varDplus1_piplus_or_Kplus_One_ETA", -999999));
+    varDplus1_piplus_or_Kplus_One_ETA_value = (Double_t*)varDplus1_piplus_or_Kplus_One_ETA->branch_address();
+    Dplus1_piplus_or_Kplus_Two_P = (Double_t*)GetInterimLeafByName("Dplus1_piplus_or_Kplus_Two_P").branch_address();
+    Dplus1_piplus_or_Kplus_Two_PZ = (Double_t*)GetInterimLeafByName("Dplus1_piplus_or_Kplus_Two_PZ").branch_address();
+    varDplus1_piplus_or_Kplus_Two_ETA = &(CreateDoubleLeaf("varDplus1_piplus_or_Kplus_Two_ETA", -999999));
+    varDplus1_piplus_or_Kplus_Two_ETA_value = (Double_t*)varDplus1_piplus_or_Kplus_Two_ETA->branch_address();
+    Dplus2_Kminus_or_piminus_P = (Double_t*)GetInterimLeafByName("Dplus2_Kminus_or_piminus_P").branch_address();
+    Dplus2_Kminus_or_piminus_PZ = (Double_t*)GetInterimLeafByName("Dplus2_Kminus_or_piminus_PZ").branch_address();
+    varDplus2_Kminus_or_piminus_ETA = &(CreateDoubleLeaf("varDplus2_Kminus_or_piminus_ETA", -999999));
+    varDplus2_Kminus_or_piminus_ETA_value = (Double_t*)varDplus2_Kminus_or_piminus_ETA->branch_address();
+    Dplus2_piplus_or_Kplus_One_P = (Double_t*)GetInterimLeafByName("Dplus2_piplus_or_Kplus_One_P").branch_address();
+    Dplus2_piplus_or_Kplus_One_PZ = (Double_t*)GetInterimLeafByName("Dplus2_piplus_or_Kplus_One_PZ").branch_address();
+    varDplus2_piplus_or_Kplus_One_ETA = &(CreateDoubleLeaf("varDplus2_piplus_or_Kplus_One_ETA", -999999));
+    varDplus2_piplus_or_Kplus_One_ETA_value = (Double_t*)varDplus2_piplus_or_Kplus_One_ETA->branch_address();
+    Dplus2_piplus_or_Kplus_Two_P = (Double_t*)GetInterimLeafByName("Dplus2_piplus_or_Kplus_Two_P").branch_address();
+    Dplus2_piplus_or_Kplus_Two_PZ = (Double_t*)GetInterimLeafByName("Dplus2_piplus_or_Kplus_Two_PZ").branch_address();
+    varDplus2_piplus_or_Kplus_Two_ETA = &(CreateDoubleLeaf("varDplus2_piplus_or_Kplus_Two_ETA", -999999));
+    varDplus2_piplus_or_Kplus_Two_ETA_value = (Double_t*)varDplus2_piplus_or_Kplus_Two_ETA->branch_address();
+  }
+
+  void UpdateSpecialLeaves() {
+    if (abs(*Dplus1_Kminus_or_piminus_ID) == 321 && abs(*Dplus1_piplus_or_Kplus_One_ID) == 211 && abs(*Dplus1_piplus_or_Kplus_Two_ID) == 211) *D1FinalState = 1;
+    if (abs(*Dplus1_Kminus_or_piminus_ID) == 211 && abs(*Dplus1_piplus_or_Kplus_One_ID) == 211 && abs(*Dplus1_piplus_or_Kplus_Two_ID) == 211) *D1FinalState = 2;
+    if (abs(*Dplus1_Kminus_or_piminus_ID) == 321 && abs(*Dplus1_piplus_or_Kplus_One_ID) == 321 && abs(*Dplus1_piplus_or_Kplus_Two_ID) == 211) *D1FinalState = 3;
+    if (abs(*Dplus1_Kminus_or_piminus_ID) == 321 && abs(*Dplus1_piplus_or_Kplus_One_ID) == 211 && abs(*Dplus1_piplus_or_Kplus_Two_ID) == 321) *D1FinalState = 4;
+
+    if (abs(*Dplus2_Kminus_or_piminus_ID) == 321 && abs(*Dplus2_piplus_or_Kplus_One_ID) == 211 && abs(*Dplus2_piplus_or_Kplus_Two_ID) == 211) *D2FinalState = 1;
+    if (abs(*Dplus2_Kminus_or_piminus_ID) == 211 && abs(*Dplus2_piplus_or_Kplus_One_ID) == 211 && abs(*Dplus2_piplus_or_Kplus_Two_ID) == 211) *D2FinalState = 2;
+    if (abs(*Dplus2_Kminus_or_piminus_ID) == 321 && abs(*Dplus2_piplus_or_Kplus_One_ID) == 321 && abs(*Dplus2_piplus_or_Kplus_Two_ID) == 211) *D2FinalState = 3;
+    if (abs(*Dplus2_Kminus_or_piminus_ID) == 321 && abs(*Dplus2_piplus_or_Kplus_One_ID) == 211 && abs(*Dplus2_piplus_or_Kplus_Two_ID) == 321) *D2FinalState = 4;
+
+    if (*D1FinalState == 1 && *D2FinalState == 1) {
+      *DDFinalState = 11;
+      *DDFinalStateParticles = 1;
+    }
+    if (*D1FinalState == 1 && *D2FinalState == 3) *DDFinalState = 13;
+    if (*D1FinalState == 1 && *D2FinalState == 4) *DDFinalState = 14;
+    if (*D1FinalState == 3 && *D2FinalState == 1) *DDFinalState = 31;
+    if (*D1FinalState == 4 && *D2FinalState == 1) *DDFinalState = 41;
+    if (*D1FinalState == 3 && *D2FinalState == 3) *DDFinalState = 33;
+    if (*D1FinalState == 3 && *D2FinalState == 4) *DDFinalState = 34;
+    if (*D1FinalState == 4 && *D2FinalState == 3) *DDFinalState = 43;
+    if (*D1FinalState == 4 && *D2FinalState == 4) *DDFinalState = 44;
+
+    if (*DDFinalState == 13 || *DDFinalState == 14) {
+      *obsMassDau_Kpipi_value = *B0_FitPVConst_Dplus_M;
+      *obsMassDau_KKpi_value  = *B0_FitPVConst_Dplus0_M;
+      *DDFinalStateParticles = 0;
+    }
+    if (*DDFinalState == 31 || *DDFinalState == 41) {
+      *obsMassDau_Kpipi_value = *B0_FitPVConst_Dplus0_M;
+      *obsMassDau_KKpi_value  = *B0_FitPVConst_Dplus_M;
+      *DDFinalStateParticles = 0;
+    }
+
+    *pseudorapidity = TMath::ATanH(*B0_PZ / *B0_P);
+    if (*B0_PX>0) *phi = TMath::ATan(*B0_PY / *B0_PX);
+    else if (*B0_PY>0) *phi = TMath::ATan(*B0_PY / *B0_PX) + TMath::Pi();
+    else *phi = TMath::ATan(*B0_PY / *B0_PX) - TMath::Pi();
+
+    *varDplus1_Kminus_or_piminus_ETA_value = TMath::ATanH(*Dplus1_Kminus_or_piminus_PZ / *Dplus1_Kminus_or_piminus_P);
+    *varDplus1_piplus_or_Kplus_One_ETA_value = TMath::ATanH(*Dplus1_piplus_or_Kplus_One_PZ / *Dplus1_piplus_or_Kplus_One_P);
+    *varDplus1_piplus_or_Kplus_Two_ETA_value = TMath::ATanH(*Dplus1_piplus_or_Kplus_Two_PZ / *Dplus1_piplus_or_Kplus_Two_P);
+    *varDplus2_Kminus_or_piminus_ETA_value = TMath::ATanH(*Dplus2_Kminus_or_piminus_PZ / *Dplus2_Kminus_or_piminus_P);
+    *varDplus2_piplus_or_Kplus_One_ETA_value = TMath::ATanH(*Dplus2_piplus_or_Kplus_One_PZ / *Dplus2_piplus_or_Kplus_One_P);
+    *varDplus2_piplus_or_Kplus_Two_ETA_value = TMath::ATanH(*Dplus2_piplus_or_Kplus_Two_PZ / *Dplus2_piplus_or_Kplus_Two_P);
+  }
+
+  bool EntryPassesSpecialCuts() {
+    return (*DDFinalState > 0);
+  }
+
+};
 
 int main(int argc, char * argv[]){
   sinfo << "-info-  \t" << "B02DDWSVariablesGrimReaper \t" << "Welcome!" << endmsg;
@@ -88,11 +266,10 @@ int main(int argc, char * argv[]){
 cfg_tuple Configure(Reducer* _rdcr, std::string& _channel){
   doocore::config::Summary& summary = doocore::config::Summary::GetInstance();
   summary.AddSection("Channel");
-  // typedef tuple: head, daughters, stable particles, isMC, isFlat
+  // typedef tuple: head, daughters, stable particles, isFlat
   std::string head ="";
   std::list<std::string> daughters;
   std::list<std::string> stable_particles;
-  bool isMC = false;
   bool isFlat = false;
   if (_channel == "B02DD"){
     head = "B0";
@@ -104,7 +281,6 @@ cfg_tuple Configure(Reducer* _rdcr, std::string& _channel){
     stable_particles.push_back("Dplus2_Kminus_or_piminus");
     stable_particles.push_back("Dplus2_piplus_or_Kplus_One");
     stable_particles.push_back("Dplus2_piplus_or_Kplus_Two");
-    isMC = _rdcr->LeafExists(head+"_BKGCAT");
     isFlat = (_rdcr->LeafExists("flat_array_index") || _rdcr->LeafExists("idxPV"));
   }
   else{
@@ -120,20 +296,18 @@ cfg_tuple Configure(Reducer* _rdcr, std::string& _channel){
     summary.Add("Stable", *it);
   }
   summary.AddSection("Data Type");
-  summary.Add("MC", isMC);
   summary.Add("Flat", isFlat);
 
   if (isFlat) sinfo << "-info-  \t" << "You are running the reducer over a flat tuple!" << endmsg;
-  if (isMC) sinfo << "-info-  \t" << "You are running the reducer over a MC tuple!" << endmsg;
 
-  return std::make_tuple(head, daughters, stable_particles, isMC, isFlat);
+  return std::make_tuple(head, daughters, stable_particles, isFlat);
 }
 
 void MassLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   doocore::config::Summary& summary = doocore::config::Summary::GetInstance();
   // handle flattened tuples
   std::string flat_suffix = "";
-  if (std::get<4>(cfg)) flat_suffix = "_flat";
+  if (std::get<3>(cfg)) flat_suffix = "_flat";
   sinfo << "-info-  \t" << "Setting flat suffix to " << flat_suffix << endmsg;
 
   // create copies of mass observables for different fit constraints
@@ -176,7 +350,7 @@ void TimeLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   // handle flattened tuples
   std::string flat_suffix = "";
   std::string fit_constraints = "";
-  if (std::get<4>(cfg)) flat_suffix = "_flat";
+  if (std::get<3>(cfg)) flat_suffix = "_flat";
 
   ReducerLeaf<Double_t>* tau_leaf_ptr = NULL;
   ReducerLeaf<Double_t>* tau_true_leaf_ptr = NULL;
@@ -198,19 +372,6 @@ void TimeLeaves(Reducer* _rdcr, cfg_tuple& cfg){
     fit_constraints = "LOKI";
     tau_leaf_ptr = &_rdcr->CreateDoubleCopyLeaf("obsTime", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_LOKI_DTF_CTAU"), 1.0/0.299792458);
     tau_err_leaf_ptr = &_rdcr->CreateDoubleCopyLeaf("obsTimeErr", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_LOKI_DTF_CTAUERR"), 1.0/0.299792458);
-  }
-
-  if (_rdcr->LeafExists(std::get<0>(cfg)+"_BKGCAT")){
-    tau_true_leaf_ptr = &_rdcr->CreateDoubleCopyLeaf("obsTime_True", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1000.0);
-    
-    // the "true" time error is defined as "reconstructed decay time" - "true decay time"
-    tau_true_err_leaf_ptr = &_rdcr->CreateDoubleLeaf("obsTimeErr_True", 1000.0);
-    if (_rdcr->LeafExists(std::get<0>(cfg)+"_FitPVConst_tau")) {
-      tau_true_err_leaf_ptr->Add(_rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_FitPVConst_tau"+flat_suffix), _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1.0, -1.0);
-    }
-    else if (_rdcr->LeafExists(std::get<0>(cfg)+"_LOKI_DTF_CTAU")){
-      tau_true_err_leaf_ptr->Add(_rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_LOKI_DTF_CTAU"), _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1.0/0.299792458, -1.0);      
-    }
   }
 
   summary.Add("Time fit constraints", fit_constraints);
@@ -236,7 +397,7 @@ void VetoLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   doocore::config::Summary& summary = doocore::config::Summary::GetInstance();
   // handle flattened tuples
   std::string flat_suffix = "";
-  if (std::get<4>(cfg)) flat_suffix = "_flat";
+  if (std::get<3>(cfg)) flat_suffix = "_flat";
 
   // veto leafs
   std::string Dplus1_px, Dplus1_py, Dplus1_pz;
@@ -1007,48 +1168,12 @@ void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg){
   doocore::config::Summary& summary = doocore::config::Summary::GetInstance();
   // handle flattened tuples
   std::string flat_suffix = "";
-  if (std::get<4>(cfg)) flat_suffix = "_flat";
+  if (std::get<3>(cfg)) flat_suffix = "_flat";
 
   // random leaf
   TRandom3* random_generator_ = new TRandom3(42);
   ReducerLeaf<Int_t>& random_leaf = _rdcr->CreateIntLeaf("idxRandom", -1);
   random_leaf.Randomize(random_generator_);
-
-  // background category
-  if (std::get<3>(cfg)){
-    _rdcr->CreateIntCopyLeaf("catBkg", _rdcr->GetInterimLeafByName("B0_BKGCAT"));
-  }
-  // final state
-  ReducerLeaf<Int_t>& catD1FinalState = _rdcr->CreateIntLeaf("catD1FinalState", -10);
-      TCut  D1_Kpipi = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+")==211"));
-      TCut  D1_pipipi = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+")==211"));
-      TCut  D1_KKpi = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+")==211"));
-      TCut  D1_KpiK = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P2_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P0_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus_P1_ID"+flat_suffix+")==321"));
-      catD1FinalState.AddCondition("Kpipi",D1_Kpipi.GetTitle(),1);
-      catD1FinalState.AddCondition("pipipi",D1_pipipi.GetTitle(),2);
-      catD1FinalState.AddCondition("KKpi",D1_KKpi.GetTitle(),3);
-      catD1FinalState.AddCondition("KpiK",D1_KpiK.GetTitle(),4);
-
-  ReducerLeaf<Int_t>& catD2FinalState = _rdcr->CreateIntLeaf("catD2FinalState", -10);
-      TCut  D2_Kpipi = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P2_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P0_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P1_ID"+flat_suffix+")==211"));
-      TCut  D2_pipipi = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P2_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P0_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P1_ID"+flat_suffix+")==211"));
-      TCut  D2_KKpi = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P2_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P0_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P1_ID"+flat_suffix+")==211"));
-      TCut  D2_KpiK = TCut(TString("abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P2_ID"+flat_suffix+")==321&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P0_ID"+flat_suffix+")==211&&abs("+std::get<0>(cfg)+"_FitPVConst_Dplus0_P1_ID"+flat_suffix+")==321"));
-      catD2FinalState.AddCondition("Kpipi",D2_Kpipi.GetTitle(),1);
-      catD2FinalState.AddCondition("pipipi",D2_pipipi.GetTitle(),2);
-      catD2FinalState.AddCondition("KKpi",D2_KKpi.GetTitle(),3);
-      catD2FinalState.AddCondition("KpiK",D2_KpiK.GetTitle(),4);
-
-  ReducerLeaf<Int_t>& catDDFinalState = _rdcr->CreateIntLeaf("catDDFinalState", -10);
-      catDDFinalState.AddCondition("KpipiKpipi", TString(D1_Kpipi && D2_Kpipi), 1);
-      catDDFinalState.AddCondition("Kpipipipipi", TString(D1_Kpipi && D2_pipipi), 2);
-      catDDFinalState.AddCondition("pipipiKpipi", TString(D1_pipipi && D2_Kpipi), 3);
-      catDDFinalState.AddCondition("KpipiKKpi", TString(D1_Kpipi && D2_KKpi), 4);
-      catDDFinalState.AddCondition("KKpiKpipi", TString(D1_KKpi && D2_Kpipi), 5);
-      catDDFinalState.AddCondition("pipipipipipi", TString(D1_pipipi && D2_pipipi), 6);
-      catDDFinalState.AddCondition("pipipiKKpi", TString(D1_pipipi && D2_KKpi), 7);
-      catDDFinalState.AddCondition("KKpipipipi", TString(D1_KKpi && D2_pipipi), 8);
-      catDDFinalState.AddCondition("KKpiKKpi", TString(D1_KKpi && D2_KKpi), 9);
 
   // event and run number
   _rdcr->CreateIntCopyLeaf("idxEventNumber", _rdcr->GetInterimLeafByName("eventNumber"));

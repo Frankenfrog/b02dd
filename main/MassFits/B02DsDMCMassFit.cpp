@@ -26,14 +26,7 @@
 #include "RooProduct.h"
 
 // from RooFit PDFs
-#include "RooGaussModel.h"
-#include "RooBDecay.h"
-#include "RooDecay.h"
-#include "RooExponential.h"
-#include "RooLognormal.h"
-#include "RooGaussian.h"
 #include "RooCBShape.h"
-
 #include "RooFormulaVar.h"
 #include "RooAbsPdf.h"
 #include "RooProdPdf.h"
@@ -46,11 +39,12 @@
 #include "doocore/io/MsgStream.h"
 #include "doocore/io/EasyTuple.h"
 #include "doocore/lutils/lutils.h"
+#include "doocore/config/EasyConfig.h"
 
 // from DooFit
-#include "Urania/RooIpatia2.h"
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -63,32 +57,41 @@ using namespace doocore::lutils;
 using namespace doofit::plotting;
 
 int main(int argc, char * argv[]){
+  if (argc < 2) {
+    std::cout << "Usage:   " << argv[0] << " fit_config_file_name" << std::endl;
+    return 0;
+  }
+  doocore::config::EasyConfig config(argv[1]);
 
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5350,"MeV/c^{2}");
-
-  RooRealVar        varBDT("BDTG2_classifier","BDTG2_classifier",-1,1);
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5350,"MeV/c^{2}");
   
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
-  catDDFinalState.defineType("KpipiKpipi",1);
-  RooCategory       catTriggerSetTopo234BodyBBDT("catTriggerSetTopo234BodyBBDT","catTriggerSetTopo234BodyBBDT");
-  catTriggerSetTopo234BodyBBDT.defineType("triggered",1);
+  catDDFinalState.defineType("KpipiKpipi",11);
+  catDDFinalState.defineType("KpipiKKpi",13);
+  catDDFinalState.defineType("KpipiKpiK",14);
+  catDDFinalState.defineType("KKpiKpipi",31);
+  catDDFinalState.defineType("KpiKKpipi",41);
+  RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
+  catDDFinalStateParticles.defineType("Kpipi",1);
+  catDDFinalStateParticles.defineType("KKpi",0);
+
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("Signal",0);
   catBkg.defineType("QuasiSignal",10);
   catBkg.defineType("FullyRecoPhysBkg",20);
+  catBkg.defineType("misID",30);
   catBkg.defineType("LowMassBkg",50);
   catBkg.defineType("Ghost",60);
+  RooCategory       idxPV("idxPV","idxPV");
+  idxPV.defineType("best PV",0);
 
   RooArgSet         observables(obsMass,"observables");
-  RooArgSet         variables(varBDT,"variables");
-  RooArgSet         realvars(observables,variables,"realvars");
-  RooArgSet         categories(catDDFinalState,catTriggerSetTopo234BodyBBDT,/*catBkg,*/"categories");
-  
+  RooArgSet         categories(catDDFinalState,catDDFinalStateParticles,idxPV,catBkg,"categories");
+
   // Get data set
-  EasyTuple         tuple("/fhgfs/groups/e5/lhcb/NTuples/B02DD/MC/Sim08/2012/MC_Sim08a_2012_Pythia8_B02DsD_Stripping20_DVv36r5_20150428_pseyfert_20150430_fmeier_BDT_TupleB.root","B02DD",RooArgSet(realvars,categories));
+  EasyTuple         tuple(config.getString("tuple"),config.getString("tree"),RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       data = tuple.ConvertToDataSet(Cut(TString(varBDT.GetName())+">-0.784"));
-  
+  RooDataSet&       data = tuple.ConvertToDataSet(Cut(TString(config.getString("cut"))));
   data.Print();
 
   // Mass PDF
@@ -107,16 +110,6 @@ int main(int argc, char * argv[]){
   RooRealVar        parDsDMassCBFraction("parDsDMassCBFraction","parDsDMassCBFraction",0.5);
   RooAddPdf         pdfDsDMass("pdfDsDMass","pdfDsDMass",RooArgList(pdfDsDMassCB1,pdfDsDMassCB2),parDsDMassCBFraction);
 
-  RooRealVar        parDsDMassL("parDsDMassL","parDsDMassL",-3,-6,-1);
-  RooRealVar        parDsDMassZeta("parDsDMassZeta","parDsDMassZeta",0);
-  RooRealVar        parDsDMassBeta("parDsDMassBeta","parDsDMassBeta",0,-0.1,0.1);
-  RooRealVar        parDsDMassSigma("parDsDMassSigma","parDsDMassSigma",9.0,5,15,"MeV/c^{2}");
-  RooRealVar        parDsDMassAlpha1("parDsDMassAlpha1","parDsDMassAlpha1",1.5, 1, 2);
-  RooRealVar        parDsDMassn1("parDsDMassn1","parDsDMassn1",10);
-  RooRealVar        parDsDMassAlpha2("parDsDMassAlpha2","parDsDMassAlpha2",1.4, 0.5, 2);
-  RooRealVar        parDsDMassn2("parDsDMassn2","parDsDMassn2",10);
-  // RooIpatia2        pdfDsDMass("pdfDsDMass","pdfDsDMass",obsMass,parDsDMassL,parDsDMassZeta,parDsDMassBeta,parDsDMassSigma,parDsDMassMean,parDsDMassAlpha1,parDsDMassn1,parDsDMassAlpha2,parDsDMassn2);
-
   RooRealVar        parDsDYield("parDsDYield","parDsDYield",500,0,1000);
   RooExtendPdf      pdfDsDExtend("pdfDsDExtend","pdfDsDExtend",pdfDsDMass,parDsDYield);
 
@@ -125,7 +118,7 @@ int main(int argc, char * argv[]){
   pdfDsDExtend.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_MC_Mass.txt");
   pdfDsDExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/StartingValues_MC_Mass.new");
   RooLinkedList fitting_args;
-  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(4))));
+  fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(config.getInt("num_cpu")))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
@@ -137,15 +130,17 @@ int main(int argc, char * argv[]){
 
   PlotConfig cfg_plot_mass("cfg_plot_mass");
   cfg_plot_mass.InitializeOptions();
-  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/MC/PlotMass");
+  cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/MC/PlotMass_DsD");
+  cfg_plot_mass.set_label_text("#splitline{MC}{#it{B}^{0} #rightarrow #it{D}_{s}^{+}#it{D}^{-}}");
+  cfg_plot_mass.set_label_position_x(0.25);
   std::vector<std::string> components_mass;
   components_mass += "pdfDsDMassCB1", "pdfDsDMassCB2";
 
-  RooDataSet* optimized_data = dynamic_cast<RooDataSet*>(data.reduce("varKminus_PID>0.2&&varKplus_PID>0.2&&varPiOneminus_PID<0.5&&varPiOneplus_PID<0.5&&varPiTwominus_PID<0.65&&varPiTwoplus_PID<0.65"));
-  optimized_data->Print();
-  RooFitResult* fit_result = pdfDsDExtend.fitTo(*optimized_data, fitting_args);
+  RooFitResult* fit_result = pdfDsDExtend.fitTo(data, fitting_args);
+  doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
+  fitresultprinter.Print();
   pdfDsDExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/FitResults_DsDMass.txt");
-  Plot Mass(cfg_plot_mass, obsMass, *optimized_data, pdfDsDExtend, components_mass, "DsDMass");
+  Plot Mass(cfg_plot_mass, obsMass, data, pdfDsDExtend, components_mass, "DsDMass");
   Mass.set_scaletype_x(kLinear);
   Mass.set_scaletype_y(kBoth);
   Mass.PlotIt();
