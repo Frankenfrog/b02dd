@@ -987,7 +987,7 @@ int main(int argc, char * argv[]){
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
     fit_result->correlationMatrix().Print();
-    TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"recreate");
+    TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"recreate");
     fit_result->Write("fit_result");
     fitresultwritetofile.Close();
 
@@ -1001,8 +1001,8 @@ int main(int argc, char * argv[]){
     PlotConfig cfg_plot_time("cfg_plot_time");
     cfg_plot_time.set_plot_appendix(config.getString("identifier"));
     cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
-    cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
-    cfg_plot_time.set_y_axis_label("Kandidaten");
+    // cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+    // cfg_plot_time.set_y_axis_label("Kandidaten");
     std::vector<std::string> components_time;
     PlotSimultaneous Time(cfg_plot_time, obsTime, *data, pdf, components_time);
     RooDataSet proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
@@ -1035,14 +1035,14 @@ int main(int argc, char * argv[]){
     file_mistag_histograms->Close();
   }
   if (plot_acceptance) {
-    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"read");
+    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
     RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
     pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
     PlotAcceptance(&accspline, read_in_fit_result);
     fitresultfile.Close();
   }
   if (plot_correlation_matrix) {
-    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"read");
+    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
     RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
     doofit::plotting::correlations::CorrelationPlot cplot(*read_in_fit_result);
     cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
@@ -1091,7 +1091,8 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
-  TLatex label(3,0.2,"#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+  TLatex label(3,0.2,"LHCb 3fb^{-1}");
+  // TLatex label(3,0.2,"#splitline{LHCb 3fb^{-1}}{inoffiziell}");
 
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
 
@@ -1101,7 +1102,8 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
-  plot->GetYaxis()->SetTitle("Akzeptanz");
+  plot->GetYaxis()->SetTitle("acceptance");
+  // plot->GetYaxis()->SetTitle("Akzeptanz");
   plot->Draw();
   label.Draw("same");
   c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline.pdf");
@@ -1112,7 +1114,8 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
-  plot->GetYaxis()->SetTitle("Akzeptanz");
+  plot->GetYaxis()->SetTitle("acceptance");
+  // plot->GetYaxis()->SetTitle("Akzeptanz");
   plot->Draw();
   label.SetX(7);
   label.Draw("same");
