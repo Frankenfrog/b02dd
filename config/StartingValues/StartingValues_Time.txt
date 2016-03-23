@@ -9,10 +9,10 @@ parSigTimeTauMean             =  1.519 C
 parSigTimeTauSigma            =  0.005 C
 
 parResMean                    =  0. C L(-0.1 - 0.1) // 0.00066
-parResCorrectionOffset1       =  0.0038  C L(0 - 1)
-parResCorrectionOffset2       =  0.014   C L(0 - 1)
-parResSigmaCorrectionFactor1  =  1.061   C L(0.9 - 1.2)
-parResSigmaCorrectionFactor2  =  1.38    C L(1.2 - 1.5)
+parResCorrectionOffset1       =  0.0036  C L(0 - 1)
+parResCorrectionOffset2       =  0.0127  C L(0 - 1)
+parResSigmaCorrectionFactor1  =  1.022   C L(0.9 - 1.2)
+parResSigmaCorrectionFactor2  =  1.24    C L(1.2 - 1.5)
 parResSigma_wrongPV           =  0.16    C L(0 - 5)
-parResFraction2               =  0.14    C L(0 - 0.5)
-parResFraction_wrongPV        =  0.0029  C L(0 - 0.01)
+parResFraction2               =  0.23    C L(0 - 0.5)
+parResFraction_wrongPV        =  0.0024  C L(0 - 0.01)

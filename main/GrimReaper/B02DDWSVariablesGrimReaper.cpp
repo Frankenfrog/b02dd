@@ -38,7 +38,7 @@ void TriggerLeaves(Reducer* _rdcr);
 void VetoLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 void AuxiliaryLeaves(Reducer* _rdcr, cfg_tuple& cfg);
 
-class B02DDVariablesReducer : public Reducer {
+class B02DDWSVariablesReducer : public Reducer {
 
   ReducerLeaf<Int_t>* catD1FinalState;
   ReducerLeaf<Int_t>* catD2FinalState;
@@ -125,7 +125,7 @@ class B02DDVariablesReducer : public Reducer {
     obsMassDau_KKpi_value  = (Double_t*)obsMassDau_KKpi->branch_address();
 
     B0_FitPVConst_Dplus_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus_M").branch_address();
-    B0_FitPVConst_Dplus0_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus0_M").branch_address();
+    B0_FitPVConst_Dplus0_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_DplusA_M").branch_address();
 
     B0_P = (Double_t*)GetInterimLeafByName("B0_P").branch_address();
     B0_PX = (Double_t*)GetInterimLeafByName("B0_PX").branch_address();
@@ -232,7 +232,7 @@ int main(int argc, char * argv[]){
     return 1;
   }
 
-  Reducer* reducer = new Reducer();
+  Reducer* reducer = new B02DDWSVariablesReducer();
   doocore::config::Summary& summary = doocore::config::Summary::GetInstance();
   summary.AddSection("I/O");
   summary.Add("Input file", inputfile);
@@ -245,6 +245,7 @@ int main(int argc, char * argv[]){
   reducer->set_input_tree_path(inputtree);
   reducer->set_output_file_path(outputfile);
   reducer->set_output_tree_path(outputtree);
+  // reducer->set_num_events_process(1000);
   
   reducer->Initialize();
 
@@ -255,8 +256,8 @@ int main(int argc, char * argv[]){
   summary.AddSection("Added leaves");
   MassLeaves(reducer, cfg);
   TimeLeaves(reducer, cfg);
-  TriggerLeaves(reducer);
-  VetoLeaves(reducer, cfg);
+  // TriggerLeaves(reducer);
+  // VetoLeaves(reducer, cfg);
   AuxiliaryLeaves(reducer, cfg);
 
   reducer->Run();

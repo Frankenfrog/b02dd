@@ -61,7 +61,7 @@ int main(int argc, char * argv[]){
   int num_cpu = config.getInt("num_cpu");
   bool pereventresolution = config.getBool("pereventresolution");
 
-  RooRealVar        obsTimeErr_True("obsTimeErr_True_ps","#it{t-t}_{true}",-0.4,0.4,"ps");
+  RooRealVar        obsTimeErr_True("obsTimeErr_True","#it{t-t}_{true}",-0.4,0.4,"ps");
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
   
   RooCategory       catBkg("catBkg","catBkg");
@@ -101,9 +101,9 @@ int main(int argc, char * argv[]){
 //========================================================================================================================================================================================================================
 
   // Get Starting Values and Fit PDF to data
-  pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
+  // pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
   
-  // pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/StartingValues.txt");
+  pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/StartingValues_MC_Resolution.txt");
   pdf.Print();
   
   // Fit PDF to data
@@ -148,6 +148,7 @@ int main(int argc, char * argv[]){
   PlotConfig cfg_plot_time("cfg_plot_time");
   cfg_plot_time.set_plot_appendix("");
   cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/MC/PlotResolution");
+  cfg_plot_time.set_label_text("MC");
   std::vector<std::string> components_time;
   components_time += "respereventGauss1", "respereventGauss2", "pdfGauss_wrongPV";
   Plot Time(cfg_plot_time, obsTimeErr_True, *data, pdf, components_time);
