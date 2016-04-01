@@ -180,8 +180,8 @@ int main(int argc, char * argv[]){
   RooRealVar                parResCorrectionOffset2("parResCorrectionOffset2","Offset of linear decay time error correction",0.);
   RooRealVar                parResSigmaCorrectionFactor1("parResSigmaCorrectionFactor1","Correctionfactor of Proper Time Errors 1",1.);
   RooRealVar                parResSigmaCorrectionFactor2("parResSigmaCorrectionFactor2","Correctionfactor of Proper Time Errors 2",1.);
-  RooFormulaVar             parResSigmaCorrection_withzscale1("parResSigmaCorrection_withzscale1","Offset of linear decay time error correction inclduign z-scale uncertainty","@0+0.00022*@1+@2*@3",RooArgList(parResCorrectionOffset1,obsTime,parResSigmaCorrectionFactor1,obsTimeErr));
-  RooFormulaVar             parResSigmaCorrection_withzscale2("parResSigmaCorrection_withzscale2","Offset of linear decay time error correction inclduign z-scale uncertainty","@0+0.00022*@1+@2*@3",RooArgList(parResCorrectionOffset2,obsTime,parResSigmaCorrectionFactor1,obsTimeErr));
+  RooFormulaVar             parResSigmaCorrection_withzscale1("parResSigmaCorrection_withzscale1","Offset of linear decay time error correction inclduign z-scale uncertainty","@0-0.00022*@1+@2*@3",RooArgList(parResCorrectionOffset1,obsTime,parResSigmaCorrectionFactor1,obsTimeErr));
+  RooFormulaVar             parResSigmaCorrection_withzscale2("parResSigmaCorrection_withzscale2","Offset of linear decay time error correction inclduign z-scale uncertainty","@0-0.00022*@1+@2*@3",RooArgList(parResCorrectionOffset2,obsTime,parResSigmaCorrectionFactor1,obsTimeErr));
   LinearFunctionWithOffset  parResSigmaCorrection1("parResSigmaCorrection1",obsTimeErr,parResSigmaCorrectionFactor1,parResCorrectionOffset1);
   LinearFunctionWithOffset  parResSigmaCorrection2("parResSigmaCorrection2",obsTimeErr,parResSigmaCorrectionFactor2,parResCorrectionOffset2);
   RooRealVar                parResSigma_wrongPV("parResSigma_wrongPV","Width of wrong PV component",1,0,5);
@@ -193,7 +193,9 @@ int main(int argc, char * argv[]){
   RooGaussModel             respereventGauss2_generate("respereventGauss2_generate","Gaussmodel for generation 2",obsTime,parResMean,parResSigmaCorrection_withzscale2);
   RooGaussModel             respereventGauss3_generate("respereventGauss3_generate","Gaussmodel for generation 3",obsTime,parResMean,parResSigma_wrongPV);
   RooAddModel               respereventGauss_generate("respereventGauss_generate","Gaussmodel for generation",RooArgList(respereventGauss3_generate,respereventGauss2_generate,respereventGauss1_generate),RooArgList(parResFraction_wrongPV,parResFraction2));
-  RooFormulaVar             parResMeanSigma_withzscale("parResMeanSigma_withzscale","parResMeanSigma_withzscale","0.05+0.00022*@0",RooArgList(obsTime));
+  RooRealVar                parReszscale("parReszscale","parReszscale",-1,1);
+  RooGaussian               pdfReszscale("pdfReszscale","pdfReszscale",parReszscale,RooConst(0),RooConst(0.00022));
+  RooFormulaVar             parResMeanSigma_withzscale("parResMeanSigma_withzscale","parResMeanSigma_withzscale","0.05+@0*@1",RooArgList(obsTime,parReszscale));
   RooGaussModel             resModel_generate("resModel_generate","resModel_generate",obsTime,parResMean,parResMeanSigma_withzscale);
 
 //=========================================================================================================================================================================================================================
@@ -451,7 +453,10 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < 10 ; ++i) {
       cout  <<  i <<  endl;
       try {
+        parReszscale.setVal(pdfReszscale.generate(parReszscale,1)->get()->getRealValue("parReszscale"));
+        cout << parReszscale.getVal() <<  "\t"  <<  parResMeanSigma_withzscale.getVal() <<  endl;
         data = tfac.Generate();
+        cout << parReszscale.getVal() <<  "\t"  <<  parResMeanSigma_withzscale.getVal() <<  endl;
         pdfTime_fit.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/zscale/generation.par");
         iterator = constrainingPdfs.createIterator();
         while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
