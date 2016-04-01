@@ -741,7 +741,7 @@ int main(int argc, char * argv[]){
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
   if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Offset(true))));
+  fitting_args.Add((TObject*)(new RooCmdArg(Offset(config.getBool("offset")))));
 
   if (bootstrapping) {
 
