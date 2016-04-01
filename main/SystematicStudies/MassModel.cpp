@@ -186,6 +186,9 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgDstDHighMassSigma("parBkgDstDHighMassSigma","Sigma of Gaussian Mass",10.0,1.0,20.0,"MeV/c^{2}");
   RooGaussian       pdfBkgDstDHighMass("pdfBkgDstDHighMass","Upper DstD Mass PDF",obsMass,parBkgDstDHighMassMean,parBkgDstDHighMassSigma);
 
+  RooRealVar        parBkgDstDMassFraction("parBkgDstDMassFraction","fraction between low and high component",0.5,0,1);
+  RooAddPdf         pdfBkgDstDMass("pdfBkgDstDMass","pdfBkgDstDMass",RooArgList(pdfBkgDstDLowMass,pdfBkgDstDHighMass),parBkgDstDMassFraction);
+
   // Bs --> DsD background
   RooFormulaVar     parBkgBsDsDMassMean("parBkgBsDsDMassMean","shifted Bs --> DsD Mean Mass","@0+87.35",RooArgList(parBkgDsDMean));
   RooCBShape        pdfBkgBsDsDMassCB1("pdfBkgBsDsDMassCB1","Mass PDF",obsMass,parBkgBsDsDMassMean,parBkgDsDMassSigma1,parBkgDsDMassCB1Alpha,parBkgDsDMassCB1Expo);
@@ -199,13 +202,15 @@ int main(int argc, char * argv[]){
   RooFormulaVar     parBkgBsDstDHighMassMean("parBkgBsDstDHighMassMean","Mean Mass","@0+87.35",RooArgList(parBkgDstDHighMassMean));
   RooGaussian       pdfBkgBsDstDHighMass("pdfBkgBsDstDHighMass","Upper DstD Mass PDF",obsMass,parBkgBsDstDHighMassMean,parBkgDstDHighMassSigma);
 
+  RooAddPdf         pdfBkgBsDstDMass("pdfBkgBsDstDMass","pdfBkgBsDstDMass",RooArgList(pdfBkgBsDstDLowMass,pdfBkgBsDstDHighMass),parBkgDstDMassFraction);  
+
   // combinatorial background
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
-  RooRealVar        parBkgExponent_Kpipi("parBkgExponent_Kpipi","parBkgExponent_Kpipi",-0.001,-1,1);
-  RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
-  RooRealVar        parBkgExponent_KKpi("parBkgExponent_KKpi","parBkgExponent_KKpi",-0.001,-1,1);
-  RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
+
+  // charmless background
+  RooRealVar        parBkgCharmlessSigma("parBkgCharmlessSigma","parBkgCharmlessSigma",10);
+  RooGaussian       pdfBkgCharmlessMass("pdfBkgCharmlessMass","pdfBkgCharmlessMass",obsMass,parSigMassMean,parBkgCharmlessSigma);
 
 //=========================================================================================================================================================================================================================
 
@@ -219,20 +224,20 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgDsDYield_11_KKpi("parBkgDsDYield_11_KKpi","parBkgDsDYield_11_KKpi",1000,0,2000);
   RooRealVar        parBkgDsDYield_12_KKpi("parBkgDsDYield_12_KKpi","parBkgDsDYield_12_KKpi",1000,0,2000);
 
+  RooRealVar        parBkgBsDsDYield_11_Kpipi("parBkgBsDsDYield_11_Kpipi","parBkgBsDsDYield_11_Kpipi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_12_Kpipi("parBkgBsDsDYield_12_Kpipi","parBkgBsDsDYield_12_Kpipi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_11_KKpi("parBkgBsDsDYield_11_KKpi","parBkgBsDsDYield_11_KKpi",1000,0,2000);
+  RooRealVar        parBkgBsDsDYield_12_KKpi("parBkgBsDsDYield_12_KKpi","parBkgBsDsDYield_12_KKpi",1000,0,2000);
+
   RooRealVar        parSigBsYield_11_Kpipi("parSigBsYield_11_Kpipi","parSigBsYield_11_Kpipi",100,0,1000);
   RooRealVar        parSigBsYield_12_Kpipi("parSigBsYield_12_Kpipi","parSigBsYield_12_Kpipi",100,0,1000);
   RooRealVar        parSigBsYield_11_KKpi("parSigBsYield_11_KKpi","parSigBsYield_11_KKpi",100,0,1000);
   RooRealVar        parSigBsYield_12_KKpi("parSigBsYield_12_KKpi","parSigBsYield_12_KKpi",100,0,1000);
 
-  RooRealVar        parBkgDstDHighYield_11_Kpipi("parBkgDstDHighYield_11_Kpipi","parBkgDstDHighYield_11_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_12_Kpipi("parBkgDstDHighYield_12_Kpipi","parBkgDstDHighYield_12_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_11_KKpi("parBkgDstDHighYield_11_KKpi","parBkgDstDHighYield_11_KKpi",5000,0,10000);
-  RooRealVar        parBkgDstDHighYield_12_KKpi("parBkgDstDHighYield_12_KKpi","parBkgDstDHighYield_12_KKpi",5000,0,10000);
-
-  RooRealVar        parBkgDstDLowYield_11_Kpipi("parBkgDstDLowYield_11_Kpipi","parBkgDstDLowYield_11_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_12_Kpipi("parBkgDstDLowYield_12_Kpipi","parBkgDstDLowYield_12_Kpipi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_11_KKpi("parBkgDstDLowYield_11_KKpi","parBkgDstDLowYield_11_KKpi",5000,0,10000);
-  RooRealVar        parBkgDstDLowYield_12_KKpi("parBkgDstDLowYield_12_KKpi","parBkgDstDLowYield_12_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_11_Kpipi("parBkgDstDYield_11_Kpipi","parBkgDstDYield_11_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_12_Kpipi("parBkgDstDYield_12_Kpipi","parBkgDstDYield_12_Kpipi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_11_KKpi("parBkgDstDYield_11_KKpi","parBkgDstDYield_11_KKpi",5000,0,10000);
+  RooRealVar        parBkgDstDYield_12_KKpi("parBkgDstDYield_12_KKpi","parBkgDstDYield_12_KKpi",5000,0,10000);
 
   RooRealVar        parBkgYield_11_Kpipi("parBkgYield_11_Kpipi","parBkgYield_11_Kpipi",5000,0,10000);
   RooRealVar        parBkgYield_12_Kpipi("parBkgYield_12_Kpipi","parBkgYield_12_Kpipi",5000,0,10000);
@@ -247,27 +252,27 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgDsDExtend_12_Kpipi("pdfBkgDsDExtend_12_Kpipi","pdfBkgDsDExtend_12_Kpipi",pdfBkgDsDMass,parBkgDsDYield_12_Kpipi);
   RooExtendPdf      pdfBkgDsDExtend_11_KKpi("pdfBkgDsDExtend_11_KKpi","pdfBkgDsDExtend_11_KKpi",pdfBkgDsDMass,parBkgDsDYield_11_KKpi);
   RooExtendPdf      pdfBkgDsDExtend_12_KKpi("pdfBkgDsDExtend_12_KKpi","pdfBkgDsDExtend_12_KKpi",pdfBkgDsDMass,parBkgDsDYield_12_KKpi);
+  RooExtendPdf      pdfBkgBsDsDExtend_11_Kpipi("pdfBkgBsDsDExtend_11_Kpipi","pdfBkgBsDsDExtend_11_Kpipi",pdfBkgBsDsDMass,parBkgBsDsDYield_11_Kpipi);
+  RooExtendPdf      pdfBkgBsDsDExtend_12_Kpipi("pdfBkgBsDsDExtend_12_Kpipi","pdfBkgBsDsDExtend_12_Kpipi",pdfBkgBsDsDMass,parBkgBsDsDYield_12_Kpipi);
+  RooExtendPdf      pdfBkgBsDsDExtend_11_KKpi("pdfBkgBsDsDExtend_11_KKpi","pdfBkgBsDsDExtend_11_KKpi",pdfBkgBsDsDMass,parBkgBsDsDYield_11_KKpi);
+  RooExtendPdf      pdfBkgBsDsDExtend_12_KKpi("pdfBkgBsDsDExtend_12_KKpi","pdfBkgBsDsDExtend_12_KKpi",pdfBkgBsDsDMass,parBkgBsDsDYield_12_KKpi);  
   RooExtendPdf      pdfSigBsExtend_11_Kpipi("pdfSigBsExtend_11_Kpipi","pdfSigBsExtend_11_Kpipi",pdfSigBsMass,parSigBsYield_11_Kpipi);
   RooExtendPdf      pdfSigBsExtend_12_Kpipi("pdfSigBsExtend_12_Kpipi","pdfSigBsExtend_12_Kpipi",pdfSigBsMass,parSigBsYield_12_Kpipi);
   RooExtendPdf      pdfSigBsExtend_11_KKpi("pdfSigBsExtend_11_KKpi","pdfSigBsExtend_11_KKpi",pdfSigBsMass,parSigBsYield_11_KKpi);
   RooExtendPdf      pdfSigBsExtend_12_KKpi("pdfSigBsExtend_12_KKpi","pdfSigBsExtend_12_KKpi",pdfSigBsMass,parSigBsYield_12_KKpi);
-  RooExtendPdf      pdfBkgDstDHighExtend_11_Kpipi("pdfBkgDstDHighExtend_11_Kpipi","pdfBkgDstDHighExtend_11_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_Kpipi);
-  RooExtendPdf      pdfBkgDstDHighExtend_12_Kpipi("pdfBkgDstDHighExtend_12_Kpipi","pdfBkgDstDHighExtend_12_Kpipi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_Kpipi);
-  RooExtendPdf      pdfBkgDstDHighExtend_11_KKpi("pdfBkgDstDHighExtend_11_KKpi","pdfBkgDstDHighExtend_11_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_11_KKpi);
-  RooExtendPdf      pdfBkgDstDHighExtend_12_KKpi("pdfBkgDstDHighExtend_12_KKpi","pdfBkgDstDHighExtend_12_KKpi",pdfBkgDstDHighMass,parBkgDstDHighYield_12_KKpi);
-  RooExtendPdf      pdfBkgDstDLowExtend_11_Kpipi("pdfBkgDstDLowExtend_11_Kpipi","pdfBkgDstDLowExtend_11_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_Kpipi);
-  RooExtendPdf      pdfBkgDstDLowExtend_12_Kpipi("pdfBkgDstDLowExtend_12_Kpipi","pdfBkgDstDLowExtend_12_Kpipi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_Kpipi);
-  RooExtendPdf      pdfBkgDstDLowExtend_11_KKpi("pdfBkgDstDLowExtend_11_KKpi","pdfBkgDstDLowExtend_11_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_11_KKpi);
-  RooExtendPdf      pdfBkgDstDLowExtend_12_KKpi("pdfBkgDstDLowExtend_12_KKpi","pdfBkgDstDLowExtend_12_KKpi",pdfBkgDstDLowMass,parBkgDstDLowYield_12_KKpi);
-  RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass_Kpipi,parBkgYield_11_Kpipi);
-  RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass_Kpipi,parBkgYield_12_Kpipi);
-  RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
-  RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass_KKpi,parBkgYield_12_KKpi);
+  RooExtendPdf      pdfBkgDstDExtend_11_Kpipi("pdfBkgDstDExtend_11_Kpipi","pdfBkgDstDExtend_11_Kpipi",pdfBkgDstDMass,parBkgDstDYield_11_Kpipi);
+  RooExtendPdf      pdfBkgDstDExtend_12_Kpipi("pdfBkgDstDExtend_12_Kpipi","pdfBkgDstDExtend_12_Kpipi",pdfBkgDstDMass,parBkgDstDYield_12_Kpipi);
+  RooExtendPdf      pdfBkgDstDExtend_11_KKpi("pdfBkgDstDExtend_11_KKpi","pdfBkgDstDExtend_11_KKpi",pdfBkgDstDMass,parBkgDstDYield_11_KKpi);
+  RooExtendPdf      pdfBkgDstDExtend_12_KKpi("pdfBkgDstDExtend_12_KKpi","pdfBkgDstDExtend_12_KKpi",pdfBkgDstDMass,parBkgDstDYield_12_KKpi);
+  RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass,parBkgYield_11_Kpipi);
+  RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass,parBkgYield_12_Kpipi);
+  RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass,parBkgYield_11_KKpi);
+  RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass,parBkgYield_12_KKpi);
 
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgDstDHighExtend_11_Kpipi,pdfBkgDstDLowExtend_11_Kpipi,pdfBkgExtend_11_Kpipi));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgDstDHighExtend_12_Kpipi,pdfBkgDstDLowExtend_12_Kpipi,pdfBkgExtend_12_Kpipi));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgDstDHighExtend_11_KKpi,pdfBkgDstDLowExtend_11_KKpi,pdfBkgExtend_11_KKpi));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgDstDHighExtend_12_KKpi,pdfBkgDstDLowExtend_12_KKpi,pdfBkgExtend_12_KKpi));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi,pdfBkgExtend_11_Kpipi));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi,pdfBkgExtend_12_Kpipi));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi,pdfBkgExtend_11_KKpi));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi,pdfBkgExtend_12_KKpi));
 
   RooSuperCategory  supercategory_mass("supercategory_mass","supercategory_mass",RooArgList(catYear,catDDFinalStateParticles));
   RooSimultaneous   pdfMass("pdfMass","pdfMass",supercategory_mass);
@@ -373,6 +378,13 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{0}}",0.007);  // B+ value 0.012   Kstar 0.024
   Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",-0.102);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",0.036);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_OS("parSigEtaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between p0 and Delta p1 OS",0.001);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",-0.002);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",-0.037);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.059);
+
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
   RooRealVar          parSigEtaP0_SS("parSigEtaP0_SS","Offset on per-event mistag",0.4228,0.3,0.5);
@@ -430,13 +442,7 @@ int main(int argc, char * argv[]){
   RooBDecay  pdfSigTime_12_SS("pdfSigTime_12_SS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_SS,parSigTimeSinh,parSigTimeCos_12_SS,parSigTimeSin_12_SS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
   RooBDecay  pdfSigTime_11_BS("pdfSigTime_11_BS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_BS,parSigTimeSinh,parSigTimeCos_11_BS,parSigTimeSin_11_BS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
   RooBDecay  pdfSigTime_12_BS("pdfSigTime_12_BS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_BS,parSigTimeSinh,parSigTimeCos_12_BS,parSigTimeSin_12_BS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
-  
-  // RooDecay  pdfSigTime_11_OS("pdfSigTime_11_OS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
-  // RooDecay  pdfSigTime_11_SS("pdfSigTime_11_SS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
-  // RooDecay  pdfSigTime_12_OS("pdfSigTime_12_OS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
-  // RooDecay  pdfSigTime_12_SS("pdfSigTime_12_SS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
-  // RooDecay  pdfSigTime_11_BS("pdfSigTime_11_BS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
-  // RooDecay  pdfSigTime_12_BS("pdfSigTime_12_BS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
+
 //========================================================================================================================================================================================================================
 
   // Build Simultaneous PDF
@@ -578,118 +584,62 @@ int main(int argc, char * argv[]){
   RooExtendPdf    pdfBkgBsDsD_12_KKpi_BS("pdfBkgBsDsD_12_KKpi_BS","pdfBkgBsDsD_12_KKpi_BS",pdfBkgBsDsD,parBkgBsDsDYield_12_KKpi_BS);
 
   // B0 --> D*D PDF
-  RooProdPdf      pdfBkgDstDHigh("pdfBkgDstDHigh","pdfBkgDstDHigh",RooArgList(pdfBkgDstDHighMass,pdfBkgB0Time));
+  RooProdPdf      pdfBkgDstD("pdfBkgDstD","pdfBkgDstD",RooArgList(pdfBkgDstDMass,pdfBkgB0Time));
 
-  RooRealVar      parBkgDstDHighYield_11_Kpipi_OS("parBkgDstDHighYield_11_Kpipi_OS","parBkgDstDHighYield_11_Kpipi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_12_Kpipi_OS("parBkgDstDHighYield_12_Kpipi_OS","parBkgDstDHighYield_12_Kpipi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_11_KKpi_OS("parBkgDstDHighYield_11_KKpi_OS","parBkgDstDHighYield_11_KKpi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_12_KKpi_OS("parBkgDstDHighYield_12_KKpi_OS","parBkgDstDHighYield_12_KKpi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_11_Kpipi_SS("parBkgDstDHighYield_11_Kpipi_SS","parBkgDstDHighYield_11_Kpipi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_12_Kpipi_SS("parBkgDstDHighYield_12_Kpipi_SS","parBkgDstDHighYield_12_Kpipi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_11_KKpi_SS("parBkgDstDHighYield_11_KKpi_SS","parBkgDstDHighYield_11_KKpi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_12_KKpi_SS("parBkgDstDHighYield_12_KKpi_SS","parBkgDstDHighYield_12_KKpi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_11_Kpipi_BS("parBkgDstDHighYield_11_Kpipi_BS","parBkgDstDHighYield_11_Kpipi_BS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_12_Kpipi_BS("parBkgDstDHighYield_12_Kpipi_BS","parBkgDstDHighYield_12_Kpipi_BS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_11_KKpi_BS("parBkgDstDHighYield_11_KKpi_BS","parBkgDstDHighYield_11_KKpi_BS",5000,0,10000);
-  RooRealVar      parBkgDstDHighYield_12_KKpi_BS("parBkgDstDHighYield_12_KKpi_BS","parBkgDstDHighYield_12_KKpi_BS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_11_Kpipi_OS("parBkgDstDYield_11_Kpipi_OS","parBkgDstDYield_11_Kpipi_OS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_12_Kpipi_OS("parBkgDstDYield_12_Kpipi_OS","parBkgDstDYield_12_Kpipi_OS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_11_KKpi_OS("parBkgDstDYield_11_KKpi_OS","parBkgDstDYield_11_KKpi_OS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_12_KKpi_OS("parBkgDstDYield_12_KKpi_OS","parBkgDstDYield_12_KKpi_OS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_11_Kpipi_SS("parBkgDstDYield_11_Kpipi_SS","parBkgDstDYield_11_Kpipi_SS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_12_Kpipi_SS("parBkgDstDYield_12_Kpipi_SS","parBkgDstDYield_12_Kpipi_SS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_11_KKpi_SS("parBkgDstDYield_11_KKpi_SS","parBkgDstDYield_11_KKpi_SS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_12_KKpi_SS("parBkgDstDYield_12_KKpi_SS","parBkgDstDYield_12_KKpi_SS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_11_Kpipi_BS("parBkgDstDYield_11_Kpipi_BS","parBkgDstDYield_11_Kpipi_BS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_12_Kpipi_BS("parBkgDstDYield_12_Kpipi_BS","parBkgDstDYield_12_Kpipi_BS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_11_KKpi_BS("parBkgDstDYield_11_KKpi_BS","parBkgDstDYield_11_KKpi_BS",5000,0,10000);
+  RooRealVar      parBkgDstDYield_12_KKpi_BS("parBkgDstDYield_12_KKpi_BS","parBkgDstDYield_12_KKpi_BS",5000,0,10000);
 
-  RooExtendPdf    pdfBkgDstDHigh_11_Kpipi_OS("pdfBkgDstDHigh_11_Kpipi_OS","pdfBkgDstDHigh_11_Kpipi_OS",pdfBkgDstDHigh,parBkgDstDHighYield_11_Kpipi_OS);
-  RooExtendPdf    pdfBkgDstDHigh_12_Kpipi_OS("pdfBkgDstDHigh_12_Kpipi_OS","pdfBkgDstDHigh_12_Kpipi_OS",pdfBkgDstDHigh,parBkgDstDHighYield_12_Kpipi_OS);
-  RooExtendPdf    pdfBkgDstDHigh_11_KKpi_OS("pdfBkgDstDHigh_11_KKpi_OS","pdfBkgDstDHigh_11_KKpi_OS",pdfBkgDstDHigh,parBkgDstDHighYield_11_KKpi_OS);
-  RooExtendPdf    pdfBkgDstDHigh_12_KKpi_OS("pdfBkgDstDHigh_12_KKpi_OS","pdfBkgDstDHigh_12_KKpi_OS",pdfBkgDstDHigh,parBkgDstDHighYield_12_KKpi_OS);
-  RooExtendPdf    pdfBkgDstDHigh_11_Kpipi_SS("pdfBkgDstDHigh_11_Kpipi_SS","pdfBkgDstDHigh_11_Kpipi_SS",pdfBkgDstDHigh,parBkgDstDHighYield_11_Kpipi_SS);
-  RooExtendPdf    pdfBkgDstDHigh_12_Kpipi_SS("pdfBkgDstDHigh_12_Kpipi_SS","pdfBkgDstDHigh_12_Kpipi_SS",pdfBkgDstDHigh,parBkgDstDHighYield_12_Kpipi_SS);
-  RooExtendPdf    pdfBkgDstDHigh_11_KKpi_SS("pdfBkgDstDHigh_11_KKpi_SS","pdfBkgDstDHigh_11_KKpi_SS",pdfBkgDstDHigh,parBkgDstDHighYield_11_KKpi_SS);
-  RooExtendPdf    pdfBkgDstDHigh_12_KKpi_SS("pdfBkgDstDHigh_12_KKpi_SS","pdfBkgDstDHigh_12_KKpi_SS",pdfBkgDstDHigh,parBkgDstDHighYield_12_KKpi_SS);
-  RooExtendPdf    pdfBkgDstDHigh_11_Kpipi_BS("pdfBkgDstDHigh_11_Kpipi_BS","pdfBkgDstDHigh_11_Kpipi_BS",pdfBkgDstDHigh,parBkgDstDHighYield_11_Kpipi_BS);
-  RooExtendPdf    pdfBkgDstDHigh_12_Kpipi_BS("pdfBkgDstDHigh_12_Kpipi_BS","pdfBkgDstDHigh_12_Kpipi_BS",pdfBkgDstDHigh,parBkgDstDHighYield_12_Kpipi_BS);
-  RooExtendPdf    pdfBkgDstDHigh_11_KKpi_BS("pdfBkgDstDHigh_11_KKpi_BS","pdfBkgDstDHigh_11_KKpi_BS",pdfBkgDstDHigh,parBkgDstDHighYield_11_KKpi_BS);
-  RooExtendPdf    pdfBkgDstDHigh_12_KKpi_BS("pdfBkgDstDHigh_12_KKpi_BS","pdfBkgDstDHigh_12_KKpi_BS",pdfBkgDstDHigh,parBkgDstDHighYield_12_KKpi_BS);
-
-  RooProdPdf      pdfBkgDstDLow("pdfBkgDstDLow","pdfBkgDstDLow",RooArgList(pdfBkgDstDLowMass,pdfBkgB0Time));
-
-  RooRealVar      parBkgDstDLowYield_11_Kpipi_OS("parBkgDstDLowYield_11_Kpipi_OS","parBkgDstDLowYield_11_Kpipi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_12_Kpipi_OS("parBkgDstDLowYield_12_Kpipi_OS","parBkgDstDLowYield_12_Kpipi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_11_KKpi_OS("parBkgDstDLowYield_11_KKpi_OS","parBkgDstDLowYield_11_KKpi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_12_KKpi_OS("parBkgDstDLowYield_12_KKpi_OS","parBkgDstDLowYield_12_KKpi_OS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_11_Kpipi_SS("parBkgDstDLowYield_11_Kpipi_SS","parBkgDstDLowYield_11_Kpipi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_12_Kpipi_SS("parBkgDstDLowYield_12_Kpipi_SS","parBkgDstDLowYield_12_Kpipi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_11_KKpi_SS("parBkgDstDLowYield_11_KKpi_SS","parBkgDstDLowYield_11_KKpi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_12_KKpi_SS("parBkgDstDLowYield_12_KKpi_SS","parBkgDstDLowYield_12_KKpi_SS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_11_Kpipi_BS("parBkgDstDLowYield_11_Kpipi_BS","parBkgDstDLowYield_11_Kpipi_BS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_12_Kpipi_BS("parBkgDstDLowYield_12_Kpipi_BS","parBkgDstDLowYield_12_Kpipi_BS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_11_KKpi_BS("parBkgDstDLowYield_11_KKpi_BS","parBkgDstDLowYield_11_KKpi_BS",5000,0,10000);
-  RooRealVar      parBkgDstDLowYield_12_KKpi_BS("parBkgDstDLowYield_12_KKpi_BS","parBkgDstDLowYield_12_KKpi_BS",5000,0,10000);
-
-  RooExtendPdf    pdfBkgDstDLow_11_Kpipi_OS("pdfBkgDstDLow_11_Kpipi_OS","pdfBkgDstDLow_11_Kpipi_OS",pdfBkgDstDLow,parBkgDstDLowYield_11_Kpipi_OS);
-  RooExtendPdf    pdfBkgDstDLow_12_Kpipi_OS("pdfBkgDstDLow_12_Kpipi_OS","pdfBkgDstDLow_12_Kpipi_OS",pdfBkgDstDLow,parBkgDstDLowYield_12_Kpipi_OS);
-  RooExtendPdf    pdfBkgDstDLow_11_KKpi_OS("pdfBkgDstDLow_11_KKpi_OS","pdfBkgDstDLow_11_KKpi_OS",pdfBkgDstDLow,parBkgDstDLowYield_11_KKpi_OS);
-  RooExtendPdf    pdfBkgDstDLow_12_KKpi_OS("pdfBkgDstDLow_12_KKpi_OS","pdfBkgDstDLow_12_KKpi_OS",pdfBkgDstDLow,parBkgDstDLowYield_12_KKpi_OS);
-  RooExtendPdf    pdfBkgDstDLow_11_Kpipi_SS("pdfBkgDstDLow_11_Kpipi_SS","pdfBkgDstDLow_11_Kpipi_SS",pdfBkgDstDLow,parBkgDstDLowYield_11_Kpipi_SS);
-  RooExtendPdf    pdfBkgDstDLow_12_Kpipi_SS("pdfBkgDstDLow_12_Kpipi_SS","pdfBkgDstDLow_12_Kpipi_SS",pdfBkgDstDLow,parBkgDstDLowYield_12_Kpipi_SS);
-  RooExtendPdf    pdfBkgDstDLow_11_KKpi_SS("pdfBkgDstDLow_11_KKpi_SS","pdfBkgDstDLow_11_KKpi_SS",pdfBkgDstDLow,parBkgDstDLowYield_11_KKpi_SS);
-  RooExtendPdf    pdfBkgDstDLow_12_KKpi_SS("pdfBkgDstDLow_12_KKpi_SS","pdfBkgDstDLow_12_KKpi_SS",pdfBkgDstDLow,parBkgDstDLowYield_12_KKpi_SS);
-  RooExtendPdf    pdfBkgDstDLow_11_Kpipi_BS("pdfBkgDstDLow_11_Kpipi_BS","pdfBkgDstDLow_11_Kpipi_BS",pdfBkgDstDLow,parBkgDstDLowYield_11_Kpipi_BS);
-  RooExtendPdf    pdfBkgDstDLow_12_Kpipi_BS("pdfBkgDstDLow_12_Kpipi_BS","pdfBkgDstDLow_12_Kpipi_BS",pdfBkgDstDLow,parBkgDstDLowYield_12_Kpipi_BS);
-  RooExtendPdf    pdfBkgDstDLow_11_KKpi_BS("pdfBkgDstDLow_11_KKpi_BS","pdfBkgDstDLow_11_KKpi_BS",pdfBkgDstDLow,parBkgDstDLowYield_11_KKpi_BS);
-  RooExtendPdf    pdfBkgDstDLow_12_KKpi_BS("pdfBkgDstDLow_12_KKpi_BS","pdfBkgDstDLow_12_KKpi_BS",pdfBkgDstDLow,parBkgDstDLowYield_12_KKpi_BS);
+  RooExtendPdf    pdfBkgDstD_11_Kpipi_OS("pdfBkgDstD_11_Kpipi_OS","pdfBkgDstD_11_Kpipi_OS",pdfBkgDstD,parBkgDstDYield_11_Kpipi_OS);
+  RooExtendPdf    pdfBkgDstD_12_Kpipi_OS("pdfBkgDstD_12_Kpipi_OS","pdfBkgDstD_12_Kpipi_OS",pdfBkgDstD,parBkgDstDYield_12_Kpipi_OS);
+  RooExtendPdf    pdfBkgDstD_11_KKpi_OS("pdfBkgDstD_11_KKpi_OS","pdfBkgDstD_11_KKpi_OS",pdfBkgDstD,parBkgDstDYield_11_KKpi_OS);
+  RooExtendPdf    pdfBkgDstD_12_KKpi_OS("pdfBkgDstD_12_KKpi_OS","pdfBkgDstD_12_KKpi_OS",pdfBkgDstD,parBkgDstDYield_12_KKpi_OS);
+  RooExtendPdf    pdfBkgDstD_11_Kpipi_SS("pdfBkgDstD_11_Kpipi_SS","pdfBkgDstD_11_Kpipi_SS",pdfBkgDstD,parBkgDstDYield_11_Kpipi_SS);
+  RooExtendPdf    pdfBkgDstD_12_Kpipi_SS("pdfBkgDstD_12_Kpipi_SS","pdfBkgDstD_12_Kpipi_SS",pdfBkgDstD,parBkgDstDYield_12_Kpipi_SS);
+  RooExtendPdf    pdfBkgDstD_11_KKpi_SS("pdfBkgDstD_11_KKpi_SS","pdfBkgDstD_11_KKpi_SS",pdfBkgDstD,parBkgDstDYield_11_KKpi_SS);
+  RooExtendPdf    pdfBkgDstD_12_KKpi_SS("pdfBkgDstD_12_KKpi_SS","pdfBkgDstD_12_KKpi_SS",pdfBkgDstD,parBkgDstDYield_12_KKpi_SS);
+  RooExtendPdf    pdfBkgDstD_11_Kpipi_BS("pdfBkgDstD_11_Kpipi_BS","pdfBkgDstD_11_Kpipi_BS",pdfBkgDstD,parBkgDstDYield_11_Kpipi_BS);
+  RooExtendPdf    pdfBkgDstD_12_Kpipi_BS("pdfBkgDstD_12_Kpipi_BS","pdfBkgDstD_12_Kpipi_BS",pdfBkgDstD,parBkgDstDYield_12_Kpipi_BS);
+  RooExtendPdf    pdfBkgDstD_11_KKpi_BS("pdfBkgDstD_11_KKpi_BS","pdfBkgDstD_11_KKpi_BS",pdfBkgDstD,parBkgDstDYield_11_KKpi_BS);
+  RooExtendPdf    pdfBkgDstD_12_KKpi_BS("pdfBkgDstD_12_KKpi_BS","pdfBkgDstD_12_KKpi_BS",pdfBkgDstD,parBkgDstDYield_12_KKpi_BS);
 
   // Bs --> D*D PDF
-  RooProdPdf      pdfBkgBsDstDLow("pdfBkgBsDstDLow","pdfBkgBsDstDLow",RooArgList(pdfBkgBsDstDLowMass,pdfBsTime));
+  RooProdPdf      pdfBkgBsDstD("pdfBkgBsDstD","pdfBkgBsDstD",RooArgList(pdfBkgBsDstDMass,pdfBsTime));
 
-  RooRealVar      parBkgBsDstDLowYield_11_Kpipi_OS("parBkgBsDstDLowYield_11_Kpipi_OS","parBkgBsDstDLowYield_11_Kpipi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_12_Kpipi_OS("parBkgBsDstDLowYield_12_Kpipi_OS","parBkgBsDstDLowYield_12_Kpipi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_11_KKpi_OS("parBkgBsDstDLowYield_11_KKpi_OS","parBkgBsDstDLowYield_11_KKpi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_12_KKpi_OS("parBkgBsDstDLowYield_12_KKpi_OS","parBkgBsDstDLowYield_12_KKpi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_11_Kpipi_SS("parBkgBsDstDLowYield_11_Kpipi_SS","parBkgBsDstDLowYield_11_Kpipi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_12_Kpipi_SS("parBkgBsDstDLowYield_12_Kpipi_SS","parBkgBsDstDLowYield_12_Kpipi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_11_KKpi_SS("parBkgBsDstDLowYield_11_KKpi_SS","parBkgBsDstDLowYield_11_KKpi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_12_KKpi_SS("parBkgBsDstDLowYield_12_KKpi_SS","parBkgBsDstDLowYield_12_KKpi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_11_Kpipi_BS("parBkgBsDstDLowYield_11_Kpipi_BS","parBkgBsDstDLowYield_11_Kpipi_BS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_12_Kpipi_BS("parBkgBsDstDLowYield_12_Kpipi_BS","parBkgBsDstDLowYield_12_Kpipi_BS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_11_KKpi_BS("parBkgBsDstDLowYield_11_KKpi_BS","parBkgBsDstDLowYield_11_KKpi_BS",100,0,1000);
-  RooRealVar      parBkgBsDstDLowYield_12_KKpi_BS("parBkgBsDstDLowYield_12_KKpi_BS","parBkgBsDstDLowYield_12_KKpi_BS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_11_Kpipi_OS("parBkgBsDstDYield_11_Kpipi_OS","parBkgBsDstDYield_11_Kpipi_OS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_12_Kpipi_OS("parBkgBsDstDYield_12_Kpipi_OS","parBkgBsDstDYield_12_Kpipi_OS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_11_KKpi_OS("parBkgBsDstDYield_11_KKpi_OS","parBkgBsDstDYield_11_KKpi_OS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_12_KKpi_OS("parBkgBsDstDYield_12_KKpi_OS","parBkgBsDstDYield_12_KKpi_OS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_11_Kpipi_SS("parBkgBsDstDYield_11_Kpipi_SS","parBkgBsDstDYield_11_Kpipi_SS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_12_Kpipi_SS("parBkgBsDstDYield_12_Kpipi_SS","parBkgBsDstDYield_12_Kpipi_SS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_11_KKpi_SS("parBkgBsDstDYield_11_KKpi_SS","parBkgBsDstDYield_11_KKpi_SS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_12_KKpi_SS("parBkgBsDstDYield_12_KKpi_SS","parBkgBsDstDYield_12_KKpi_SS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_11_Kpipi_BS("parBkgBsDstDYield_11_Kpipi_BS","parBkgBsDstDYield_11_Kpipi_BS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_12_Kpipi_BS("parBkgBsDstDYield_12_Kpipi_BS","parBkgBsDstDYield_12_Kpipi_BS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_11_KKpi_BS("parBkgBsDstDYield_11_KKpi_BS","parBkgBsDstDYield_11_KKpi_BS",100,0,1000);
+  RooRealVar      parBkgBsDstDYield_12_KKpi_BS("parBkgBsDstDYield_12_KKpi_BS","parBkgBsDstDYield_12_KKpi_BS",100,0,1000);
 
-  RooExtendPdf    pdfBkgBsDstDLow_11_Kpipi_OS("pdfBkgBsDstDLow_11_Kpipi_OS","pdfBkgBsDstDLow_11_Kpipi_OS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_11_Kpipi_OS);
-  RooExtendPdf    pdfBkgBsDstDLow_12_Kpipi_OS("pdfBkgBsDstDLow_12_Kpipi_OS","pdfBkgBsDstDLow_12_Kpipi_OS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_12_Kpipi_OS);
-  RooExtendPdf    pdfBkgBsDstDLow_11_KKpi_OS("pdfBkgBsDstDLow_11_KKpi_OS","pdfBkgBsDstDLow_11_KKpi_OS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_11_KKpi_OS);
-  RooExtendPdf    pdfBkgBsDstDLow_12_KKpi_OS("pdfBkgBsDstDLow_12_KKpi_OS","pdfBkgBsDstDLow_12_KKpi_OS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_12_KKpi_OS);
-  RooExtendPdf    pdfBkgBsDstDLow_11_Kpipi_SS("pdfBkgBsDstDLow_11_Kpipi_SS","pdfBkgBsDstDLow_11_Kpipi_SS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_11_Kpipi_SS);
-  RooExtendPdf    pdfBkgBsDstDLow_12_Kpipi_SS("pdfBkgBsDstDLow_12_Kpipi_SS","pdfBkgBsDstDLow_12_Kpipi_SS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_12_Kpipi_SS);
-  RooExtendPdf    pdfBkgBsDstDLow_11_KKpi_SS("pdfBkgBsDstDLow_11_KKpi_SS","pdfBkgBsDstDLow_11_KKpi_SS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_11_KKpi_SS);
-  RooExtendPdf    pdfBkgBsDstDLow_12_KKpi_SS("pdfBkgBsDstDLow_12_KKpi_SS","pdfBkgBsDstDLow_12_KKpi_SS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_12_KKpi_SS);
-  RooExtendPdf    pdfBkgBsDstDLow_11_Kpipi_BS("pdfBkgBsDstDLow_11_Kpipi_BS","pdfBkgBsDstDLow_11_Kpipi_BS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_11_Kpipi_BS);
-  RooExtendPdf    pdfBkgBsDstDLow_12_Kpipi_BS("pdfBkgBsDstDLow_12_Kpipi_BS","pdfBkgBsDstDLow_12_Kpipi_BS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_12_Kpipi_BS);
-  RooExtendPdf    pdfBkgBsDstDLow_11_KKpi_BS("pdfBkgBsDstDLow_11_KKpi_BS","pdfBkgBsDstDLow_11_KKpi_BS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_11_KKpi_BS);
-  RooExtendPdf    pdfBkgBsDstDLow_12_KKpi_BS("pdfBkgBsDstDLow_12_KKpi_BS","pdfBkgBsDstDLow_12_KKpi_BS",pdfBkgBsDstDLow,parBkgBsDstDLowYield_12_KKpi_BS);
-
-  RooProdPdf      pdfBkgBsDstDHigh("pdfBkgBsDstDHigh","pdfBkgBsDstDHigh",RooArgList(pdfBkgBsDstDHighMass,pdfBsTime));
-
-  RooRealVar      parBkgBsDstDHighYield_11_Kpipi_OS("parBkgBsDstDHighYield_11_Kpipi_OS","parBkgBsDstDHighYield_11_Kpipi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_12_Kpipi_OS("parBkgBsDstDHighYield_12_Kpipi_OS","parBkgBsDstDHighYield_12_Kpipi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_11_KKpi_OS("parBkgBsDstDHighYield_11_KKpi_OS","parBkgBsDstDHighYield_11_KKpi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_12_KKpi_OS("parBkgBsDstDHighYield_12_KKpi_OS","parBkgBsDstDHighYield_12_KKpi_OS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_11_Kpipi_SS("parBkgBsDstDHighYield_11_Kpipi_SS","parBkgBsDstDHighYield_11_Kpipi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_12_Kpipi_SS("parBkgBsDstDHighYield_12_Kpipi_SS","parBkgBsDstDHighYield_12_Kpipi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_11_KKpi_SS("parBkgBsDstDHighYield_11_KKpi_SS","parBkgBsDstDHighYield_11_KKpi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_12_KKpi_SS("parBkgBsDstDHighYield_12_KKpi_SS","parBkgBsDstDHighYield_12_KKpi_SS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_11_Kpipi_BS("parBkgBsDstDHighYield_11_Kpipi_BS","parBkgBsDstDHighYield_11_Kpipi_BS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_12_Kpipi_BS("parBkgBsDstDHighYield_12_Kpipi_BS","parBkgBsDstDHighYield_12_Kpipi_BS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_11_KKpi_BS("parBkgBsDstDHighYield_11_KKpi_BS","parBkgBsDstDHighYield_11_KKpi_BS",100,0,1000);
-  RooRealVar      parBkgBsDstDHighYield_12_KKpi_BS("parBkgBsDstDHighYield_12_KKpi_BS","parBkgBsDstDHighYield_12_KKpi_BS",100,0,1000);
-
-  RooExtendPdf    pdfBkgBsDstDHigh_11_Kpipi_OS("pdfBkgBsDstDHigh_11_Kpipi_OS","pdfBkgBsDstDHigh_11_Kpipi_OS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_11_Kpipi_OS);
-  RooExtendPdf    pdfBkgBsDstDHigh_12_Kpipi_OS("pdfBkgBsDstDHigh_12_Kpipi_OS","pdfBkgBsDstDHigh_12_Kpipi_OS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_12_Kpipi_OS);
-  RooExtendPdf    pdfBkgBsDstDHigh_11_KKpi_OS("pdfBkgBsDstDHigh_11_KKpi_OS","pdfBkgBsDstDHigh_11_KKpi_OS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_11_KKpi_OS);
-  RooExtendPdf    pdfBkgBsDstDHigh_12_KKpi_OS("pdfBkgBsDstDHigh_12_KKpi_OS","pdfBkgBsDstDHigh_12_KKpi_OS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_12_KKpi_OS);
-  RooExtendPdf    pdfBkgBsDstDHigh_11_Kpipi_SS("pdfBkgBsDstDHigh_11_Kpipi_SS","pdfBkgBsDstDHigh_11_Kpipi_SS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_11_Kpipi_SS);
-  RooExtendPdf    pdfBkgBsDstDHigh_12_Kpipi_SS("pdfBkgBsDstDHigh_12_Kpipi_SS","pdfBkgBsDstDHigh_12_Kpipi_SS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_12_Kpipi_SS);
-  RooExtendPdf    pdfBkgBsDstDHigh_11_KKpi_SS("pdfBkgBsDstDHigh_11_KKpi_SS","pdfBkgBsDstDHigh_11_KKpi_SS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_11_KKpi_SS);
-  RooExtendPdf    pdfBkgBsDstDHigh_12_KKpi_SS("pdfBkgBsDstDHigh_12_KKpi_SS","pdfBkgBsDstDHigh_12_KKpi_SS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_12_KKpi_SS);
-  RooExtendPdf    pdfBkgBsDstDHigh_11_Kpipi_BS("pdfBkgBsDstDHigh_11_Kpipi_BS","pdfBkgBsDstDHigh_11_Kpipi_BS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_11_Kpipi_BS);
-  RooExtendPdf    pdfBkgBsDstDHigh_12_Kpipi_BS("pdfBkgBsDstDHigh_12_Kpipi_BS","pdfBkgBsDstDHigh_12_Kpipi_BS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_12_Kpipi_BS);
-  RooExtendPdf    pdfBkgBsDstDHigh_11_KKpi_BS("pdfBkgBsDstDHigh_11_KKpi_BS","pdfBkgBsDstDHigh_11_KKpi_BS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_11_KKpi_BS);
-  RooExtendPdf    pdfBkgBsDstDHigh_12_KKpi_BS("pdfBkgBsDstDHigh_12_KKpi_BS","pdfBkgBsDstDHigh_12_KKpi_BS",pdfBkgBsDstDHigh,parBkgBsDstDHighYield_12_KKpi_BS);
+  RooExtendPdf    pdfBkgBsDstD_11_Kpipi_OS("pdfBkgBsDstD_11_Kpipi_OS","pdfBkgBsDstD_11_Kpipi_OS",pdfBkgBsDstD,parBkgBsDstDYield_11_Kpipi_OS);
+  RooExtendPdf    pdfBkgBsDstD_12_Kpipi_OS("pdfBkgBsDstD_12_Kpipi_OS","pdfBkgBsDstD_12_Kpipi_OS",pdfBkgBsDstD,parBkgBsDstDYield_12_Kpipi_OS);
+  RooExtendPdf    pdfBkgBsDstD_11_KKpi_OS("pdfBkgBsDstD_11_KKpi_OS","pdfBkgBsDstD_11_KKpi_OS",pdfBkgBsDstD,parBkgBsDstDYield_11_KKpi_OS);
+  RooExtendPdf    pdfBkgBsDstD_12_KKpi_OS("pdfBkgBsDstD_12_KKpi_OS","pdfBkgBsDstD_12_KKpi_OS",pdfBkgBsDstD,parBkgBsDstDYield_12_KKpi_OS);
+  RooExtendPdf    pdfBkgBsDstD_11_Kpipi_SS("pdfBkgBsDstD_11_Kpipi_SS","pdfBkgBsDstD_11_Kpipi_SS",pdfBkgBsDstD,parBkgBsDstDYield_11_Kpipi_SS);
+  RooExtendPdf    pdfBkgBsDstD_12_Kpipi_SS("pdfBkgBsDstD_12_Kpipi_SS","pdfBkgBsDstD_12_Kpipi_SS",pdfBkgBsDstD,parBkgBsDstDYield_12_Kpipi_SS);
+  RooExtendPdf    pdfBkgBsDstD_11_KKpi_SS("pdfBkgBsDstD_11_KKpi_SS","pdfBkgBsDstD_11_KKpi_SS",pdfBkgBsDstD,parBkgBsDstDYield_11_KKpi_SS);
+  RooExtendPdf    pdfBkgBsDstD_12_KKpi_SS("pdfBkgBsDstD_12_KKpi_SS","pdfBkgBsDstD_12_KKpi_SS",pdfBkgBsDstD,parBkgBsDstDYield_12_KKpi_SS);
+  RooExtendPdf    pdfBkgBsDstD_11_Kpipi_BS("pdfBkgBsDstD_11_Kpipi_BS","pdfBkgBsDstD_11_Kpipi_BS",pdfBkgBsDstD,parBkgBsDstDYield_11_Kpipi_BS);
+  RooExtendPdf    pdfBkgBsDstD_12_Kpipi_BS("pdfBkgBsDstD_12_Kpipi_BS","pdfBkgBsDstD_12_Kpipi_BS",pdfBkgBsDstD,parBkgBsDstDYield_12_Kpipi_BS);
+  RooExtendPdf    pdfBkgBsDstD_11_KKpi_BS("pdfBkgBsDstD_11_KKpi_BS","pdfBkgBsDstD_11_KKpi_BS",pdfBkgBsDstD,parBkgBsDstDYield_11_KKpi_BS);
+  RooExtendPdf    pdfBkgBsDstD_12_KKpi_BS("pdfBkgBsDstD_12_KKpi_BS","pdfBkgBsDstD_12_KKpi_BS",pdfBkgBsDstD,parBkgBsDstDYield_12_KKpi_BS);
 
   // Background Decay Time PDF
   RooGaussModel   pdfBkgResolution("pdfBkgResolution","pdfBkgResolution",obsTime,RooConst(0),RooConst(0.05));
@@ -700,8 +650,7 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgTimeFraction("parBkgTimeFraction","parBkgTimeFraction",0.8);
   RooAddPdf       pdfBkgTime("pdfBkgTime","pdfBkgTime",RooArgList(pdfBkgTimeTwo,pdfBkgTimeOne),parBkgTimeFraction);
 
-  RooProdPdf      pdfBkg_Kpipi("pdfBkg_Kpipi","pdfBkg_Kpipi",RooArgList(pdfBkgMass_Kpipi,pdfBkgTime));
-  RooProdPdf      pdfBkg_KKpi("pdfBkg_KKpi","pdfBkg_KKpi",RooArgList(pdfBkgMass_KKpi,pdfBkgTime));
+  RooProdPdf      pdfBkg("pdfBkg","pdfBkg",RooArgList(pdfBkgMass,pdfBkgTime));
 
   RooRealVar      parBkgYield_11_Kpipi_OS("parBkgYield_11_Kpipi_OS","parBkgYield_11_Kpipi_OS",5000,0,10000);
   RooRealVar      parBkgYield_12_Kpipi_OS("parBkgYield_12_Kpipi_OS","parBkgYield_12_Kpipi_OS",5000,0,10000);
@@ -716,33 +665,62 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgYield_11_KKpi_BS("parBkgYield_11_KKpi_BS","parBkgYield_11_KKpi_BS",5000,0,10000);
   RooRealVar      parBkgYield_12_KKpi_BS("parBkgYield_12_KKpi_BS","parBkgYield_12_KKpi_BS",5000,0,10000);
 
-  RooExtendPdf    pdfBkg_11_Kpipi_OS("pdfBkg_11_Kpipi_OS","pdfBkg_11_Kpipi_OS",pdfBkg_Kpipi,parBkgYield_11_Kpipi_OS);
-  RooExtendPdf    pdfBkg_11_Kpipi_SS("pdfBkg_11_Kpipi_SS","pdfBkg_11_Kpipi_SS",pdfBkg_Kpipi,parBkgYield_11_Kpipi_SS);
-  RooExtendPdf    pdfBkg_11_Kpipi_BS("pdfBkg_11_Kpipi_BS","pdfBkg_11_Kpipi_BS",pdfBkg_Kpipi,parBkgYield_11_Kpipi_BS);
-  RooExtendPdf    pdfBkg_12_Kpipi_OS("pdfBkg_12_Kpipi_OS","pdfBkg_12_Kpipi_OS",pdfBkg_Kpipi,parBkgYield_12_Kpipi_OS);
-  RooExtendPdf    pdfBkg_12_Kpipi_SS("pdfBkg_12_Kpipi_SS","pdfBkg_12_Kpipi_SS",pdfBkg_Kpipi,parBkgYield_12_Kpipi_SS);
-  RooExtendPdf    pdfBkg_12_Kpipi_BS("pdfBkg_12_Kpipi_BS","pdfBkg_12_Kpipi_BS",pdfBkg_Kpipi,parBkgYield_12_Kpipi_BS);
-  RooExtendPdf    pdfBkg_11_KKpi_OS("pdfBkg_11_KKpi_OS","pdfBkg_11_KKpi_OS",pdfBkg_KKpi,parBkgYield_11_KKpi_OS);
-  RooExtendPdf    pdfBkg_11_KKpi_SS("pdfBkg_11_KKpi_SS","pdfBkg_11_KKpi_SS",pdfBkg_KKpi,parBkgYield_11_KKpi_SS);
-  RooExtendPdf    pdfBkg_11_KKpi_BS("pdfBkg_11_KKpi_BS","pdfBkg_11_KKpi_BS",pdfBkg_KKpi,parBkgYield_11_KKpi_BS);
-  RooExtendPdf    pdfBkg_12_KKpi_OS("pdfBkg_12_KKpi_OS","pdfBkg_12_KKpi_OS",pdfBkg_KKpi,parBkgYield_12_KKpi_OS);
-  RooExtendPdf    pdfBkg_12_KKpi_SS("pdfBkg_12_KKpi_SS","pdfBkg_12_KKpi_SS",pdfBkg_KKpi,parBkgYield_12_KKpi_SS);
-  RooExtendPdf    pdfBkg_12_KKpi_BS("pdfBkg_12_KKpi_BS","pdfBkg_12_KKpi_BS",pdfBkg_KKpi,parBkgYield_12_KKpi_BS);
+  RooExtendPdf    pdfBkg_11_Kpipi_OS("pdfBkg_11_Kpipi_OS","pdfBkg_11_Kpipi_OS",pdfBkg,parBkgYield_11_Kpipi_OS);
+  RooExtendPdf    pdfBkg_11_Kpipi_SS("pdfBkg_11_Kpipi_SS","pdfBkg_11_Kpipi_SS",pdfBkg,parBkgYield_11_Kpipi_SS);
+  RooExtendPdf    pdfBkg_11_Kpipi_BS("pdfBkg_11_Kpipi_BS","pdfBkg_11_Kpipi_BS",pdfBkg,parBkgYield_11_Kpipi_BS);
+  RooExtendPdf    pdfBkg_12_Kpipi_OS("pdfBkg_12_Kpipi_OS","pdfBkg_12_Kpipi_OS",pdfBkg,parBkgYield_12_Kpipi_OS);
+  RooExtendPdf    pdfBkg_12_Kpipi_SS("pdfBkg_12_Kpipi_SS","pdfBkg_12_Kpipi_SS",pdfBkg,parBkgYield_12_Kpipi_SS);
+  RooExtendPdf    pdfBkg_12_Kpipi_BS("pdfBkg_12_Kpipi_BS","pdfBkg_12_Kpipi_BS",pdfBkg,parBkgYield_12_Kpipi_BS);
+  RooExtendPdf    pdfBkg_11_KKpi_OS("pdfBkg_11_KKpi_OS","pdfBkg_11_KKpi_OS",pdfBkg,parBkgYield_11_KKpi_OS);
+  RooExtendPdf    pdfBkg_11_KKpi_SS("pdfBkg_11_KKpi_SS","pdfBkg_11_KKpi_SS",pdfBkg,parBkgYield_11_KKpi_SS);
+  RooExtendPdf    pdfBkg_11_KKpi_BS("pdfBkg_11_KKpi_BS","pdfBkg_11_KKpi_BS",pdfBkg,parBkgYield_11_KKpi_BS);
+  RooExtendPdf    pdfBkg_12_KKpi_OS("pdfBkg_12_KKpi_OS","pdfBkg_12_KKpi_OS",pdfBkg,parBkgYield_12_KKpi_OS);
+  RooExtendPdf    pdfBkg_12_KKpi_SS("pdfBkg_12_KKpi_SS","pdfBkg_12_KKpi_SS",pdfBkg,parBkgYield_12_KKpi_SS);
+  RooExtendPdf    pdfBkg_12_KKpi_BS("pdfBkg_12_KKpi_BS","pdfBkg_12_KKpi_BS",pdfBkg,parBkgYield_12_KKpi_BS);
+
+  // Charmless PDF
+  RooProdPdf      pdfBkgCharmless("pdfBkgCharmless","pdfBkgCharmless",RooArgList(pdfBkgCharmlessMass,pdfBkgB0Time));
+
+  RooRealVar      parBkgCharmlessYield_11_Kpipi_OS("parBkgCharmlessYield_11_Kpipi_OS","parBkgCharmlessYield_11_Kpipi_OS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_12_Kpipi_OS("parBkgCharmlessYield_12_Kpipi_OS","parBkgCharmlessYield_12_Kpipi_OS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_11_KKpi_OS("parBkgCharmlessYield_11_KKpi_OS","parBkgCharmlessYield_11_KKpi_OS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_12_KKpi_OS("parBkgCharmlessYield_12_KKpi_OS","parBkgCharmlessYield_12_KKpi_OS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_11_Kpipi_SS("parBkgCharmlessYield_11_Kpipi_SS","parBkgCharmlessYield_11_Kpipi_SS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_12_Kpipi_SS("parBkgCharmlessYield_12_Kpipi_SS","parBkgCharmlessYield_12_Kpipi_SS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_11_KKpi_SS("parBkgCharmlessYield_11_KKpi_SS","parBkgCharmlessYield_11_KKpi_SS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_12_KKpi_SS("parBkgCharmlessYield_12_KKpi_SS","parBkgCharmlessYield_12_KKpi_SS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_11_Kpipi_BS("parBkgCharmlessYield_11_Kpipi_BS","parBkgCharmlessYield_11_Kpipi_BS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_12_Kpipi_BS("parBkgCharmlessYield_12_Kpipi_BS","parBkgCharmlessYield_12_Kpipi_BS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_11_KKpi_BS("parBkgCharmlessYield_11_KKpi_BS","parBkgCharmlessYield_11_KKpi_BS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_12_KKpi_BS("parBkgCharmlessYield_12_KKpi_BS","parBkgCharmlessYield_12_KKpi_BS",100,0,1000);
+
+  RooExtendPdf    pdfBkgCharmless_11_Kpipi_OS("pdfBkgCharmless_11_Kpipi_OS","pdfBkgCharmless_11_Kpipi_OS",pdfBkgCharmless,parBkgCharmlessYield_11_Kpipi_OS);
+  RooExtendPdf    pdfBkgCharmless_12_Kpipi_OS("pdfBkgCharmless_12_Kpipi_OS","pdfBkgCharmless_12_Kpipi_OS",pdfBkgCharmless,parBkgCharmlessYield_12_Kpipi_OS);
+  RooExtendPdf    pdfBkgCharmless_11_KKpi_OS("pdfBkgCharmless_11_KKpi_OS","pdfBkgCharmless_11_KKpi_OS",pdfBkgCharmless,parBkgCharmlessYield_11_KKpi_OS);
+  RooExtendPdf    pdfBkgCharmless_12_KKpi_OS("pdfBkgCharmless_12_KKpi_OS","pdfBkgCharmless_12_KKpi_OS",pdfBkgCharmless,parBkgCharmlessYield_12_KKpi_OS);
+  RooExtendPdf    pdfBkgCharmless_11_Kpipi_SS("pdfBkgCharmless_11_Kpipi_SS","pdfBkgCharmless_11_Kpipi_SS",pdfBkgCharmless,parBkgCharmlessYield_11_Kpipi_SS);
+  RooExtendPdf    pdfBkgCharmless_12_Kpipi_SS("pdfBkgCharmless_12_Kpipi_SS","pdfBkgCharmless_12_Kpipi_SS",pdfBkgCharmless,parBkgCharmlessYield_12_Kpipi_SS);
+  RooExtendPdf    pdfBkgCharmless_11_KKpi_SS("pdfBkgCharmless_11_KKpi_SS","pdfBkgCharmless_11_KKpi_SS",pdfBkgCharmless,parBkgCharmlessYield_11_KKpi_SS);
+  RooExtendPdf    pdfBkgCharmless_12_KKpi_SS("pdfBkgCharmless_12_KKpi_SS","pdfBkgCharmless_12_KKpi_SS",pdfBkgCharmless,parBkgCharmlessYield_12_KKpi_SS);
+  RooExtendPdf    pdfBkgCharmless_11_Kpipi_BS("pdfBkgCharmless_11_Kpipi_BS","pdfBkgCharmless_11_Kpipi_BS",pdfBkgCharmless,parBkgCharmlessYield_11_Kpipi_BS);
+  RooExtendPdf    pdfBkgCharmless_12_Kpipi_BS("pdfBkgCharmless_12_Kpipi_BS","pdfBkgCharmless_12_Kpipi_BS",pdfBkgCharmless,parBkgCharmlessYield_12_Kpipi_BS);
+  RooExtendPdf    pdfBkgCharmless_11_KKpi_BS("pdfBkgCharmless_11_KKpi_BS","pdfBkgCharmless_11_KKpi_BS",pdfBkgCharmless,parBkgCharmlessYield_11_KKpi_BS);
+  RooExtendPdf    pdfBkgCharmless_12_KKpi_BS("pdfBkgCharmless_12_KKpi_BS","pdfBkgCharmless_12_KKpi_BS",pdfBkgCharmless,parBkgCharmlessYield_12_KKpi_BS);  
 
 //========================================================================================================================================================================================================================
 
-  RooAddPdf       pdf_11_Kpipi_OS("pdf_11_Kpipi_OS","pdf_11_Kpipi_OS",RooArgList(pdfSig_11_Kpipi_OS,pdfSigBs_11_Kpipi_OS,pdfBkgDsD_11_Kpipi_OS,pdfBkg_11_Kpipi_OS,pdfBkgDstDLow_11_Kpipi_OS,pdfBkgDstDHigh_11_Kpipi_OS,pdfBkgBsDstDLow_11_Kpipi_OS,pdfBkgBsDstDHigh_11_Kpipi_OS,pdfBkgBsDsD_11_Kpipi_OS));
-  RooAddPdf       pdf_11_Kpipi_SS("pdf_11_Kpipi_SS","pdf_11_Kpipi_SS",RooArgList(pdfSig_11_Kpipi_SS,pdfSigBs_11_Kpipi_SS,pdfBkgDsD_11_Kpipi_SS,pdfBkg_11_Kpipi_SS,pdfBkgDstDLow_11_Kpipi_SS,pdfBkgDstDHigh_11_Kpipi_SS,pdfBkgBsDstDLow_11_Kpipi_SS,pdfBkgBsDstDHigh_11_Kpipi_SS,pdfBkgBsDsD_11_Kpipi_SS));
-  RooAddPdf       pdf_11_Kpipi_BS("pdf_11_Kpipi_BS","pdf_11_Kpipi_BS",RooArgList(pdfSig_11_Kpipi_BS,pdfSigBs_11_Kpipi_BS,pdfBkgDsD_11_Kpipi_BS,pdfBkg_11_Kpipi_BS,pdfBkgDstDLow_11_Kpipi_BS,pdfBkgDstDHigh_11_Kpipi_BS,pdfBkgBsDstDLow_11_Kpipi_BS,pdfBkgBsDstDHigh_11_Kpipi_BS,pdfBkgBsDsD_11_Kpipi_BS));
-  RooAddPdf       pdf_12_Kpipi_OS("pdf_12_Kpipi_OS","pdf_12_Kpipi_OS",RooArgList(pdfSig_12_Kpipi_OS,pdfSigBs_12_Kpipi_OS,pdfBkgDsD_12_Kpipi_OS,pdfBkg_12_Kpipi_OS,pdfBkgDstDLow_12_Kpipi_OS,pdfBkgDstDHigh_12_Kpipi_OS,pdfBkgBsDstDLow_12_Kpipi_OS,pdfBkgBsDstDHigh_12_Kpipi_OS,pdfBkgBsDsD_12_Kpipi_OS));
-  RooAddPdf       pdf_12_Kpipi_SS("pdf_12_Kpipi_SS","pdf_12_Kpipi_SS",RooArgList(pdfSig_12_Kpipi_SS,pdfSigBs_12_Kpipi_SS,pdfBkgDsD_12_Kpipi_SS,pdfBkg_12_Kpipi_SS,pdfBkgDstDLow_12_Kpipi_SS,pdfBkgDstDHigh_12_Kpipi_SS,pdfBkgBsDstDLow_12_Kpipi_SS,pdfBkgBsDstDHigh_12_Kpipi_SS,pdfBkgBsDsD_12_Kpipi_SS));
-  RooAddPdf       pdf_12_Kpipi_BS("pdf_12_Kpipi_BS","pdf_12_Kpipi_BS",RooArgList(pdfSig_12_Kpipi_BS,pdfSigBs_12_Kpipi_BS,pdfBkgDsD_12_Kpipi_BS,pdfBkg_12_Kpipi_BS,pdfBkgDstDLow_12_Kpipi_BS,pdfBkgDstDHigh_12_Kpipi_BS,pdfBkgBsDstDLow_12_Kpipi_BS,pdfBkgBsDstDHigh_12_Kpipi_BS,pdfBkgBsDsD_12_Kpipi_BS));
-  RooAddPdf       pdf_11_KKpi_OS("pdf_11_KKpi_OS","pdf_11_KKpi_OS",RooArgList(pdfSig_11_KKpi_OS,pdfSigBs_11_KKpi_OS,pdfBkgDsD_11_KKpi_OS,pdfBkg_11_KKpi_OS,pdfBkgDstDLow_11_KKpi_OS,pdfBkgDstDHigh_11_KKpi_OS,pdfBkgBsDstDLow_11_KKpi_OS,pdfBkgBsDstDHigh_11_KKpi_OS,pdfBkgBsDsD_11_KKpi_OS));
-  RooAddPdf       pdf_11_KKpi_SS("pdf_11_KKpi_SS","pdf_11_KKpi_SS",RooArgList(pdfSig_11_KKpi_SS,pdfSigBs_11_KKpi_SS,pdfBkgDsD_11_KKpi_SS,pdfBkg_11_KKpi_SS,pdfBkgDstDLow_11_KKpi_SS,pdfBkgDstDHigh_11_KKpi_SS,pdfBkgBsDstDLow_11_KKpi_SS,pdfBkgBsDstDHigh_11_KKpi_SS,pdfBkgBsDsD_11_KKpi_SS));
-  RooAddPdf       pdf_11_KKpi_BS("pdf_11_KKpi_BS","pdf_11_KKpi_BS",RooArgList(pdfSig_11_KKpi_BS,pdfSigBs_11_KKpi_BS,pdfBkgDsD_11_KKpi_BS,pdfBkg_11_KKpi_BS,pdfBkgDstDLow_11_KKpi_BS,pdfBkgDstDHigh_11_KKpi_BS,pdfBkgBsDstDLow_11_KKpi_BS,pdfBkgBsDstDHigh_11_KKpi_BS,pdfBkgBsDsD_11_KKpi_BS));
-  RooAddPdf       pdf_12_KKpi_OS("pdf_12_KKpi_OS","pdf_12_KKpi_OS",RooArgList(pdfSig_12_KKpi_OS,pdfSigBs_12_KKpi_OS,pdfBkgDsD_12_KKpi_OS,pdfBkg_12_KKpi_OS,pdfBkgDstDLow_12_KKpi_OS,pdfBkgDstDHigh_12_KKpi_OS,pdfBkgBsDstDLow_12_KKpi_OS,pdfBkgBsDstDHigh_12_KKpi_OS,pdfBkgBsDsD_12_KKpi_OS));
-  RooAddPdf       pdf_12_KKpi_SS("pdf_12_KKpi_SS","pdf_12_KKpi_SS",RooArgList(pdfSig_12_KKpi_SS,pdfSigBs_12_KKpi_SS,pdfBkgDsD_12_KKpi_SS,pdfBkg_12_KKpi_SS,pdfBkgDstDLow_12_KKpi_SS,pdfBkgDstDHigh_12_KKpi_SS,pdfBkgBsDstDLow_12_KKpi_SS,pdfBkgBsDstDHigh_12_KKpi_SS,pdfBkgBsDsD_12_KKpi_SS));
-  RooAddPdf       pdf_12_KKpi_BS("pdf_12_KKpi_BS","pdf_12_KKpi_BS",RooArgList(pdfSig_12_KKpi_BS,pdfSigBs_12_KKpi_BS,pdfBkgDsD_12_KKpi_BS,pdfBkg_12_KKpi_BS,pdfBkgDstDLow_12_KKpi_BS,pdfBkgDstDHigh_12_KKpi_BS,pdfBkgBsDstDLow_12_KKpi_BS,pdfBkgBsDstDHigh_12_KKpi_BS,pdfBkgBsDsD_12_KKpi_BS));
+  RooAddPdf       pdf_11_Kpipi_OS("pdf_11_Kpipi_OS","pdf_11_Kpipi_OS",RooArgList(pdfSig_11_Kpipi_OS,pdfSigBs_11_Kpipi_OS,pdfBkgDsD_11_Kpipi_OS,pdfBkg_11_Kpipi_OS,pdfBkgDstD_11_Kpipi_OS,pdfBkgBsDstD_11_Kpipi_OS,pdfBkgBsDsD_11_Kpipi_OS,pdfBkgCharmless_11_Kpipi_OS));
+  RooAddPdf       pdf_11_Kpipi_SS("pdf_11_Kpipi_SS","pdf_11_Kpipi_SS",RooArgList(pdfSig_11_Kpipi_SS,pdfSigBs_11_Kpipi_SS,pdfBkgDsD_11_Kpipi_SS,pdfBkg_11_Kpipi_SS,pdfBkgDstD_11_Kpipi_SS,pdfBkgBsDstD_11_Kpipi_SS,pdfBkgBsDsD_11_Kpipi_SS,pdfBkgCharmless_11_Kpipi_SS));
+  RooAddPdf       pdf_11_Kpipi_BS("pdf_11_Kpipi_BS","pdf_11_Kpipi_BS",RooArgList(pdfSig_11_Kpipi_BS,pdfSigBs_11_Kpipi_BS,pdfBkgDsD_11_Kpipi_BS,pdfBkg_11_Kpipi_BS,pdfBkgDstD_11_Kpipi_BS,pdfBkgBsDstD_11_Kpipi_BS,pdfBkgBsDsD_11_Kpipi_BS,pdfBkgCharmless_11_Kpipi_BS));
+  RooAddPdf       pdf_12_Kpipi_OS("pdf_12_Kpipi_OS","pdf_12_Kpipi_OS",RooArgList(pdfSig_12_Kpipi_OS,pdfSigBs_12_Kpipi_OS,pdfBkgDsD_12_Kpipi_OS,pdfBkg_12_Kpipi_OS,pdfBkgDstD_12_Kpipi_OS,pdfBkgBsDstD_12_Kpipi_OS,pdfBkgBsDsD_12_Kpipi_OS,pdfBkgCharmless_12_Kpipi_OS));
+  RooAddPdf       pdf_12_Kpipi_SS("pdf_12_Kpipi_SS","pdf_12_Kpipi_SS",RooArgList(pdfSig_12_Kpipi_SS,pdfSigBs_12_Kpipi_SS,pdfBkgDsD_12_Kpipi_SS,pdfBkg_12_Kpipi_SS,pdfBkgDstD_12_Kpipi_SS,pdfBkgBsDstD_12_Kpipi_SS,pdfBkgBsDsD_12_Kpipi_SS,pdfBkgCharmless_12_Kpipi_SS));
+  RooAddPdf       pdf_12_Kpipi_BS("pdf_12_Kpipi_BS","pdf_12_Kpipi_BS",RooArgList(pdfSig_12_Kpipi_BS,pdfSigBs_12_Kpipi_BS,pdfBkgDsD_12_Kpipi_BS,pdfBkg_12_Kpipi_BS,pdfBkgDstD_12_Kpipi_BS,pdfBkgBsDstD_12_Kpipi_BS,pdfBkgBsDsD_12_Kpipi_BS,pdfBkgCharmless_12_Kpipi_BS));
+  RooAddPdf       pdf_11_KKpi_OS("pdf_11_KKpi_OS","pdf_11_KKpi_OS",RooArgList(pdfSig_11_KKpi_OS,pdfSigBs_11_KKpi_OS,pdfBkgDsD_11_KKpi_OS,pdfBkg_11_KKpi_OS,pdfBkgDstD_11_KKpi_OS,pdfBkgBsDstD_11_KKpi_OS,pdfBkgBsDsD_11_KKpi_OS,pdfBkgCharmless_11_KKpi_OS));
+  RooAddPdf       pdf_11_KKpi_SS("pdf_11_KKpi_SS","pdf_11_KKpi_SS",RooArgList(pdfSig_11_KKpi_SS,pdfSigBs_11_KKpi_SS,pdfBkgDsD_11_KKpi_SS,pdfBkg_11_KKpi_SS,pdfBkgDstD_11_KKpi_SS,pdfBkgBsDstD_11_KKpi_SS,pdfBkgBsDsD_11_KKpi_SS,pdfBkgCharmless_11_KKpi_SS));
+  RooAddPdf       pdf_11_KKpi_BS("pdf_11_KKpi_BS","pdf_11_KKpi_BS",RooArgList(pdfSig_11_KKpi_BS,pdfSigBs_11_KKpi_BS,pdfBkgDsD_11_KKpi_BS,pdfBkg_11_KKpi_BS,pdfBkgDstD_11_KKpi_BS,pdfBkgBsDstD_11_KKpi_BS,pdfBkgBsDsD_11_KKpi_BS,pdfBkgCharmless_11_KKpi_BS));
+  RooAddPdf       pdf_12_KKpi_OS("pdf_12_KKpi_OS","pdf_12_KKpi_OS",RooArgList(pdfSig_12_KKpi_OS,pdfSigBs_12_KKpi_OS,pdfBkgDsD_12_KKpi_OS,pdfBkg_12_KKpi_OS,pdfBkgDstD_12_KKpi_OS,pdfBkgBsDstD_12_KKpi_OS,pdfBkgBsDsD_12_KKpi_OS,pdfBkgCharmless_12_KKpi_OS));
+  RooAddPdf       pdf_12_KKpi_SS("pdf_12_KKpi_SS","pdf_12_KKpi_SS",RooArgList(pdfSig_12_KKpi_SS,pdfSigBs_12_KKpi_SS,pdfBkgDsD_12_KKpi_SS,pdfBkg_12_KKpi_SS,pdfBkgDstD_12_KKpi_SS,pdfBkgBsDstD_12_KKpi_SS,pdfBkgBsDsD_12_KKpi_SS,pdfBkgCharmless_12_KKpi_SS));
+  RooAddPdf       pdf_12_KKpi_BS("pdf_12_KKpi_BS","pdf_12_KKpi_BS",RooArgList(pdfSig_12_KKpi_BS,pdfSigBs_12_KKpi_BS,pdfBkgDsD_12_KKpi_BS,pdfBkg_12_KKpi_BS,pdfBkgDstD_12_KKpi_BS,pdfBkgBsDstD_12_KKpi_BS,pdfBkgBsDsD_12_KKpi_BS,pdfBkgCharmless_12_KKpi_BS));
 
   RooSuperCategory  supercategory_generate("supercategory_generate","supercategory_generate",RooArgList(catYear,catTag,catDDFinalStateParticles));
   RooSimultaneous   pdf_generate("pdf_generate","P",supercategory_generate);
@@ -764,10 +742,7 @@ int main(int argc, char * argv[]){
   Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
   pdfTime.Print();
 
-  RooRealVar            parSigEtaDeltaP0P1CorrelationCoeff_OS("parSigEtaDeltaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 or Delta p0 and Delta p1 for OS",0.14);
-  TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
-  RooRealVar            parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 for OS",0.14);
-  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
+  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
   TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
 
   RooArgSet             constrainingPdfs("constrainingPdfs");
@@ -775,16 +750,7 @@ int main(int argc, char * argv[]){
   RooGaussian           conpdfSigTimeDeltaM("conpdfSigTimeDeltaM","constraint for #Delta m",parSigTimeDeltaM,parSigTimeDeltaMMean,parSigTimeDeltaMSigma);
   RooGaussian           conpdfSigEtaDeltaProd_11("conpdfSigEtaDeltaProd_11","Gaussian Constraint for production asymmetry 2011",parSigEtaDeltaProd_11,parSigEtaDeltaProdMean_11,parSigEtaDeltaProdSigma_11);
   RooGaussian           conpdfSigEtaDeltaProd_12("conpdfSigEtaDeltaProd_12","Gaussian Constraint for production asymmetry 2012",parSigEtaDeltaProdOffset,parSigEtaDeltaProdOffsetMean,parSigEtaDeltaProdOffsetSigma);
-  RooGaussian           conpdfSigEtaDeltaP0_OS("conpdfSigEtaDeltaP0_OS","conpdfSigEtaDeltaP0_OS",parSigEtaDeltaP0_OS,parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP0Sigma_OS);
-  RooGaussian           conpdfSigEtaDeltaP1_OS("conpdfSigEtaDeltaP1_OS","conpdfSigEtaDeltaP1_OS",parSigEtaDeltaP1_OS,parSigEtaDeltaP1Mean_OS,parSigEtaDeltaP1Sigma_OS);
-  RooMultiVarGaussian   conpdfSigEtaDelta_OS("conpdfSigEtaDelta_OS","constraint for Delta p0 and Delta p1 of OS FT calibration",RooArgList(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),RooArgList(parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP1Mean_OS),covariancematrixSigEtaDelta_OS);
-  RooGaussian           conpdfSigEtaDeltaP0_SS("conpdfSigEtaDeltaP0_SS","conpdfSigEtaDeltaP0_SS",parSigEtaDeltaP0_SS,parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP0Sigma_SS);
-  RooGaussian           conpdfSigEtaDeltaP1_SS("conpdfSigEtaDeltaP1_SS","conpdfSigEtaDeltaP1_SS",parSigEtaDeltaP1_SS,parSigEtaDeltaP1Mean_SS,parSigEtaDeltaP1Sigma_SS);  
-  RooGaussian           conpdfSigEtaP0_OS("conpdfSigEtaP0_OS","Gaussian Constraint for Offset parameter",parSigEtaP0_OS,parSigEtaP0Mean_OS,parSigEtaP0Sigma_OS);
-  RooGaussian           conpdfSigEtaP1_OS("conpdfSigEtaP1_OS","Gaussian Constraint for Scale parameter",parSigEtaP1_OS,parSigEtaP1Mean_OS,parSigEtaP1Sigma_OS);
-  RooMultiVarGaussian   conpdfSigEta_OS("conpdfSigEta_OS","constraint for p0 and p1 of OS FT calibration",RooArgList(parSigEtaP0_OS,parSigEtaP1_OS),RooArgList(parSigEtaP0Mean_OS,parSigEtaP1Mean_OS),covariancematrixSigEta_OS);
-  RooGaussian           conpdfSigEtaP0_SS("conpdfSigEtaP0_SS","Gaussian Constraint for Offset parameter",parSigEtaP0_SS,parSigEtaP0Mean_SS,parSigEtaP0Sigma_SS);
-  RooGaussian           conpdfSigEtaP1_SS("conpdfSigEtaP1_SS","Gaussian Constraint for Scale parameter",parSigEtaP1_SS,parSigEtaP1Mean_SS,parSigEtaP1Sigma_SS);
+  RooMultiVarGaussian   conpdfSigEta_OS("conpdfSigEta_OS","constraint for OS FT calibration",RooArgList(parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),RooArgList(parSigEtaP0Mean_OS,parSigEtaP1Mean_OS,parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP1Mean_OS),covariancematrixSigEta_OS);
   RooMultiVarGaussian   conpdfSigEta_SS("conpdfSigEta_SS","constraint for SS FT calibration",RooArgList(parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),RooArgList(parSigEtaP0Mean_SS,parSigEtaP1Mean_SS,parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP1Mean_SS),covariancematrixSigEta_SS);  
 
   constrainingPdfs.add(conpdfSigTimeTau);
@@ -793,7 +759,6 @@ int main(int argc, char * argv[]){
   constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
   constrainingPdfs.add(conpdfSigEta_OS);
   constrainingPdfs.add(conpdfSigEta_SS);
-  constrainingPdfs.add(conpdfSigEtaDelta_OS);
   cout  <<  "Constraints added" <<  endl;
 
 //========================================================================================================================================================================================================================
@@ -866,17 +831,17 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Offset(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
-    RooDataSet* data_newconstrain_etaOS, *data_newconstrain_etaSS, *data_newconstrain_deltaetaOS, *data_newconstrain_deltaetaSS;
+    RooDataSet* data_newconstrain_etaOS, *data_newconstrain_etaSS;
     RooArgSet set_of_yields;
     RooRealVar SigWeight_11_Kpipi("parSigYield_11_Kpipi_sw","signal weight for 11 Kpipi",-10,10);
     RooRealVar SigWeight_11_KKpi("parSigYield_11_KKpi_sw","signal weight for 11 KKpi",-10,10);
     RooRealVar SigWeight_12_Kpipi("parSigYield_12_Kpipi_sw","signal weight for 12 Kpipi",-10,10);
     RooRealVar SigWeight_12_KKpi("parSigYield_12_KKpi_sw","signal weight for 12 KKpi",-10,10);
     RooFormulaVar sum_of_signal_weights_year_finalstate("sum_of_signal_weights_year_finalstate","sum of signal weights","@0+@1+@2+@3",RooArgList(SigWeight_11_Kpipi,SigWeight_11_KKpi,SigWeight_12_Kpipi,SigWeight_12_KKpi));
-    set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDLowYield_11_Kpipi,parBkgDstDHighYield_11_Kpipi));
-    set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDLowYield_11_KKpi,parBkgDstDHighYield_11_KKpi));
-    set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDLowYield_12_Kpipi,parBkgDstDHighYield_12_Kpipi));
-    set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDLowYield_12_KKpi,parBkgDstDHighYield_12_KKpi));
+    set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
+    set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
+    set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
+    set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
     for (int i = 0; i < 5 ; ++i) {
       cout  <<  i <<  endl;
       try {
@@ -907,18 +872,16 @@ int main(int argc, char * argv[]){
         }
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));
-        data_newconstrain_deltaetaOS = conpdfSigEtaDelta_OS.generate(RooArgSet(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),1);
-        parSigEtaDeltaP0Mean_OS.setVal(data_newconstrain_deltaetaOS->get()->getRealValue("parSigEtaDeltaP0_OS"));
-        parSigEtaDeltaP1Mean_OS.setVal(data_newconstrain_deltaetaOS->get()->getRealValue("parSigEtaDeltaP1_OS"));
-        data_newconstrain_etaOS = conpdfSigEta_OS.generate(RooArgSet(parSigEtaP0_OS,parSigEtaP1_OS),1);
+        data_newconstrain_etaOS = conpdfSigEta_OS.generate(RooArgSet(parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),1);
         parSigEtaP0Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP0_OS"));
         parSigEtaP1Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP1_OS"));
-        // data_newconstrain_deltaetaSS = conpdfSigEtaDelta_SS.generate(RooArgSet(parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),1);
-        // parSigEtaDeltaP0Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP0_SS"));
-        // parSigEtaDeltaP1Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP1_SS"));
-        data_newconstrain_etaSS = conpdfSigEta_SS.generate(RooArgSet(parSigEtaP0_SS,parSigEtaP1_SS),1);
+        parSigEtaDeltaP0Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaDeltaP0_OS"));
+        parSigEtaDeltaP1Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaDeltaP1_OS"));
+        data_newconstrain_etaSS = conpdfSigEta_SS.generate(RooArgSet(parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),1);
         parSigEtaP0Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP0_SS"));
         parSigEtaP1Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP1_SS"));
+        parSigEtaDeltaP0Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaDeltaP0_SS"));
+        parSigEtaDeltaP1Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaDeltaP1_SS"));
         parSigTimeTauMean.setVal(conpdfSigTimeTau.generate(parSigTimeTau,1)->get()->getRealValue("parSigTimeTau"));
         parSigTimeDeltaMMean.setVal(conpdfSigTimeDeltaM.generate(parSigTimeDeltaM,1)->get()->getRealValue("parSigTimeDeltaM"));
         stopwatch.Start(true);
@@ -930,8 +893,6 @@ int main(int argc, char * argv[]){
         delete data_sweighted;
         delete data_newconstrain_etaOS;
         delete data_newconstrain_etaSS;
-        delete data_newconstrain_deltaetaOS;
-        delete data_newconstrain_deltaetaSS;
       } catch (...) {
         i--;
       }
