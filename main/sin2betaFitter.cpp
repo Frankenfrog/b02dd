@@ -22,6 +22,7 @@
 #include "RooConstVar.h"
 #include "RooBinning.h"
 #include "RooAddition.h"
+#include "RooWorkspace.h"
 
 // from RooFit PDFs
 #include "RooGaussModel.h"
@@ -60,6 +61,8 @@
 #include "doofit/plotting/correlations/CorrelationPlot.h"
 #include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/config/CommonConfig.h"
+#include "doofit/toy/ToyFactoryStd/ToyFactoryStd.h"
+#include "doofit/toy/ToyFactoryStd/ToyFactoryStdConfig.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"
 #include "doofit/fitter/splot/SPlotFit2.h"
@@ -90,7 +93,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
 int main(int argc, char * argv[]){
   if (argc < 2) {
     std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
-    std::cout << "Toy study config is optional, and only needed for bootstrapping"  <<  std::endl;
+    std::cout << "Toy study config is optional, and only needed for bootstrapping or mass fitter validation"  <<  std::endl;
     return 0;
   }
   doocore::config::EasyConfig config(argv[1]);
@@ -107,30 +110,30 @@ int main(int argc, char * argv[]){
   bool split_final_state  = config.getBool("split_final_state");
   bool calculate_sweights = config.getBool("calculate_sweights");
   bool bootstrapping = config.getBool("bootstrapping");
-  if (argc <= 2) bootstrapping = false;
+  bool massfittervalidation = config.getBool("massfittervalidation");
+  if ((bootstrapping || massfittervalidation) && argc < 3) {
+    std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
+    std::cout << "The toy study config file is missing! This is mandatory to perform bootstrapping or mass fitter validation!"  <<  std::endl;
+    return 0;
+  }
   TString method = config.getString("method");
   bool massfit = config.getBool("massfit");
   bool decaytimefit = config.getBool("decaytimefit");
   bool mistag_histograms = config.getBool("mistag_histograms");
-  if (mistag_histograms) {
+  bool plot_acceptance = config.getBool("plot_acceptance");
+  bool plot_correlation_matrix = config.getBool("plot_correlation_matrix");
+  bool plot_mass_distribution = config.getBool("plot_mass_distribution");
+  if (mistag_histograms || plot_acceptance || plot_correlation_matrix || plot_mass_distribution) {
     bootstrapping = false;
     massfit = false;
     calculate_sweights = false;
     decaytimefit = false;
+    massfittervalidation = false;
   }
   std::string cut = config.getString("cut");
   bool more_knots = config.getBool("more_knots");
-  bool plot_acceptance = config.getBool("plot_acceptance");
-  bool plot_correlation_matrix = config.getBool("plot_correlation_matrix");
-  bool plot_mass_distribution = config.getBool("plot_mass_distribution");
 
-  if (bootstrapping && argc < 3) {
-    std::cout << "Usage:   " << argv[0] << " 'fit_config_file_name' - c toystudy_config_file_name" << std::endl;
-    std::cout << "The toy study config file is missing! This is mandatory to perform the bootstrapping!"  <<  std::endl;
-    return 0;
-  }
-
-  RooRealVar        obsMass("obsMassDDPVConst","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEta"+OS_tagger,"#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEta"+SS_tagger,"#eta_{SS}",0.,0.5);
@@ -227,16 +230,18 @@ int main(int argc, char * argv[]){
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
   // Get data set
-  EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
-  tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet*       data;
-  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-  else if (decaytimefit || plot_acceptance || plot_correlation_matrix)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
-  else {
-    cout << "What do you want to do? No use case is activated right now!" <<  endl;
-    return 0;
+  if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms)) {
+    EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
+    tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
+    if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+    else if (decaytimefit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+    else {
+      cout << "What do you want to do? No use case is activated right now!" <<  endl;
+      return 0;
+    }
+    data->Print();
   }
-  if (!mistag_histograms) data->Print();
 
   // Mass PDF
   // Signal
@@ -736,13 +741,73 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","minimize"))));
-  fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
   if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
   if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
   fitting_args.Add((TObject*)(new RooCmdArg(Offset(config.getBool("offset")))));
 
+  if (massfittervalidation) {
+
+    // Workspace initializing
+    RooWorkspace* ws = new RooWorkspace("ws");
+    ws->import(*pdfMass);
+    ws->defineSet("observables",obsMass);
+
+    doofit::config::CommonConfig cfg_com("common");
+    cfg_com.InitializeOptions(argc, argv);
+
+    ToyFactoryStdConfig cfg_tfac("toyfac");
+    cfg_tfac.InitializeOptions(cfg_com);
+
+    ToyStudyStdConfig cfg_tstudy("toystudy");
+    cfg_tstudy.InitializeOptions(cfg_com);
+
+    cfg_com.CheckHelpFlagAndPrintHelp();
+
+    ws->Print();
+
+    cfg_tfac.set_workspace(ws);
+
+    ToyFactoryStd tfac(cfg_com, cfg_tfac);
+
+    cfg_com.PrintAll();
+
+    PlotConfig cfg_plot("cfg_plot");
+
+    ToyStudyStd tstudy(cfg_com, cfg_tstudy, cfg_plot);
+
+    if (method.EqualTo("generate")) {
+      fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(false))));
+      fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
+      fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
+      fitting_args.Add((TObject*)(new RooCmdArg(Hesse(true))));
+
+      RooFitResult* fit_result;
+      TStopwatch  stopwatch;
+
+      for (int i = 0; i < 1000 ; ++i) {
+        cout  <<  i <<  endl;
+        try {
+          data = tfac.Generate();
+          pdfMass->getParameters(data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassFitValidation/generation.par");
+          stopwatch.Start(true);
+          fit_result = pdfMass->fitTo(*data,fitting_args);
+          stopwatch.Stop();
+          fit_result->Print("v");
+          tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
+          delete data;
+        } catch (...) {
+          i--;
+        }
+      }
+    }
+
+    if (method.EqualTo("evaluate")) {
+      tstudy.ReadFitResults();
+      tstudy.EvaluateFitResults();
+      tstudy.PlotEvaluatedParameters();
+    }
+  }
   if (bootstrapping) {
 
     doofit::config::CommonConfig cfg_com("common");
@@ -762,6 +827,7 @@ int main(int argc, char * argv[]){
       fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
       fitting_args.Add((TObject*)(new RooCmdArg(Hesse(true))));
       fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
+      fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
 
       RooDataSet* data_bootstrapped;
       RooDataSet* data_bootstrapped_sweighted;
@@ -981,6 +1047,8 @@ int main(int argc, char * argv[]){
   if (decaytimefit) {
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
     fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
+    fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
+    fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
     RooFitResult* fit_result = pdf.fitTo(*data,fitting_args);
     pdf.getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     fit_result->Print("v");
@@ -1019,6 +1087,7 @@ int main(int argc, char * argv[]){
   }
   if (mistag_histograms) {
     TFile* file_mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","recreate");
+    EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
     TTree&            tree = tuple.tree();
     TH1D* hist_Sig_OS_eta = new TH1D("hist_Sig_OS_eta","hist_Sig_OS_eta",100,0,0.5);
     tree.Draw(TString(obsEtaOS.GetName())+">>hist_Sig_OS_eta",TString(cut+"*SigWeight"));

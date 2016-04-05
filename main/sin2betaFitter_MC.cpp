@@ -7,6 +7,7 @@
 #include "TFile.h"
 #include "TROOT.h"
 #include "TH1.h"
+#include "TStyle.h"
 
 //from RooFit
 #include "RooCmdArg.h"
@@ -78,7 +79,7 @@ using namespace doofit::roofit::pdfs;
 
 void PlotTimeErr(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
 void PlotTime(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result);
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree);
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -95,6 +96,7 @@ int main(int argc, char * argv[]){
   if (cp_fit) truetag = config.getBool("truetag");
 
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
+  RooRealVar        obsTime_True("obsTime_True","#it{t}_{true}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSSPion("obsEtaSSPion_TupleCalib","#eta_{SS#pi}",0.,0.5);
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
@@ -121,7 +123,7 @@ int main(int argc, char * argv[]){
   RooCategory       idxPV("idxPV","idxPV");
   idxPV.defineType("signal",0);
   
-  RooArgSet         observables(obsTime,"observables");
+  RooArgSet         observables(obsTime,obsTime_True,"observables");
   if (pereventresolution) observables.add(obsTimeErr);
   if (cp_fit && !truetag){
     observables.add(obsEtaOS);
@@ -137,6 +139,7 @@ int main(int argc, char * argv[]){
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   RooDataSet*       data = &(tuple.ConvertToDataSet());
+  TTree&            tree = tuple.tree();
   data->Print();
 
   RooDataSet        proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSSPion,obsTagOS,obsTagSSPion,obsTimeErr));
@@ -416,13 +419,13 @@ int main(int argc, char * argv[]){
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
   fit_result->correlationMatrix().Print();
-  TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults_"+config.getString("resolutionmodelname")+".root"),"recreate");
+  TFile   fitresultwritetofile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.root","recreate");
   fit_result->Write("fit_result");
   fitresultwritetofile.Close();
 
   // Plots
   pdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.txt");
-  PlotAcceptance(&accspline, fit_result);
+  PlotAcceptance(&accspline, fit_result, &tree);
  
   PlotConfig cfg_plot_time("cfg_plot_time");
   cfg_plot_time.set_plot_appendix("");
@@ -465,14 +468,22 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
+  gStyle->SetTitleOffset(1.15,"Y");
+  gStyle->SetPadLeftMargin(0.16);
   TCanvas c("c","c",800,600);
   c.SetLogx(true);
   
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
+  RooRealVar        obsTime_True("obsTime_True","#it{t}_{true}",0.25,10.25,"ps");
+
+  TH1D hist_acceptance("hist_acceptance","hist_acceptance",100,obsTime.getMin(),obsTime.getMax());
+  tree->Draw("obsTime_True>>hist_acceptance","exp(obsTime_True/1.519)");
+  RooDataHist datahist_acceptance("datahist_acceptance","datahist_acceptance",obsTime_True,&hist_acceptance);
+  RooAbsReal* acceptance_integral = acceptance->createIntegral(obsTime_True);
 
   RooPlot* plot = obsTime.frame();
   acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
@@ -485,12 +496,15 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   
   c.SetLogx(false);
   plot = obsTime.frame();
-  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
-  acceptance->plotOn(plot);
+  // datahist_acceptance.plotOn(plot);
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines(),Normalization(0.11/acceptance_integral->getVal()));
+  acceptance->plotOn(plot,Normalization(0.11/acceptance_integral->getVal()));
   plot->SetMinimum(0.);
-  plot->SetMaximum(1.1);
+  plot->SetMaximum(0.02);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
+  hist_acceptance.DrawNormalized("same");
+
   c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline_nolog.pdf");
 }
 
