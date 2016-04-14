@@ -70,10 +70,13 @@ int main(int argc, char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
-  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5230,5330,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",4800,5400,"MeV/c^{2}");
   RooRealVar        obsMassDauOne("obsMassDauOne","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
   RooRealVar        obsMassDauTwo("obsMassDauTwo","#it{m_{K#pi#pi}}",1845,1895,"MeV/c^{2}");
-  
+
+  RooRealVar        BDT_classifier_Kpipi("BDT_wPIDs_LowMass_Kpipi_classifier","BDT_classifier",-1,1);
+  RooRealVar        BDT_classifier_KKpi("BDT_wPIDs_LowMass_KKpi_classifier","BDT_classifier",-1,1);
+
   RooCategory       catDDFinalState("catDDFinalState","catDDFinalState");
   catDDFinalState.defineType("KpipiKpipi",11);
   catDDFinalState.defineType("KpipiKKpi",13);
@@ -93,7 +96,7 @@ int main(int argc, char * argv[]){
   RooCategory       idxPV("idxPV","idxPV");
   idxPV.defineType("best PV",0);
 
-  RooArgSet         observables("observables");
+  RooArgSet         observables(BDT_classifier_Kpipi,BDT_classifier_KKpi,"observables");
   if (config.getBool("B0")) observables.add(obsMass);
   if (config.getBool("Dpm")) observables.add(RooArgSet(obsMassDauOne,obsMassDauTwo));
   RooArgSet         categories(catDDFinalState,catDDFinalStateParticles,catBkg,idxPV,"categories");
@@ -117,8 +120,14 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigMassCB2Alpha("parSigMassCB2Alpha","parSigMassCB2Alpha",-1,-2,-0.5);
   RooCBShape        pdfSigMassCB2("pdfSigMassCB2","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
 
+  RooRealVar        parSigMassSigma3("parSigMassSigma3","Sigma of Gaussian Mass",7.0,1.0,9.0,"MeV/c^{2}");
+  RooRealVar        parSigMassCB3Expo("parSigMassCB3Expo","parSigMassCB3Expo",10,1,100);
+  RooRealVar        parSigMassCB3Alpha("parSigMassCB3Alpha","parSigMassCB3Alpha",2,0,5);
+  RooCBShape        pdfSigMassCB3("pdfSigMassCB3","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma3,parSigMassCB3Alpha,parSigMassCB3Expo);
+
   RooRealVar        parSigMassCBFraction("parSigMassCBFraction","parSigMassCBFraction",0.5);
-  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB2),parSigMassCBFraction);
+  RooRealVar        parSigMassCBFraction2("parSigMassCBFraction2","parSigMassCBFraction2",0.5);
+  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB3,pdfSigMassCB2),RooArgList(parSigMassCBFraction,parSigMassCBFraction2));
 
   RooRealVar        parSigYield("parSigYield","parSigYield",500,0,1000);
   RooExtendPdf      pdfSigExtend("pdfSigExtend","pdfSigExtend",pdfSigMass,parSigYield);
@@ -164,8 +173,9 @@ int main(int argc, char * argv[]){
     fitresultprinter.Print();
     pdfSigExtend.getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Mass_"+config.getString("identifier")+".txt"));
     std::vector<std::string> components_mass;
-    components_mass += "pdfSigExtend";
-    Plot Mass(cfg_plot_mass, obsMass, data, pdfSigExtend, components_mass, "CB_obsMass");
+    components_mass += "pdfSigMassCB1", "pdfSigMassCB2", "pdfSigMassCB3";
+    obsMass.setBins(config.getInt("numBins"));
+    Plot Mass(cfg_plot_mass, obsMass, data, pdfSigExtend, components_mass, "obsMass");
     Mass.set_scaletype_x(kLinear);
     Mass.set_scaletype_y(kBoth);
     Mass.PlotIt();

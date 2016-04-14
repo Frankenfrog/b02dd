@@ -66,6 +66,17 @@ class B02DDVariablesReducer : public Reducer {
   Float_t* B0_FitPVConst_Dplus_M;
   Float_t* B0_FitPVConst_Dminus_M;
 
+  ReducerLeaf<Double_t>* varDKpipiTauSignificance;
+  ReducerLeaf<Double_t>* varDKKpiTauSignificance;
+
+  Double_t* varDKpipiTauSignificance_value;
+  Double_t* varDKKpiTauSignificance_value;
+
+  Float_t* B0_FitPVConst_Dplus_tau;
+  Float_t* B0_FitPVConst_Dplus_tauErr;
+  Float_t* B0_FitPVConst_Dminus_tau;
+  Float_t* B0_FitPVConst_Dminus_tauErr;
+
   ReducerLeaf<Double_t>* varPiOneminus_ProbNNk;
   ReducerLeaf<Double_t>* varPiOneminus_ProbNNpi;
   ReducerLeaf<Double_t>* varPiOneminus_ProbNNp;
@@ -222,6 +233,17 @@ class B02DDVariablesReducer : public Reducer {
 
     B0_FitPVConst_Dplus_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus_M").branch_address();
     B0_FitPVConst_Dminus_M = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dminus_M").branch_address();
+
+    varDKpipiTauSignificance = &(CreateDoubleLeaf("varDKpipiTauSignificance", -1000.));
+    varDKKpiTauSignificance  = &(CreateDoubleLeaf("varDKKpiTauSignificance", -1000.));
+
+    varDKpipiTauSignificance_value = (Double_t*)varDKpipiTauSignificance->branch_address();
+    varDKKpiTauSignificance_value  = (Double_t*)varDKKpiTauSignificance->branch_address();
+
+    B0_FitPVConst_Dplus_tau     = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus_tau").branch_address();
+    B0_FitPVConst_Dplus_tauErr  = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dplus_tauErr").branch_address();
+    B0_FitPVConst_Dminus_tau    = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dminus_tau").branch_address();
+    B0_FitPVConst_Dminus_tauErr = (Float_t*)GetInterimLeafByName("B0_FitPVConst_Dminus_tauErr").branch_address();
 
     Dminus_piminus_or_Kminus_One_PT = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_One_PT").branch_address();
     Dminus_piminus_or_Kminus_Two_PT = (Double_t*)GetInterimLeafByName("Dminus_piminus_or_Kminus_Two_PT").branch_address();
@@ -380,6 +402,8 @@ class B02DDVariablesReducer : public Reducer {
     if (*DDFinalState == 13 || *DDFinalState == 14) {
       *obsMassDau_Kpipi_value = *B0_FitPVConst_Dplus_M;
       *obsMassDau_KKpi_value  = *B0_FitPVConst_Dminus_M;
+      *varDKpipiTauSignificance = *B0_FitPVConst_Dplus_tau/ *B0_FitPVConst_Dplus_tauErr;
+      *varDKKpiTauSignificance  = *B0_FitPVConst_Dminus_tau/ *B0_FitPVConst_Dminus_tauErr;
       *DDFinalStateParticles = 0;
       *varPiHigh_PT_value = std::max(*Dplus_piplus_or_Kplus_One_PT,*Dplus_piplus_or_Kplus_Two_PT);
       *varPiLow_PT_value = std::min(*Dplus_piplus_or_Kplus_One_PT,*Dplus_piplus_or_Kplus_Two_PT);
@@ -387,6 +411,8 @@ class B02DDVariablesReducer : public Reducer {
     if (*DDFinalState == 31 || *DDFinalState == 41) {
       *obsMassDau_Kpipi_value = *B0_FitPVConst_Dminus_M;
       *obsMassDau_KKpi_value  = *B0_FitPVConst_Dplus_M;
+      *varDKpipiTauSignificance = *B0_FitPVConst_Dminus_tau/ *B0_FitPVConst_Dminus_tauErr;
+      *varDKKpiTauSignificance  = *B0_FitPVConst_Dplus_tau/ *B0_FitPVConst_Dplus_tauErr;
       *DDFinalStateParticles = 0;
       *varPiHigh_PT_value = std::max(*Dminus_piminus_or_Kminus_One_PT,*Dminus_piminus_or_Kminus_Two_PT);
       *varPiLow_PT_value = std::min(*Dminus_piminus_or_Kminus_One_PT,*Dminus_piminus_or_Kminus_Two_PT);
@@ -658,6 +684,9 @@ void TimeLeaves(Reducer* _rdcr, cfg_tuple& cfg){
     tau_leaf_ptr = &_rdcr->CreateDoubleCopyLeaf("obsTime", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_LOKI_DTF_CTAU"), 1.0/0.299792458);
     tau_err_leaf_ptr = &_rdcr->CreateDoubleCopyLeaf("obsTimeErr", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_LOKI_DTF_CTAUERR"), 1.0/0.299792458);
   }
+
+  _rdcr->CreateDoubleCopyLeaf("obsTime_LVF", _rdcr->GetInterimLeafByName("B0_TAU"), 1000.0);
+  _rdcr->CreateDoubleCopyLeaf("obsTimeErr_LVF", _rdcr->GetInterimLeafByName("B0_TAUERR"), 1000.0);
 
   if (_rdcr->LeafExists(std::get<0>(cfg)+"_BKGCAT")){
     tau_true_leaf_ptr = &_rdcr->CreateDoubleCopyLeaf("obsTime_True", _rdcr->GetInterimLeafByName(std::get<0>(cfg)+"_TRUETAU"), 1000.0);

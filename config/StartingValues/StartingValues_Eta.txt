@@ -44,17 +44,17 @@
 // parSigEtaP1Sigma_OS      =  0.09   C
 
 // combined 2011 + 2012 values
-parSigEtaDeltaP0_OS      =  0.003  L(-0.03 - 0.03)
+parSigEtaDeltaP0_OS      =  0.003  C L(-0.03 - 0.03)
 parSigEtaDeltaP0Mean_OS  =  0.003  C
 parSigEtaDeltaP0Sigma_OS =  0.012  C
-parSigEtaDeltaP1_OS      = -0.02   L(-0.1 - 0.1)
+parSigEtaDeltaP1_OS      = -0.02   C L(-0.1 - 0.1)
 parSigEtaDeltaP1Mean_OS  = -0.02   C
 parSigEtaDeltaP1Sigma_OS =  0.11   C
 parSigEtaMean_OS         =  0.3617 C
-parSigEtaP0_OS           =  0.375  L(0 - 0.4)
+parSigEtaP0_OS           =  0.375  C L(0 - 0.4)
 parSigEtaP0Mean_OS       =  0.375  C
 parSigEtaP0Sigma_OS      =  0.008  C
-parSigEtaP1_OS           =  0.94   L(0.8 - 1.1)
+parSigEtaP1_OS           =  0.94   C L(0.8 - 1.1)
 parSigEtaP1Mean_OS       =  0.94   C
 parSigEtaP1Sigma_OS      =  0.07   C
 
@@ -89,23 +89,23 @@ parSigEtaP1Sigma_OS      =  0.07   C
 // parSigEtaMean_SS         = 0.4294 C
 
 // combined 2011 + 2012 values
-parSigEtaDeltaP0_SS      = 0.0002 L(-0.02 - 0.02)
+parSigEtaDeltaP0_SS      = 0.0002 C L(-0.02 - 0.02)
 parSigEtaDeltaP0Mean_SS  = 0.0002 C
 parSigEtaDeltaP0Sigma_SS = 0.009  C
-parSigEtaDeltaP1_SS      = 0.04   L(-0.3 - 0.3)
+parSigEtaDeltaP1_SS      = 0.04   C L(-0.3 - 0.3)
 parSigEtaDeltaP1Mean_SS  = 0.04   C
 parSigEtaDeltaP1Sigma_SS = 0.13   C
-parSigEtaP0_SS           = 0.428  L(0.3 - 0.5)
+parSigEtaP0_SS           = 0.428  C L(0.3 - 0.5)
 parSigEtaP0Mean_SS       = 0.428  C
 parSigEtaP0Sigma_SS      = 0.006  C
-parSigEtaP1_SS           = 0.94   L(0.6 - 1.2)
+parSigEtaP1_SS           = 0.94   C L(0.6 - 1.2)
 parSigEtaP1Mean_SS       = 0.94   C
 parSigEtaP1Sigma_SS      = 0.09   C
 parSigEtaMean_SS         = 0.4288 C
 
-parSigEtaDeltaProdOffset      = -0.0016 L(-1 - 0.01)
+parSigEtaDeltaProdOffset      = -0.0016 C L(-1 - 0.01)
 parSigEtaDeltaProdOffsetMean  = -0.0016 C
 parSigEtaDeltaProdOffsetSigma =  0.0018 C
-parSigEtaDeltaProd_11         = -0.0057 L(-0.05 - 1)
+parSigEtaDeltaProd_11         = -0.0057 C L(-0.05 - 1)
 parSigEtaDeltaProdMean_11     = -0.0057 C
 parSigEtaDeltaProdSigma_11    =  0.0102 C

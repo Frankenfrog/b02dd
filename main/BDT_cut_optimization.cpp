@@ -11,6 +11,7 @@
 #include "TStyle.h"
 #include "TGraph.h"
 #include "TMultiGraph.h"
+#include "TLine.h"
 
 //from RooFit
 #include "RooCmdArg.h"
@@ -93,14 +94,17 @@ int main(int argc, char * argv[]){
   
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
+  gStyle->SetTitleOffset(1.15,"Y");
+  gStyle->SetPadLeftMargin(0.16);
   TCanvas c("c","c",800,600);
 
   bool single_optimization = config.getBool("single_optimization");
   bool optimize_Kpipi = config.getBool("optimize_Kpipi");
   bool cp_fit = config.getBool("cp_fit");
   bool pereventresolution = config.getBool("pereventresolution");
+  bool fits = config.getBool("fits");
 
-  RooRealVar        obsMass("obsMass","#it{m_{K#pi#pi K#pi#pi}}",5000,5500,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{K#pi#pi K#pi#pi}}",5150,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEtaOSwCharm","#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0.,0.5);
@@ -116,8 +120,8 @@ int main(int argc, char * argv[]){
   catTag.defineType("SS",-1);
   catTag.defineType("both",10);
   catTag.defineType("untagged",0);
-  RooRealVar        BDT_classifier_Kpipi("BDT_wPIDs_Kpipi_classifier","BDT_classifier",-1,1);
-  RooRealVar        BDT_classifier_KKpi("BDT_wPIDs_KKpi_classifier","BDT_classifier",-1,1);
+  RooRealVar        BDT_classifier_Kpipi("BDT_wPIDs_LowMass_Kpipi_classifier","BDT_classifier",-1,1);
+  RooRealVar        BDT_classifier_KKpi("BDT_wPIDs_LowMass_KKpi_classifier","BDT_classifier",-1,1);
 
   RooCategory       catYear("catYear","catYear");
   catYear.defineType("2011",2011);
@@ -148,19 +152,29 @@ int main(int argc, char * argv[]){
   // Mass PDF
   // Signal
   RooRealVar        parSigMassMean("parSigMassMean","Bd Mean Mass",5280,5270,5290,"MeV/c^{2}");
+  RooRealVar        parSigMassSigmaScale("parSigMassSigmaScale","Scale of MC resolution",1,0,2);
 
   RooRealVar        parSigMassSigma1("parSigMassSigma1","Sigma of Gaussian Mass",9,7,20,"MeV/c^{2}");
+  RooProduct        parSigMassSigma1Product("parSigMassSigma1Product","parSigMassSigma1Product",RooArgList(parSigMassSigma1,parSigMassSigmaScale));
   RooRealVar        parSigMassCB1Expo("parSigMassCB1Expo","parSigMassCB1Expo",10);
   RooRealVar        parSigMassCB1Alpha("parSigMassCB1Alpha","parSigMassCB1Alpha",1.28);
-  RooCBShape        pdfSigMassCB1("pdfSigMassCB1","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
+  RooCBShape        pdfSigMassCB1("pdfSigMassCB1","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma1Product,parSigMassCB1Alpha,parSigMassCB1Expo);
 
   RooRealVar        parSigMassSigma2("parSigMassSigma2","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
+  RooProduct        parSigMassSigma2Product("parSigMassSigma2Product","parSigMassSigma2Product",RooArgList(parSigMassSigma2,parSigMassSigmaScale));
   RooRealVar        parSigMassCB2Expo("parSigMassCB2Expo","parSigMassCB2Expo",10);
   RooRealVar        parSigMassCB2Alpha("parSigMassCB2Alpha","parSigMassCB2Alpha",-1.32);
-  RooCBShape        pdfSigMassCB2("pdfSigMassCB2","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
+  RooCBShape        pdfSigMassCB2("pdfSigMassCB2","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma2Product,parSigMassCB2Alpha,parSigMassCB2Expo);
 
-  RooRealVar        parSigMassCBFraction("parSigMassCBFraction","parSigMassCBFraction",0.5,0,1);
-  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB2),parSigMassCBFraction);
+  RooRealVar        parSigMassSigma3("parSigMassSigma3","Sigma of Gaussian Mass",7.0,1.0,9.0,"MeV/c^{2}");
+  RooProduct        parSigMassSigma3Product("parSigMassSigma3Product","parSigMassSigma3Product",RooArgList(parSigMassSigma3,parSigMassSigmaScale));
+  RooRealVar        parSigMassCB3Expo("parSigMassCB3Expo","parSigMassCB3Expo",10,1,100);
+  RooRealVar        parSigMassCB3Alpha("parSigMassCB3Alpha","parSigMassCB3Alpha",2,0,5);
+  RooCBShape        pdfSigMassCB3("pdfSigMassCB3","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma3Product,parSigMassCB3Alpha,parSigMassCB3Expo);
+
+  RooRealVar        parSigMassCBFraction("parSigMassCBFraction","parSigMassCBFraction",0.5);
+  RooRealVar        parSigMassCBFraction2("parSigMassCBFraction2","parSigMassCBFraction2",0.5);
+  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB3,pdfSigMassCB2),RooArgList(parSigMassCBFraction,parSigMassCBFraction2));
 
   // B0 --> DsD background
   RooRealVar        parBkgDsDMean("parBkgDsDMean","Mean Mass",5220,5210,5230,"MeV/c^{2}");
@@ -186,9 +200,10 @@ int main(int argc, char * argv[]){
 
   // Bs --> DD signal
   RooFormulaVar     parSigBsMassMean("parSigBsMassMean","Bs Mean Mass","@0+87.35",RooArgList(parSigMassMean));
-  RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
-  RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
-  RooAddPdf         pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB2),parSigMassCBFraction);
+  RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1Product,parSigMassCB1Alpha,parSigMassCB1Expo);
+  RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2Product,parSigMassCB2Alpha,parSigMassCB2Expo);
+  RooCBShape        pdfSigBsMassCB3("pdfSigBsMassCB3","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma3Product,parSigMassCB3Alpha,parSigMassCB3Expo);
+  RooAddPdf         pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB3,pdfSigBsMassCB2),RooArgList(parSigMassCBFraction,parSigMassCBFraction2));
 
   // Bd --> D*+ D- with D*+ --> D+ pi0 Background
   RooRealVar        parBkgDstDLowMassMean("parBkgDstDLowMassMean","Mean Mass",5060,5050,5070,"MeV/c^{2}");
@@ -246,8 +261,8 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend_11("pdfBkgExtend_11","pdfBkgExtend_11",pdfBkgMass,parBkgYield_11);
   RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
 
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,pdfBkgDstDExtend_11,pdfBkgBsDsDExtend_11));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,pdfBkgDstDExtend_12,pdfBkgBsDsDExtend_12));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11/*,pdfBkgDstDExtend_11,pdfBkgBsDsDExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12/*,pdfBkgDstDExtend_12,pdfBkgBsDsDExtend_12*/));
 
   RooRealVar        parSigYield_11_Kpipi("parSigYield_11_Kpipi","parSigYield_11_Kpipi",500,0,1000);
   RooRealVar        parSigYield_12_Kpipi("parSigYield_12_Kpipi","parSigYield_12_Kpipi",500,0,1000);
@@ -299,10 +314,10 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
   RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass_KKpi,parBkgYield_12_KKpi);
 
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi/*,pdfBkgDstDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi*/));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi/*,pdfBkgDstDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi*/));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi/*,pdfBkgDstDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi*/));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi/*,pdfBkgDstDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi*/));
 
   RooSuperCategory  supercategory_mass("supercategory_mass","supercategory_mass",RooArgList(catYear,catDDFinalStateParticles));
 
@@ -558,7 +573,7 @@ int main(int argc, char * argv[]){
   if (cp_fit) {
     fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
-    fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
+    // fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
     if (!pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
     else fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
   }
@@ -586,14 +601,14 @@ int main(int argc, char * argv[]){
   RooRealVar SigWeight_12("parSigYield_12_sw","signal weight for 12",-10,10);
   RooFormulaVar sum_of_signal_weights_year("sum_of_signal_weights_year","sum of signal weights","@0+@1",RooArgList(SigWeight_11,SigWeight_12));
   if (single_optimization) {
-    set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgDstDYield_11,parBkgBsDsDYield_11));
-    set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgDstDYield_12,parBkgBsDsDYield_12));
+    set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11/*,parBkgDstDYield_11,parBkgBsDsDYield_11*/));
+    set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12/*,parBkgDstDYield_12,parBkgBsDsDYield_12*/));
   }
   else {
-    set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
-    set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
-    set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
-    set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
+    set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi/*,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi*/));
+    set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi/*,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi*/));
+    set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi/*,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi*/));
+    set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi/*,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi*/));
   }
   RooFitResult* fit_result;
   RooAbsReal* background_integral;
@@ -603,124 +618,188 @@ int main(int argc, char * argv[]){
   int n_steps = config.getInt("n_steps");
   double scan_width = (scan_end - scan_begin)/n_steps;
 
-  for (int i = 0; i <= n_steps; ++i) {
-    double cutvalue = scan_begin + i*scan_width;
-    if (single_optimization) {
-      reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier")+"_classifier>"+to_string(cutvalue))));
-      if (data.sumEntries("catDDFinalStateParticles==1") > 0) pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Kpipi_BDT_Optimization.txt");
-      else pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_KKpi_BDT_Optimization.txt");
-    }
-    else {
-      pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_BDT_Optimization.txt");
-      if (optimize_Kpipi) reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier")+"_classifier>"+to_string(cutvalue)+"||catDDFinalStateParticles==0")));
-      else reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier")+"_classifier>"+to_string(cutvalue)+"||catDDFinalStateParticles==1")));
-    } 
-    reduced_data->Print();
-    if (cp_fit) {
-      splotfit = new SPlotFit2(*pdfMass,*reduced_data,set_of_yields);
-      splotfit->set_use_minos(false);
-      splotfit->set_num_cpu(config.getInt("num_cpu"));
-      RooMsgService::instance().setStreamStatus(0, false);
-      RooMsgService::instance().setStreamStatus(1, false);
-      splotfit->Fit();
-      RooMsgService::instance().setStreamStatus(0, true);
-      RooMsgService::instance().setStreamStatus(1, true);
+  if (fits) {
+    for (int i = 0; i <= n_steps; ++i) {
+      double cutvalue = scan_begin + i*scan_width;
+      cout << cutvalue  << endl;
       if (single_optimization) {
-        reduced_data->addColumn(sum_of_signal_weights_year);
-        reduced_data_sweighted = new RooDataSet("reduced_data_sweighted","reduced_data_sweighted",reduced_data,*(reduced_data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year");
+        reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier")+"_classifier>"+to_string(cutvalue))));
+        if (data.sumEntries("catDDFinalStateParticles==1") > 0) pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Kpipi_BDT_Optimization.txt");
+        else pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_KKpi_BDT_Optimization.txt");
       }
       else {
-        reduced_data->addColumn(sum_of_signal_weights_year_finalstate);
-        reduced_data_sweighted = new RooDataSet("reduced_data_sweighted","reduced_data_sweighted",reduced_data,*(reduced_data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year_finalstate");
-      }
-      fit_result = pdf.fitTo(*reduced_data_sweighted,fitting_args);
-      if (fit_result->status() > 0) continue;
-      pdf.getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Time_"+to_string(i)+".txt"));
-      doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
-      fitresultprinter.Print();
-      bdt_cut += cutvalue;
-      sensitivity_S += parSigTimeSin2b.getError();
-      sensitivity_C += parSigTimeC.getError();
-      delete reduced_data_sweighted;
-    }
-    else {
-      fit_result = pdfMass->fitTo(*reduced_data,fitting_args);
-      if (fit_result->status() > 0) continue;
-      bdt_cut += cutvalue;
-      pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Mass_"+to_string(i)+".txt"));
-      doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
-      fitresultprinter.Print();
-      if (single_optimization) {
-        signal_yield += parSigYield_11.getVal() + parSigYield_12.getVal();
-        background_integral = pdfBkgMass.createIntegral(obsMass,NormSet(obsMass),Range("signal"));
-        background_yield += parBkgYield_11.getVal()*background_integral->getVal() + parBkgYield_12.getVal()*background_integral->getVal();
-      }
-      else if (optimize_Kpipi) {
-        signal_yield += parSigYield_11_Kpipi.getVal() + parSigYield_12_Kpipi.getVal();
-        background_integral = pdfBkgMass_Kpipi.createIntegral(obsMass,NormSet(obsMass),Range("signal"));
-        background_yield += parBkgYield_11_Kpipi.getVal()*background_integral->getVal() + parBkgYield_12_Kpipi.getVal()*background_integral->getVal();
+        pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_BDT_Optimization.txt");
+        if (optimize_Kpipi) reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier")+"_classifier>"+to_string(cutvalue)+"||catDDFinalStateParticles==0")));
+        else reduced_data = dynamic_cast<RooDataSet*>(data.reduce(TString(config.getString("bdt_classifier")+"_classifier>"+to_string(cutvalue)+"||catDDFinalStateParticles==1")));
+      } 
+      reduced_data->Print();
+      if (cp_fit) {
+        splotfit = new SPlotFit2(*pdfMass,*reduced_data,set_of_yields);
+        splotfit->set_use_minos(false);
+        splotfit->set_num_cpu(config.getInt("num_cpu"));
+        RooMsgService::instance().setStreamStatus(0, false);
+        RooMsgService::instance().setStreamStatus(1, false);
+        splotfit->Fit();
+        RooMsgService::instance().setStreamStatus(0, true);
+        RooMsgService::instance().setStreamStatus(1, true);
+        if (single_optimization) {
+          reduced_data->addColumn(sum_of_signal_weights_year);
+          reduced_data_sweighted = new RooDataSet("reduced_data_sweighted","reduced_data_sweighted",reduced_data,*(reduced_data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year");
+        }
+        else {
+          reduced_data->addColumn(sum_of_signal_weights_year_finalstate);
+          reduced_data_sweighted = new RooDataSet("reduced_data_sweighted","reduced_data_sweighted",reduced_data,*(reduced_data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year_finalstate");
+        }
+        fit_result = pdf.fitTo(*reduced_data_sweighted,fitting_args);
+        pdf.getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Time_"+to_string(i)+".txt"));
+        doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
+        fitresultprinter.Print();
+        if (fit_result->status() > 0) continue;
+        bdt_cut += cutvalue;
+        sensitivity_S += parSigTimeSin2b.getError();
+        sensitivity_C += parSigTimeC.getError();
+        delete reduced_data_sweighted;
       }
       else {
-        signal_yield += parSigYield_11_KKpi.getVal() + parSigYield_12_KKpi.getVal();
-        background_integral = pdfBkgMass_KKpi.createIntegral(obsMass,NormSet(obsMass),Range("signal"));
-        background_yield += parBkgYield_11_KKpi.getVal()*background_integral->getVal() + parBkgYield_12_KKpi.getVal()*background_integral->getVal();
+        fit_result = pdfMass->fitTo(*reduced_data,fitting_args);
+        if (fit_result->status() > 0) continue;
+        bdt_cut += cutvalue;
+        pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Mass_"+to_string(i)+".txt"));
+        doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
+        fitresultprinter.Print();
+        if (single_optimization) {
+          signal_yield += parSigYield_11.getVal() + parSigYield_12.getVal();
+          background_integral = pdfBkgMass.createIntegral(obsMass,NormSet(obsMass),Range("signal"));
+          background_yield += parBkgYield_11.getVal()*background_integral->getVal() + parBkgYield_12.getVal()*background_integral->getVal();
+        }
+        else if (optimize_Kpipi) {
+          signal_yield += parSigYield_11_Kpipi.getVal() + parSigYield_12_Kpipi.getVal();
+          background_integral = pdfBkgMass_Kpipi.createIntegral(obsMass,NormSet(obsMass),Range("signal"));
+          background_yield += parBkgYield_11_Kpipi.getVal()*background_integral->getVal() + parBkgYield_12_Kpipi.getVal()*background_integral->getVal();
+        }
+        else {
+          signal_yield += parSigYield_11_KKpi.getVal() + parSigYield_12_KKpi.getVal();
+          background_integral = pdfBkgMass_KKpi.createIntegral(obsMass,NormSet(obsMass),Range("signal"));
+          background_yield += parBkgYield_11_KKpi.getVal()*background_integral->getVal() + parBkgYield_12_KKpi.getVal()*background_integral->getVal();
+        }
       }
     }
   }
 
-  if (cp_fit) for (int i = 0; i < sensitivity_S.size(); ++i)  cout <<  bdt_cut.at(i)  <<  "\t"  <<  round(sensitivity_S.at(i)*10000)/10000 <<  "\t"  <<  round(10000*sensitivity_C.at(i))/10000 <<  "\t" << round(sensitivity_S.at(i)*10000)/10000 + round(sensitivity_C.at(i)*10000)/10000 << endl;
+  if (cp_fit) {
+    if (fits) {
+      TGraph*  gr_S_sensitivity = new TGraph(sensitivity_S.size(), &bdt_cut[0], &sensitivity_S[0]);
+      gr_S_sensitivity->SetLineColor(2);
+      gr_S_sensitivity->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
+      gr_S_sensitivity->GetYaxis()->SetTitle("sensitivity S_{D^{+}D^{-}}");
+      gr_S_sensitivity->GetXaxis()->SetLimits(scan_begin,scan_end);
+      gr_S_sensitivity->Draw("AC");
+      c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivity_S.pdf"));
+  
+      TGraph*  gr_C_sensitivity = new TGraph(sensitivity_C.size(), &bdt_cut[0], &sensitivity_C[0]);
+      gr_C_sensitivity->SetLineColor(2);
+      gr_C_sensitivity->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
+      gr_C_sensitivity->GetYaxis()->SetTitle("sensitivity C_{D^{+}D^{-}}");
+      gr_C_sensitivity->GetXaxis()->SetLimits(scan_begin,scan_end);
+      gr_C_sensitivity->Draw("AC");
+      c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivity_C.pdf"));
+  
+      TFile   sensitivitiesfile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.root"),"recreate");
+      gr_S_sensitivity->Write("gr_S_sensitivity");
+      gr_C_sensitivity->Write("gr_C_sensitivity");
+      sensitivitiesfile.Close();
+
+      for (int i = 0; i < sensitivity_S.size(); ++i)  cout <<  bdt_cut.at(i)  <<  "\t"  <<  round(sensitivity_S.at(i)*10000)/10000 <<  "\t"  <<  round(10000*sensitivity_C.at(i))/10000 <<  "\t" << round(sensitivity_S.at(i)*10000)/10000 + round(sensitivity_C.at(i)*10000)/10000 << endl;
+    }
+    else {
+      TFile sensitivitiesfile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.root"),"read");
+      TGraph* read_in_sensitivity_S = dynamic_cast<TGraph*>(sensitivitiesfile.Get("gr_S_sensitivity"));
+      TGraph* read_in_sensitivity_C = dynamic_cast<TGraph*>(sensitivitiesfile.Get("gr_C_sensitivity"));
+      TMultiGraph* mg = new TMultiGraph();
+      read_in_sensitivity_S->SetLineColor(2);
+      read_in_sensitivity_S->SetLineStyle(2);
+      read_in_sensitivity_C->SetLineColor(4);
+      read_in_sensitivity_C->SetLineStyle(9);
+      mg->Add(read_in_sensitivity_S);
+      mg->Add(read_in_sensitivity_C);
+      mg->Draw("AC");
+      mg->GetXaxis()->SetLimits(scan_begin,scan_end);
+      mg->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
+      mg->GetYaxis()->SetTitle("sensitivity");
+      c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.pdf"));
+      sensitivitiesfile.Close();
+    }
+  }
   else {
     std::vector<double> signal_efficiency;
     std::vector<double> signal_significance;
     std::vector<double> background_rejection;
     double total_signal_yield = *max_element(begin(signal_yield), end(signal_yield));
     double total_bkg_yield = *max_element(begin(background_yield), end(background_yield));
-    // for (int i = 0; i < signal_yield.size(); ++i) {
-    //   signal_efficiency.at(i) = signal_yield.at(i)/total_signal_yield;
-    //   signal_significance.at(i) = signal_yield.at(i)/sqrt(signal_yield.at(i)+background_yield.at(i));
-    //   background_rejection.at(i) = 1. - background_yield.at(i)/total_bkg_yield;
-    // }
+    for (int i = 0; i < signal_yield.size(); ++i) {
+      signal_efficiency += signal_yield.at(i)/total_signal_yield;
+      signal_significance += signal_yield.at(i)/sqrt(signal_yield.at(i)+background_yield.at(i));
+      background_rejection += 1. - background_yield.at(i)/total_bkg_yield;
+    }
+    TLine BDT_cut_value(config.getDouble("optimal_cut"),0,config.getDouble("optimal_cut"),1);
+    BDT_cut_value.SetLineStyle(2);
 
     TGraph*  gr_signal_yield = new TGraph(signal_yield.size(), &bdt_cut[0], &signal_yield[0]);
     gr_signal_yield->SetLineColor(2);
-    gr_signal_yield->GetXaxis()->SetTitle("BDT classifier");
+    gr_signal_yield->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
     gr_signal_yield->GetYaxis()->SetTitle("signal yield");
+    gr_signal_yield->GetXaxis()->SetLimits(scan_begin,scan_end);
     gr_signal_yield->Draw("AC");
+    BDT_cut_value.SetY1(gr_signal_yield->GetYaxis()->GetXmin());
+    BDT_cut_value.SetY2(gr_signal_yield->GetYaxis()->GetXmax());
+    BDT_cut_value.Draw();
     c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalYield.pdf"));
   
     TGraph*  gr_background_yield = new TGraph(background_yield.size(), &bdt_cut[0], &background_yield[0]);
     gr_background_yield->SetLineColor(2);
-    gr_background_yield->GetXaxis()->SetTitle("BDT classifier");
+    gr_background_yield->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
     gr_background_yield->GetYaxis()->SetTitle("background yield");
+    gr_background_yield->GetXaxis()->SetLimits(scan_begin,scan_end);
     gr_background_yield->Draw("AC");
+    BDT_cut_value.SetY1(gr_background_yield->GetYaxis()->GetXmin());
+    BDT_cut_value.SetY2(gr_background_yield->GetYaxis()->GetXmax());
+    BDT_cut_value.Draw();
     c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/BackgroundYield.pdf"));
   
-    // TGraph*  gr_signal_efficiency = new TGraph(signal_efficiency.size(), &bdt_cut[0], &signal_efficiency[0]);
-    // gr_signal_efficiency->SetLineColor(2);
-    // gr_signal_efficiency->GetXaxis()->SetTitle("BDT classifier");
-    // gr_signal_efficiency->GetYaxis()->SetTitle("signal efficiency");
-    // gr_signal_efficiency->Draw("AC");
-    // c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalEfficiency.pdf"));
+    TGraph*  gr_signal_efficiency = new TGraph(signal_efficiency.size(), &bdt_cut[0], &signal_efficiency[0]);
+    gr_signal_efficiency->SetLineColor(2);
+    gr_signal_efficiency->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
+    gr_signal_efficiency->GetYaxis()->SetTitle("signal efficiency");
+    gr_signal_efficiency->GetXaxis()->SetLimits(scan_begin,scan_end);
+    gr_signal_efficiency->Draw("AC");
+    BDT_cut_value.SetY1(gr_signal_efficiency->GetYaxis()->GetXmin());
+    BDT_cut_value.SetY2(gr_signal_efficiency->GetYaxis()->GetXmax());
+    BDT_cut_value.Draw();
+    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalEfficiency.pdf"));
   
-    // TGraph*  gr_signal_significance = new TGraph(signal_significance.size(), &bdt_cut[0], &signal_significance[0]);
-    // gr_signal_significance->SetLineColor(2);
-    // gr_signal_significance->GetXaxis()->SetTitle("BDT classifier");
-    // gr_signal_significance->GetYaxis()->SetTitle("signal significance");
-    // gr_signal_significance->Draw("AC");
-    // c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalSignificance.pdf"));
+    TGraph*  gr_signal_significance = new TGraph(signal_significance.size(), &bdt_cut[0], &signal_significance[0]);
+    gr_signal_significance->SetLineColor(2);
+    gr_signal_significance->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
+    gr_signal_significance->GetYaxis()->SetTitle("signal significance");
+    gr_signal_significance->GetXaxis()->SetLimits(scan_begin,scan_end);
+    gr_signal_significance->Draw("AC");
+    BDT_cut_value.SetY1(gr_signal_significance->GetYaxis()->GetXmin());
+    BDT_cut_value.SetY2(gr_signal_significance->GetYaxis()->GetXmax());
+    BDT_cut_value.Draw();
+    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalSignificance.pdf"));
   
-    // TGraph*  ROC_curve = new TGraph(signal_efficiency.size(), &signal_efficiency[0], &background_rejection[0]);
-    // ROC_curve->SetLineColor(2);
-    // ROC_curve->GetXaxis()->SetTitle("signal efficiency");
-    // ROC_curve->GetYaxis()->SetTitle("background rejection");
-    // ROC_curve->Draw("AC");
-    // c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/ROC_Curve.pdf"));
+    TGraph*  ROC_curve = new TGraph(signal_efficiency.size(), &signal_efficiency[0], &background_rejection[0]);
+    ROC_curve->SetLineColor(2);
+    ROC_curve->GetXaxis()->SetTitle("signal efficiency");
+    ROC_curve->GetYaxis()->SetTitle("background rejection");
+    ROC_curve->Draw("AC");
+    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/ROC_Curve.pdf"));
 
     // TMultiGraph* mg = new TMultiGraph();
     // mg->Add(gr_signal_efficiency);
     // mg->Add(gr_signal_significance);
     // mg->Draw("AC");
-    // mg->GetXaxis()->SetTitle("BDT classifier");
+    // mg->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
     // mg->GetYaxis()->SetTitle("signal yield");
     // c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Summary.pdf"));
 

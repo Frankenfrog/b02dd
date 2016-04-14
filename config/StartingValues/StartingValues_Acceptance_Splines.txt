@@ -9,7 +9,7 @@
 // parSigTimeAccCSpline9 =  0.99 L(0 - 2)
 
 parSigTimeAccCSpline1 =  0.7  L(0.1 - 2)
-parSigTimeAccCSpline2 =  0.98 L(0.1 - 2)
+parSigTimeAccCSpline2 =  0.92 L(0.1 - 2)
 parSigTimeAccCSpline3 =  1    C L(0.1 - 2)
 parSigTimeAccCSpline4 =  0.99 L(0.1 - 2)
 

@@ -9,6 +9,7 @@ add_executable(ProductionAsymmetry ProductionAsymmetry.cpp)
 add_executable(DecayTimeAcceptance DecayTimeAcceptance.cpp)
 add_executable(MassModel MassModel.cpp)
 add_executable(zscale zscale.cpp)
+add_executable(CorrelationEtaTime CorrelationEtaTime.cpp)
 
 # Aliases for module libs
 
@@ -23,3 +24,4 @@ target_link_libraries(ProductionAsymmetry ${ALL_LIBRARIES})
 target_link_libraries(DecayTimeAcceptance ${ALL_LIBRARIES})
 target_link_libraries(MassModel ${ALL_LIBRARIES})
 target_link_libraries(zscale ${ALL_LIBRARIES})
+target_link_libraries(CorrelationEtaTime CPToyMC ${ALL_LIBRARIES})

@@ -1,12 +1,16 @@
-parSigMassCB1Alpha =  1.5 L(1 - 2) 
-parSigMassCB1Expo =  10 C L(1 - 100) 
-parSigMassCB2Alpha = -1.4 L(-2 - -0.5) 
-parSigMassCB2Expo =  10 C L(1 - 100) 
-parSigMassCBFraction =  0.50000 L(0 - 1) 
-parSigMassMean =  5280.0 L(5270 - 5290) // [MeV/c^{2}]
-parSigMassSigma1 =  8.8711 L(1 - 100) // [MeV/c^{2}]
-parSigMassSigma2 =  7.7655 L(1 - 100) // [MeV/c^{2}]
-parSigYield =  35000 L(0 - 50000) 
+parSigMassCB1Alpha =  1.2  L(0 - 2) 
+parSigMassCB1Expo  =  10   C L(1 - 200) 
+parSigMassCB2Alpha = -1.4  L(-3 - -0.5) 
+parSigMassCB2Expo  =  10   C L(1 - 200) 
+parSigMassCB3Alpha =  0.1  L(0 - 5) 
+parSigMassCB3Expo  =  10   C L(1 - 200) 
+parSigMassCBFraction  =  0.4 L(0 - 1) 
+parSigMassCBFraction2 =  0.01 L(0 - 1) 
+parSigMassMean =  5279.7 L(5270 - 5290) // [MeV/c^{2}]
+parSigMassSigma1 =  8   L(1 - 100) // [MeV/c^{2}]
+parSigMassSigma2 =  9.5 L(1 - 100) // [MeV/c^{2}]
+parSigMassSigma3 =  16  L(1 - 100) // [MeV/c^{2}]
+parSigYield =  39000 L(0 - 50000) 
 
 parDsDMassCB1Alpha =  0.47 L(0.1 - 2) 
 parDsDMassCB1Expo =  10 C L(1 - 100) 

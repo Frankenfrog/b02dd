@@ -1,12 +1,17 @@
 parBkgExponent       = -0.0025 L(-0.1 - 0.1)
-parSigMassCB1Alpha   =  1.28   C L(-INF - +INF)
+parSigMassCB1Alpha   =  1.17   C L(-INF - +INF)
 parSigMassCB1Expo    =  10.0   C L(-INF - +INF)
-parSigMassCB2Alpha   = -1.32   C L(-INF - +INF)
+parSigMassCB2Alpha   = -1.47   C L(-INF - +INF)
 parSigMassCB2Expo    =  10.0   C L(-INF - +INF)
-parSigMassCBFraction =  0.50   C L(0 - 1)
+parSigMassCB3Alpha   =  0.12   C L(-INF - +INF)
+parSigMassCB3Expo    =  10.0   C L(-INF - +INF)
+parSigMassCBFraction =  0.48   C L(0 - 1)
+parSigMassCBFraction2 =  0.0098   C L(0 - 1)
 parSigMassMean       =  5279.11 L(5270 - 5290) // [MeV/c^{2}]
-parSigMassSigma1     =  9.8    L(1 - 30) // [MeV/c^{2}]
-parSigMassSigma2     =  7.5    L(1 - 30) // [MeV/c^{2}]
+parSigMassSigma1     =  8.5    C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigma2     =  9.0    C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigma3     =  16     C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigmaScale =  1      L(0 - 2)
 
 parBkgDsDMassCB1Alpha   =  0.47 C L(0.01 - 2)
 parBkgDsDMassCB1Expo    =  10   C L(1 - 100)

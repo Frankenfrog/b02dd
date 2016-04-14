@@ -23,6 +23,7 @@
 #include "RooBinning.h"
 #include "RooAddition.h"
 #include "RooWorkspace.h"
+#include "RooProduct.h"
 
 // from RooFit PDFs
 #include "RooGaussModel.h"
@@ -133,7 +134,7 @@ int main(int argc, char * argv[]){
   std::string cut = config.getString("cut");
   bool more_knots = config.getBool("more_knots");
 
-  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5150,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEta"+OS_tagger,"#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEta"+SS_tagger,"#eta_{SS}",0.,0.5);
@@ -174,12 +175,8 @@ int main(int argc, char * argv[]){
   catMag.defineType("up",1);
   catMag.defineType("down",-1);
 
-  RooRealVar        BDT1_classifier("BDT1_classifier","BDT1_classifier",-1,1);
-  RooRealVar        BDT2_classifier("BDT2_classifier","BDT2_classifier",-1,1);
-  RooRealVar        BDTG1_classifier("BDTG1_classifier","BDTG1_classifier",-1,1);
-  RooRealVar        BDTG2_classifier("BDTG2_classifier","BDTG2_classifier",-1,1);
-  RooRealVar        BDTwPIDs_classifier("BDT_wPIDs_Kpipi_classifier","BDT_wPIDs_Kpipi_classifier",-1,1);
-  RooRealVar        BDTwPIDs_KKpi_classifier("BDT_wPIDs_KKpi_classifier","BDT_wPIDs_KKpi_classifier",-1,1);
+  RooRealVar        BDTwPIDs_classifier("BDT_wPIDs_LowMass_Kpipi_classifier","BDT_wPIDs_LowMass_Kpipi_classifier",-1,1);
+  RooRealVar        BDTwPIDs_KKpi_classifier("BDT_wPIDs_LowMass_KKpi_classifier","BDT_wPIDs_LowMass_KKpi_classifier",-1,1);
   RooRealVar        idxRunNumber("idxRunNumber","idxRunNumber",0);
 
   RooRealVar        SigWeight("SigWeight","Signal weight",-10,10);
@@ -189,6 +186,8 @@ int main(int argc, char * argv[]){
   RooRealVar        varPionTwoMaxP("varPionTwoMaxP","varPionTwoMaxP",0);
   RooRealVar        varDminusMassHypo_KpiK("varDminusMassHypo_KpiK","varDminusMassHypo_KpiK",0);
   RooRealVar        varDplusMassHypo_KpiK("varDplusMassHypo_KpiK","varDplusMassHypo_KpiK",0);
+  RooRealVar        varPiTwominus_PID("varPiTwominus_PID","varPiTwominus_PID",0,1);
+  RooRealVar        varPiTwoplus_PID("varPiTwoplus_PID","varPiTwoplus_PID",0,1);
 
   RooCategory       Hlt2Topo2BodyBBDTDecision("Hlt2Topo2BodyBBDTDecision","Hlt2Topo2BodyBBDTDecision");
   Hlt2Topo2BodyBBDTDecision.defineType("triggered",1);
@@ -215,8 +214,8 @@ int main(int argc, char * argv[]){
   RooArgSet         observables(obsTime,obsMass,"observables");
   observables.add(RooArgSet(Hlt2Topo2BodyBBDTDecision,Hlt2Topo3BodyBBDTDecision,Hlt2Topo4BodyBBDTDecision,Hlt2Topo2BodySimpleDecision,Hlt2Topo3BodySimpleDecision,Hlt2Topo4BodySimpleDecision,Hlt2IncPhiDecision));
   observables.add(RooArgSet(varKaonMaxP,varPionOneMaxP,varPionTwoMaxP));
-  observables.add(RooArgSet(varDplusMassHypo_KpiK,varDminusMassHypo_KpiK));
-  observables.add(RooArgSet(BDT1_classifier,BDT2_classifier,BDTG1_classifier,BDTG2_classifier,BDTwPIDs_classifier,BDTwPIDs_KKpi_classifier));
+  observables.add(RooArgSet(varDplusMassHypo_KpiK,varDminusMassHypo_KpiK,varPiTwominus_PID,varPiTwoplus_PID));
+  observables.add(RooArgSet(BDTwPIDs_classifier,BDTwPIDs_KKpi_classifier));
   observables.add(idxRunNumber);
   if (pereventresolution) observables.add(obsTimeErr);
   if (cp_fit){
@@ -231,34 +230,44 @@ int main(int argc, char * argv[]){
   
   // Get data set
   RooDataSet*       data;
-  if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms)) {
-    EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
-    tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-    if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-    else if (decaytimefit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
-    else {
-      cout << "What do you want to do? No use case is activated right now!" <<  endl;
-      return 0;
-    }
+  EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
+  tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
+  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+  else if (decaytimefit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  else if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms)) {
+    cout << "What do you want to do? No use case is activated right now!" <<  endl;
+    return 0;
+  }
+  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || decaytimefit || plot_acceptance) {
     data->Print();
   }
 
   // Mass PDF
   // Signal
   RooRealVar        parSigMassMean("parSigMassMean","Bd Mean Mass",5280,5270,5290,"MeV/c^{2}");
+  RooRealVar        parSigMassSigmaScale("parSigMassSigmaScale","Scale of MC resolution",1,0,2);
 
   RooRealVar        parSigMassSigma1("parSigMassSigma1","Sigma of Gaussian Mass",9,7,20,"MeV/c^{2}");
+  RooProduct        parSigMassSigma1Product("parSigMassSigma1Product","parSigMassSigma1Product",RooArgList(parSigMassSigma1,parSigMassSigmaScale));
   RooRealVar        parSigMassCB1Expo("parSigMassCB1Expo","parSigMassCB1Expo",10);
   RooRealVar        parSigMassCB1Alpha("parSigMassCB1Alpha","parSigMassCB1Alpha",1.28);
-  RooCBShape        pdfSigMassCB1("pdfSigMassCB1","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
+  RooCBShape        pdfSigMassCB1("pdfSigMassCB1","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma1Product,parSigMassCB1Alpha,parSigMassCB1Expo);
 
   RooRealVar        parSigMassSigma2("parSigMassSigma2","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
+  RooProduct        parSigMassSigma2Product("parSigMassSigma2Product","parSigMassSigma2Product",RooArgList(parSigMassSigma2,parSigMassSigmaScale));
   RooRealVar        parSigMassCB2Expo("parSigMassCB2Expo","parSigMassCB2Expo",10);
   RooRealVar        parSigMassCB2Alpha("parSigMassCB2Alpha","parSigMassCB2Alpha",-1.32);
-  RooCBShape        pdfSigMassCB2("pdfSigMassCB2","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
+  RooCBShape        pdfSigMassCB2("pdfSigMassCB2","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma2Product,parSigMassCB2Alpha,parSigMassCB2Expo);
 
-  RooRealVar        parSigMassCBFraction("parSigMassCBFraction","parSigMassCBFraction",0.5,0,1);
-  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB2),parSigMassCBFraction);
+  RooRealVar        parSigMassSigma3("parSigMassSigma3","Sigma of Gaussian Mass",7.0,1.0,9.0,"MeV/c^{2}");
+  RooProduct        parSigMassSigma3Product("parSigMassSigma3Product","parSigMassSigma3Product",RooArgList(parSigMassSigma3,parSigMassSigmaScale));
+  RooRealVar        parSigMassCB3Expo("parSigMassCB3Expo","parSigMassCB3Expo",10,1,100);
+  RooRealVar        parSigMassCB3Alpha("parSigMassCB3Alpha","parSigMassCB3Alpha",2,0,5);
+  RooCBShape        pdfSigMassCB3("pdfSigMassCB3","Signal Mass PDF",obsMass,parSigMassMean,parSigMassSigma3Product,parSigMassCB3Alpha,parSigMassCB3Expo);
+
+  RooRealVar        parSigMassCBFraction("parSigMassCBFraction","parSigMassCBFraction",0.5);
+  RooRealVar        parSigMassCBFraction2("parSigMassCBFraction2","parSigMassCBFraction2",0.5);
+  RooAddPdf         pdfSigMass("pdfSigMass","pdfSigMass",RooArgList(pdfSigMassCB1,pdfSigMassCB3,pdfSigMassCB2),RooArgList(parSigMassCBFraction,parSigMassCBFraction2));
 
   // B0 --> DsD background
   RooRealVar        parBkgDsDMean("parBkgDsDMean","Mean Mass",5220,5210,5230,"MeV/c^{2}");
@@ -284,9 +293,10 @@ int main(int argc, char * argv[]){
 
   // Bs --> DD signal
   RooFormulaVar     parSigBsMassMean("parSigBsMassMean","Bs Mean Mass","@0+87.35",RooArgList(parSigMassMean));
-  RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1,parSigMassCB1Alpha,parSigMassCB1Expo);
-  RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2,parSigMassCB2Alpha,parSigMassCB2Expo);
-  RooAddPdf         pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB2),parSigMassCBFraction);
+  RooCBShape        pdfSigBsMassCB1("pdfSigBsMassCB1","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma1Product,parSigMassCB1Alpha,parSigMassCB1Expo);
+  RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2Product,parSigMassCB2Alpha,parSigMassCB2Expo);
+  RooCBShape        pdfSigBsMassCB3("pdfSigBsMassCB3","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma3Product,parSigMassCB3Alpha,parSigMassCB3Expo);
+  RooAddPdf         pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB3,pdfSigBsMassCB2),RooArgList(parSigMassCBFraction,parSigMassCBFraction2));
 
   // Bd --> D*+ D- with D*+ --> D+ pi0 Background
   RooRealVar        parBkgDstDLowMassMean("parBkgDstDLowMassMean","Mean Mass",5060,5050,5070,"MeV/c^{2}");
@@ -327,10 +337,10 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgExponent_KKpi("parBkgExponent_KKpi","parBkgExponent_KKpi",-0.001,-1,1);
   RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
 
-  RooRealVar        parSigYield_11_Kpipi("parSigYield_11_Kpipi","parSigYield_11_Kpipi",500,0,1000);
-  RooRealVar        parSigYield_12_Kpipi("parSigYield_12_Kpipi","parSigYield_12_Kpipi",500,0,1000);
-  RooRealVar        parSigYield_11_KKpi("parSigYield_11_KKpi","parSigYield_11_KKpi",500,0,1000);
-  RooRealVar        parSigYield_12_KKpi("parSigYield_12_KKpi","parSigYield_12_KKpi",500,0,1000);
+  RooRealVar        parSigYield_11_Kpipi("parSigYield_11_Kpipi","N_{B^{0}_{d}}^{11,K#pi#pi}",500,0,1000);
+  RooRealVar        parSigYield_12_Kpipi("parSigYield_12_Kpipi","N_{B^{0}_{d}}^{12,K#pi#pi}",500,0,1000);
+  RooRealVar        parSigYield_11_KKpi("parSigYield_11_KKpi","N_{B^{0}_{d}}^{11,KK#pi}",500,0,1000);
+  RooRealVar        parSigYield_12_KKpi("parSigYield_12_KKpi","N_{B^{0}_{d}}^{12,KK#pi}",500,0,1000);
   RooRealVar        parSigYield_Kpipi("parSigYield_Kpipi","parSigYield_Kpipi",1000,0,2000);
   RooRealVar        parSigYield_KKpi("parSigYield_KKpi","parSigYield_KKpi",200,0,1000);
   RooRealVar        parSigYield_11("parSigYield_11","parSigYield_11",500,0,1000);
@@ -445,24 +455,24 @@ int main(int argc, char * argv[]){
   // RooExtendPdf      pdfBkgBsDstDExtend_11("pdfBkgBsDstDExtend_11","pdfBkgBsDstDExtend_11",pdfBkgBsDstDMass,parBkgBsDstDYield_11);
   // RooExtendPdf      pdfBkgBsDstDExtend_12("pdfBkgBsDstDExtend_12","pdfBkgBsDstDExtend_12",pdfBkgBsDstDMass,parBkgBsDstDYield_12);
   // RooExtendPdf      pdfBkgBsDstDExtend("pdfBkgBsDstDExtend","pdfBkgBsDstDExtend",pdfBkgBsDstDMass,parBkgBsDstDYield);
-  RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass,parBkgYield_11_Kpipi);
-  RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass,parBkgYield_12_Kpipi);
-  RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass,parBkgYield_11_KKpi);
-  RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass,parBkgYield_12_KKpi);
-  RooExtendPdf      pdfBkgExtend_Kpipi("pdfBkgExtend_Kpipi","pdfBkgExtend_Kpipi",pdfBkgMass,parBkgYield_Kpipi);
-  RooExtendPdf      pdfBkgExtend_KKpi("pdfBkgExtend_KKpi","pdfBkgExtend_KKpi",pdfBkgMass,parBkgYield_KKpi);
+  RooExtendPdf      pdfBkgExtend_11_Kpipi("pdfBkgExtend_11_Kpipi","pdfBkgExtend_11_Kpipi",pdfBkgMass_Kpipi,parBkgYield_11_Kpipi);
+  RooExtendPdf      pdfBkgExtend_12_Kpipi("pdfBkgExtend_12_Kpipi","pdfBkgExtend_12_Kpipi",pdfBkgMass_Kpipi,parBkgYield_12_Kpipi);
+  RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass_KKpi,parBkgYield_11_KKpi);
+  RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass_KKpi,parBkgYield_12_KKpi);
+  RooExtendPdf      pdfBkgExtend_Kpipi("pdfBkgExtend_Kpipi","pdfBkgExtend_Kpipi",pdfBkgMass_Kpipi,parBkgYield_Kpipi);
+  RooExtendPdf      pdfBkgExtend_KKpi("pdfBkgExtend_KKpi","pdfBkgExtend_KKpi",pdfBkgMass_KKpi,parBkgYield_KKpi);
   RooExtendPdf      pdfBkgExtend_11("pdfBkgExtend_11","pdfBkgExtend_11",pdfBkgMass,parBkgYield_11);
   RooExtendPdf      pdfBkgExtend_12("pdfBkgExtend_12","pdfBkgExtend_12",pdfBkgMass,parBkgYield_12);
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi/*,pdfBkgBsDstDExtend_11_Kpipi*/));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi/*,pdfBkgBsDstDExtend_12_Kpipi*/));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi/*,pdfBkgBsDstDExtend_11_KKpi*/));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi/*,pdfBkgBsDstDExtend_12_KKpi*/));
-  RooAddPdf         pdfMass_Kpipi("pdfMass_Kpipi","Mass PDF",RooArgList(pdfSigExtend_Kpipi,pdfBkgDsDExtend_Kpipi,pdfSigBsExtend_Kpipi,pdfBkgExtend_Kpipi,pdfBkgDstDExtend_Kpipi,pdfBkgBsDsDExtend_Kpipi/*,pdfBkgBsDstDExtend_Kpipi*/));
-  RooAddPdf         pdfMass_KKpi("pdfMass_KKpi","Mass PDF",RooArgList(pdfSigExtend_KKpi,pdfBkgDsDExtend_KKpi,pdfSigBsExtend_KKpi,pdfBkgExtend_KKpi,pdfBkgDstDExtend_KKpi,pdfBkgBsDsDExtend_KKpi/*,pdfBkgBsDstDExtend_KKpi*/));
-  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,pdfBkgDstDExtend_11,pdfBkgBsDsDExtend_11/*,pdfBkgBsDstDExtend_11*/));
-  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,pdfBkgDstDExtend_12,pdfBkgBsDsDExtend_12/*,pdfBkgBsDstDExtend_12*/));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgExtend_11_Kpipi,/*pdfBkgDstDExtend_11_Kpipi,*/pdfBkgBsDsDExtend_11_Kpipi/*,pdfBkgBsDstDExtend_11_Kpipi*/));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgExtend_12_Kpipi,/*pdfBkgDstDExtend_12_Kpipi,*/pdfBkgBsDsDExtend_12_Kpipi/*,pdfBkgBsDstDExtend_12_Kpipi*/));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgExtend_11_KKpi,/*pdfBkgDstDExtend_11_KKpi,*/pdfBkgBsDsDExtend_11_KKpi/*,pdfBkgBsDstDExtend_11_KKpi*/));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgExtend_12_KKpi,/*pdfBkgDstDExtend_12_KKpi,*/pdfBkgBsDsDExtend_12_KKpi/*,pdfBkgBsDstDExtend_12_KKpi*/));
+  RooAddPdf         pdfMass_Kpipi("pdfMass_Kpipi","Mass PDF",RooArgList(pdfSigExtend_Kpipi,pdfBkgDsDExtend_Kpipi,pdfSigBsExtend_Kpipi,pdfBkgExtend_Kpipi,/*pdfBkgDstDExtend_Kpipi,*/pdfBkgBsDsDExtend_Kpipi/*,pdfBkgBsDstDExtend_Kpipi*/));
+  RooAddPdf         pdfMass_KKpi("pdfMass_KKpi","Mass PDF",RooArgList(pdfSigExtend_KKpi,pdfBkgDsDExtend_KKpi,pdfSigBsExtend_KKpi,pdfBkgExtend_KKpi,/*pdfBkgDstDExtend_KKpi,*/pdfBkgBsDsDExtend_KKpi/*,pdfBkgBsDstDExtend_KKpi*/));
+  RooAddPdf         pdfMass_11("pdfMass_11","Mass PDF",RooArgList(pdfSigExtend_11,pdfBkgDsDExtend_11,pdfSigBsExtend_11,pdfBkgExtend_11,/*pdfBkgDstDExtend_11,*/pdfBkgBsDsDExtend_11/*,pdfBkgBsDstDExtend_11*/));
+  RooAddPdf         pdfMass_12("pdfMass_12","Mass PDF",RooArgList(pdfSigExtend_12,pdfBkgDsDExtend_12,pdfSigBsExtend_12,pdfBkgExtend_12,/*pdfBkgDstDExtend_12,*/pdfBkgBsDsDExtend_12/*,pdfBkgBsDstDExtend_12*/));
 
   RooSuperCategory  supercategory_mass("supercategory_mass","supercategory_mass",RooArgList(catYear,catDDFinalStateParticles));
   RooAbsPdf*        pdfMass;
@@ -486,7 +496,7 @@ int main(int argc, char * argv[]){
     ((RooSimultaneous*)pdfMass)->addPdf(pdfMass_Kpipi,"Kpipi");
     ((RooSimultaneous*)pdfMass)->addPdf(pdfMass_KKpi,"KKpi");
   }
-  else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,pdfBkgDstDExtend,pdfBkgBsDsDExtend/*,pdfBkgBsDstDExtend*/));
+  else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,/*pdfBkgDstDExtend,*/pdfBkgBsDsDExtend/*,pdfBkgBsDstDExtend*/));
 
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
@@ -938,7 +948,7 @@ int main(int argc, char * argv[]){
     // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
     // cfg_plot_mass.set_y_axis_label("Kandidaten");
     std::vector<std::string> components_mass;
-    components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", "pdfBkgDstDExtend.*", "pdfBkgBsDsDExtend.*";
+    components_mass += "pdfSigExtend.*", "pdfBkgDsDExtend.*", "pdfSigBsExtend.*", "pdfBkgExtend.*", /*"pdfBkgDstDExtend.*",*/ "pdfBkgBsDsDExtend.*";
     Plot* Mass;
     if (split_years || split_final_state) Mass = new PlotSimultaneous(cfg_plot_mass, obsMass, *data, *((RooSimultaneous*)pdfMass), components_mass, "obsMass");
     else Mass = new Plot(cfg_plot_mass, obsMass, *data, *pdfMass, components_mass, "obsMass");
@@ -952,23 +962,23 @@ int main(int argc, char * argv[]){
       if (split_years) {
         splot_observables.add(catYear);
         if (split_final_state) {
-          set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
-          set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
-          set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
-          set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
+          set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,/*parBkgDstDYield_11_Kpipi,*/parBkgBsDsDYield_11_Kpipi));
+          set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,/*parBkgDstDYield_11_KKpi,*/parBkgBsDsDYield_11_KKpi));
+          set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,/*parBkgDstDYield_12_Kpipi,*/parBkgBsDsDYield_12_Kpipi));
+          set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,/*parBkgDstDYield_12_KKpi,*/parBkgBsDsDYield_12_KKpi));
           splot_observables.add(catDDFinalStateParticles);
         }
         else {
-          set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgDstDYield_11,parBkgBsDsDYield_11));
-          set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgDstDYield_12,parBkgBsDsDYield_12));
+          set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,/*parBkgDstDYield_11,*/parBkgBsDsDYield_11));
+          set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,/*parBkgDstDYield_12,*/parBkgBsDsDYield_12));
         }
       }
       else if (split_final_state) {
-        set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi,parBkgDstDYield_Kpipi,parBkgBsDsDYield_Kpipi));
-        set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi,parBkgDstDYield_KKpi,parBkgBsDsDYield_KKpi));
+        set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi,/*parBkgDstDYield_Kpipi,*/parBkgBsDsDYield_Kpipi));
+        set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi,/*parBkgDstDYield_KKpi,*/parBkgBsDsDYield_KKpi));
         splot_observables.add(catDDFinalStateParticles);
       }
-      else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield,parBkgDstDYield,parBkgBsDsDYield));
+      else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield,/*parBkgDstDYield,*/parBkgBsDsDYield));
 
       SPlotFit2 splotfit(*pdfMass,*data,set_of_yields);
       splotfit.set_use_minos(false);
@@ -1073,6 +1083,20 @@ int main(int argc, char * argv[]){
     // cfg_plot_time.set_y_axis_label("Kandidaten");
     std::vector<std::string> components_time;
     PlotSimultaneous Time(cfg_plot_time, obsTime, *data, pdf, components_time);
+    std::vector<double> os_mistag_bins;
+    os_mistag_bins += 0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5;
+    RooBinning os_mistag_binning(os_mistag_bins.size()-1, os_mistag_bins.data(), "os_mistag_binning_for_plotting");
+    // RooBinning os_mistag_binning(6, 0.0, 0.5, "os_mistag_binning_for_plotting");
+    obsEtaOS.setBinning(os_mistag_binning);
+    std::vector<double> ss_mistag_bins;
+    ss_mistag_bins += 0.10, 0.20, 0.25, 0.30, 0.35, 0.40, 0.42, 0.44, 0.45, 0.46, 0.47, 0.5;
+    // RooBinning ss_mistag_binning(ss_mistag_bins.size()-1, ss_mistag_bins.data(), "ss_mistag_binning_for_plotting");
+    RooBinning ss_mistag_binning(6, 0.0, 0.5, "ss_mistag_binning_for_plotting");
+    obsEtaSS.setBinning(ss_mistag_binning);
+    std::vector<double> time_error_bins;
+    time_error_bins += 0.005, 0.010, 0.015, 0.020, 0.025, 0.030, 0.035, 0.040, 0.045, 0.050, 0.055, 0.060, 0.070, 0.080, 0.090, 0.100, 0.150;
+    RooBinning time_error_binning(time_error_bins.size()-1, time_error_bins.data(), "time_error_binning_for_plotting");
+    obsTimeErr.setBinning(time_error_binning);
     RooDataSet proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
     RooArgSet projargset("projargset");
     if (cp_fit && !pereventresolution) projargset.add(RooArgSet(obsEtaOS,obsEtaSS));

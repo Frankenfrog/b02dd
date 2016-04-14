@@ -10,6 +10,8 @@
 #include "TH2D.h"
 #include "TProfile.h"
 #include "TF1.h"
+#include "TMath.h"
+#include "TStyle.h"
 
 #include "RooCmdArg.h"
 #include "RooRealVar.h"
@@ -21,6 +23,7 @@
 #include "doocore/io/EasyTuple.h"
 #include "doocore/config/EasyConfig.h"
 #include "doocore/io/Progress.h"
+#include "doocore/lutils/lutils.h"
 
 // for cool vector assignment
 #include <boost/assign/std/vector.hpp>
@@ -29,9 +32,13 @@ using namespace boost::assign;
 using namespace std;
 using namespace RooFit;
 using namespace doocore::io;
+using namespace doocore::lutils;
 
 void CreateScatterPlot(RooDataSet& data, TString hist_name, int nbins, TString x_obs_name, TString y_obs_name, TString x_title, TString y_title, double x_min, double x_max, double y_min, double y_max);
 void CreateProfileHistogram(RooDataSet& data, TString profile_name, int nbins, TString x_obs_name, TString y_obs_name, TString x_title, TString y_title, double x_min, double x_max, double y_min, double y_max, bool linear_fit = false, double x_min_fit = 0.25, double x_max_fit = 10.25);
+void BinLogX(TProfile* profile);
+
+bool logx = false;
 
 int main(int argc, const char * argv[]){
   if (argc != 2) {
@@ -42,9 +49,7 @@ int main(int argc, const char * argv[]){
 
   bool bootstrapping = config.getBool("bootstrapping");
   bool Kpipi = config.getBool("Kpipi");
-  TString BDT_name = "BDT_wPIDs";
-  if (Kpipi) BDT_name += "_classifier";
-  else BDT_name += "_KKpi_classifier";
+  TString BDT_name = config.getString("BDT_name");
 
   RooRealVar        obsEtaOS("obsEtaOSwCharm","#eta_{OS}",0,0.5);
   RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0,0.5);
@@ -64,8 +69,15 @@ int main(int argc, const char * argv[]){
   if (Kpipi)  catDDFinalStateParticles.defineType("Kpipi",1);
   else  catDDFinalStateParticles.defineType("KKpi",0);
 
+  RooCategory       catTaggedOSwCharm("catTaggedOSwCharm","catTaggedOSwCharm");
+  catTaggedOSwCharm.defineType("tagged",1);
+  catTaggedOSwCharm.defineType("untagged",0);
+  RooCategory       catTaggedSS("catTaggedSS","catTaggedSS");
+  catTaggedSS.defineType("tagged",-1);
+  catTaggedSS.defineType("untagged",0);
+
   RooArgSet         observables(obsTime,obsMass,"observables");
-  observables.add(RooArgSet(obsEtaOS,obsEtaSS,obsEtaSSPion,obsEtaSSPionBDT,obsEtaSSProton));
+  observables.add(RooArgSet(obsEtaOS,obsEtaSS,obsEtaSSPion,obsEtaSSPionBDT,obsEtaSSProton,catTaggedOSwCharm,catTaggedSS));
   observables.add(BDT_classifier);
   if (config.getBool("Correlation_BDT_time")) observables.add(catDDFinalStateParticles);
   if (config.getBool("MC")) observables.add(catBkg);
@@ -237,14 +249,21 @@ int main(int argc, const char * argv[]){
   CreateProfileHistogram(*signaldata_allSS, "Profile_DecayTime_SS", 100, "obsTime", "obsEtaSS", "#it{t} (ps)", "#it{#eta}_{SS}", 0.25, 10.25, 0, 0.6, true, 0.25, 8.25);
   CreateProfileHistogram(*signaldata_SSPion, "Profile_DecayTime_SSPion", 100, "obsTime", "obsEtaSSPion", "#it{t} (ps)", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
   CreateProfileHistogram(*signaldata_SSPionBDT, "Profile_DecayTime_SSPionBDT", 20, "obsTime", "obsEtaSSPionBDT", "#it{t} (ps)", "#it{#eta}_{SS#pion}", 0.25, 10.25, 0.3, 0.5, true, 2.25, 8.25);
-  CreateProfileHistogram(*signaldata_SSProton, "Profile_DecayTime_SSProton", 100, "obsTime", "obsEtaSSProton", "#it{t} (ps)", "#it{#eta}_{SS#p}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
-  if (config.getBool("Kpipi"))  CreateProfileHistogram(*signaldata, "Profile_DecayTime_BDT_Kpipi", 100, "obsTime", BDT_name, "#it{t} (ps)", "BDT_{K#pi#pi} classifier", 0.25, 10.25, -0.2, 1, false, 2.25, 8.25);
-  else CreateProfileHistogram(*signaldata, "Profile_DecayTime_BDT_KKpi", 100, "obsTime", BDT_name, "#it{t} (ps)", "BDT_{KK#pi} classifier", 0.25, 10.25, -0.2, 1, false, 2.25, 8.25);
+  CreateProfileHistogram(*signaldata_SSProton, "Profile_DecayTime_SSProton", 100, "obsTime", "obsEtaSSProton", "#it{t} (ps)", "#it{#eta}_{SS#it{p}}", 0.25, 10.25, 0, 0.6, true, 2.25, 8.25);
+  logx = false;
+  CreateProfileHistogram(*signaldata, "Profile_DecayTime_OSEfficiency", 50, "obsTime", "catTaggedOSwCharm", "#it{t} (ps)", "#it{#varepsilon}_{tag}^{OS}", 0.25, 10.25, 0, 1, true, 0.25, 10.25);
+  CreateProfileHistogram(*signaldata, "Profile_DecayTime_SSEfficiency", 50, "obsTime", "catTaggedSS", "#it{t} (ps)", "#it{#varepsilon}_{tag}^{SS}", 0.25, 10.25, 0, 1, true, 0.25, 10.25);
+  logx = false;
+  if (config.getBool("Kpipi"))  CreateProfileHistogram(*signaldata, "Profile_DecayTime_BDT_Kpipi", 50, "obsTime", BDT_name, "#it{t} (ps)", "BDT_{K#pi#pi} classifier", 0.25, 10.25, -1, 1, false, 2.25, 8.25);
+  else CreateProfileHistogram(*signaldata, "Profile_DecayTime_BDT_KKpi", 50, "obsTime", BDT_name, "#it{t} (ps)", "BDT_{KK#pi} classifier", 0.25, 10.25, -1, 1, false, 2.25, 8.25);
 
   return 0;
 }
 
 void CreateScatterPlot(RooDataSet& data, TString hist_name, int nbins, TString x_obs_name, TString y_obs_name, TString x_title, TString y_title, double x_min, double x_max, double y_min, double y_max){
+  gROOT->SetStyle("Plain");
+  setStyle("LHCb");
+  gStyle->SetPadRightMargin(0.1);
   std::vector<double> x_values;
   std::vector<double> y_values;
   std::vector<double> weights;
@@ -254,6 +273,7 @@ void CreateScatterPlot(RooDataSet& data, TString hist_name, int nbins, TString x
     y_values += data.get()->getRealValue(y_obs_name);
     weights  += data.weight(); 
   }
+  
   TCanvas canvas("c", "c", 800, 600);
   TH2D* hist = new TH2D(hist_name, hist_name, 40, x_min, x_max, 40, y_min, y_max);
   hist->SetNameTitle(hist_name, "");
@@ -271,14 +291,32 @@ void CreateProfileHistogram(RooDataSet& data, TString profile_name, int nbins, T
   std::vector<double> x_values;
   std::vector<double> y_values;
   std::vector<double> weights;
-  for (int i = 0; i < data.numEntries(); ++i){
-    data.get(i);
-    x_values += data.get()->getRealValue(x_obs_name);
-    y_values += data.get()->getRealValue(y_obs_name);
-    weights  += data.weight(); 
+  if (y_obs_name.BeginsWith("cat")) {
+    for (int i = 0; i < data.numEntries(); ++i){
+      data.get(i);
+      x_values += data.get()->getRealValue(x_obs_name);
+      if (y_obs_name == "catTaggedSS") y_values += -data.get()->getCatIndex(y_obs_name);
+      else y_values += data.get()->getCatIndex(y_obs_name);
+      weights  += data.weight(); 
+    }
   }
+  else {
+    for (int i = 0; i < data.numEntries(); ++i){
+      data.get(i);
+      x_values += data.get()->getRealValue(x_obs_name);
+      y_values += data.get()->getRealValue(y_obs_name);
+      weights  += data.weight(); 
+    }
+  }
+  
+  gROOT->SetStyle("Plain");
+  setStyle("LHCb");
+  // gStyle->SetTitleOffset(1.15,"Y");
+  // gStyle->SetPadLeftMargin(0.16);
   TCanvas canvas("c", "c", 800, 600);
+  if (logx)  canvas.SetLogx();
   TProfile* profile = new TProfile(profile_name, profile_name, nbins, x_min, x_max);
+  if (logx)  BinLogX(profile);
   profile->SetNameTitle(profile_name, "");
   profile->SetStats(false);
   profile->SetXTitle(x_title);
@@ -287,12 +325,30 @@ void CreateProfileHistogram(RooDataSet& data, TString profile_name, int nbins, T
   profile->SetMaximum(y_max);
   profile->SetMarkerColor(1);
   profile->SetLineColor(1);
+  profile->Sumw2();
   profile->FillN(x_values.size(), &x_values[0], &y_values[0], &weights[0]);
   if (linear_fit) {
     TF1* fit_function = new TF1("fit_function","[0]+[1]*x",x_min_fit,x_max_fit);
-    profile->Fit(fit_function, "R");
+    profile->Fit(fit_function, "RL");
   }
   profile->Draw();
   canvas.SaveAs("/home/fmeier/storage03/b02dd/"+profile_name+".pdf");  
   delete profile;
+}
+
+void BinLogX(TProfile* profile) {
+
+   TAxis *axis = profile->GetXaxis(); 
+   int bins = axis->GetNbins();
+
+   Axis_t from = log10(axis->GetXmin());
+   Axis_t to = log10(axis->GetXmax());
+   Axis_t width = (to - from) / bins;
+   Axis_t *new_bins = new Axis_t[bins + 1];
+
+   for (int i = 0; i <= bins; i++) {
+     new_bins[i] = TMath::Power(10, from + i * width);
+   } 
+   axis->Set(bins, new_bins); 
+   delete new_bins; 
 }

@@ -71,6 +71,9 @@ SET(CPToyMC_INCLUDE_DIR "${CPToyMC_BASE}/include")
 SET(CPToyMC_LIBRARY_DIR "${CPToyMC_BASE}/lib")
 SET(CPToyMC_LIBRARIES "-lCPToyMC")
 
+include_directories(${CPToyMC_INCLUDE_DIR})
+link_directories(${CPToyMC_LIBRARY_DIR})
+
 set(ALL_LIBRARIES ${DooSelection_LIBRARIES} ${DooFit_LIBRARIES} ${DooCore_LIBRARIES} ${ROOT_LIBRARIES} ${ROOFIT_LIBRARIES} ${Boost_LIBRARIES} ${ADDITIONAL_LIBRARIES} "-lTreePlayer")
 
 add_subdirectory(main)
