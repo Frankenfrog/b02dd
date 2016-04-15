@@ -237,8 +237,8 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
     hist_array.sort(key=get_max, reverse=True)
     hist0 = hist_array[0]
     hist1 = hist_array[1]
-    hist0.Draw("HIST")
-    hist1.Draw("HIST Same")
+    hist0.Draw("E1")
+    hist1.Draw("E1 Same")
 
 
 
