@@ -41,6 +41,12 @@ def create_input_dicts(config):
         if ttree is None:
             print("Could not open tree " + tree_name + " in file " + file_name)
 
+        markertype = 1
+        try:
+            markertype = config.getint(input_sec, 'marker')
+        except: 
+            pass
+
         input_dict = {
             'name':   input_sec.lstrip('input.'),
             'file':   tfile,
@@ -48,6 +54,7 @@ def create_input_dicts(config):
             'weight': config.get(input_sec, 'weight_branch'),
             'cut':    config.get(input_sec, 'cut'),
             'colour': config.getint(input_sec, 'colour'),
+            'marker': markertype,
             'legend': config.get(input_sec, 'legend')
         }
         input_dicts.append(input_dict)
@@ -126,6 +133,7 @@ def create_plot(general_dict, input_dicts, plot_dict):
                   plot_dict['y_range_max_scale'],
                   plot_dict['normalise'],
                   input_dict['colour'],
+                  input_dict['marker'],
                   input_dict['legend'],
                   hist_array,
                   tlegend)
@@ -222,6 +230,7 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
                   plot_dict['y_range_max_scale'],
                   plot_dict['normalise'],
                   input_dict['colour'],
+                  input_dict['marker'],
                   input_dict['legend'],
                   hist_array,
                   tlegend)
@@ -366,7 +375,7 @@ def save_plot(canvas, plot_name, general_dict,suffix=''):
 def plot_hist(tree, input_name, varname, cut, binning,
               x_range_min, x_range_max, x_unit, x_title,
               y_range_min, y_range_max_scale, drawnorm,
-              color, legend_desc,
+              color, marker, legend_desc,
               hist_list, tlegend):
 
     hits_name = "hist" + input_name + varname
@@ -380,6 +389,7 @@ def plot_hist(tree, input_name, varname, cut, binning,
 
     hist.SetLineColor(color)
     hist.SetMarkerColor(color)
+    hist.SetMarkerStyle(marker)
 
     hist.GetXaxis().SetTitle(create_x_axis_label(x_title, x_unit))
     hist.GetYaxis().SetTitle(create_y_axis_label(x_range_min, x_range_max, binning, x_unit))
