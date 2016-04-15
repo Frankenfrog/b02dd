@@ -404,30 +404,40 @@ def create_x_axis_label(x_title, x_unit):
 def create_y_axis_label(x_range_min, x_range_max, binning, x_unit):
     bin_width_label = get_bin_width_label(x_range_min, x_range_max, binning)
     if x_unit:
-       bin_width_label += " (" + x_unit + ")"
+        bin_width_label += " (" + x_unit + ")"
     return "Candidates / " + bin_width_label
 
 
 def get_bin_width_label(x_range_min, x_range_max, binning):
     normbinwidth = (x_range_max - x_range_min) / binning
-    if normbinwidth < 1:
-      normbinwidth = round(normbinwidth, 3)
+    if normbinwidth < 0.0001:
+        normbinwidth = round(normbinwidth,7)
+    elif normbinwidth < 0.001:
+        normbinwidth = round(normbinwidth,6)
+    elif normbinwidth < 0.01:
+        normbinwidth = round(normbinwidth,5)
+    elif normbinwidth < 0.1:
+        normbinwidth = round(normbinwidth,4)
+    elif normbinwidth < 1:
+        normbinwidth = round(normbinwidth, 3)
     elif normbinwidth < 10:
-      normbinwidth = round(normbinwidth, 2)
+        normbinwidth = round(normbinwidth, 2)
     elif normbinwidth < 100:
-      normbinwidth = round(normbinwidth, 1)
+        normbinwidth = round(normbinwidth, 1)
     else:
-      normbinwidth = round(normbinwidth, 0)
+        normbinwidth = round(normbinwidth, 0)
 
     bin_width_label = 0
-    if math.log10(normbinwidth) < 0:
-      bin_width_label = '%.3f' % normbinwidth # taking the digit before the comma, the comma itself and three behind it
-    elif math.log10(normbinwidth) < 1:
-      bin_width_label = '%.2f' % normbinwidth # taking the digit before the comma, the comma itself and two behind it
-    elif math.log10(normbinwidth) < 2:
-      bin_width_label = '%.1f' % normbinwidth # taking the digits before the comma, the comma itself and one behind it
+    if math.log10(normbinwidth) < -10:         
+        bin_width_label = '%.7f' %normbinwidth # taking the digit before the comma, the comma itself and seven behind it      
+    elif math.log10(normbinwidth) < 0:        
+        bin_width_label = '%.3f' %normbinwidth # taking the digit before the comma, the comma itself and three behind it      
+    elif math.log10(normbinwidth) < 1:        
+        bin_width_label = '%.2f' %normbinwidth # taking the digit before the comma, the comma itself and two behind it        
+    elif math.log10(normbinwidth) < 2:        
+        bin_width_label = '%.1f' %normbinwidth # taking the digits before the comma, the comma itself and one behind it
     else:
-      bin_width_label = '%.0f' % normbinwidth
+        bin_width_label = '%.0f' % normbinwidth
     return bin_width_label
 
 
