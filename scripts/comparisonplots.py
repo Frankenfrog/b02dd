@@ -237,8 +237,9 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
     hist_array.sort(key=get_max, reverse=True)
     hist0 = hist_array[0]
     hist1 = hist_array[1]
-    hist0.Draw("E1")
-    hist1.Draw("Same E1")
+    hist0.Draw("HIST")
+    hist1.Draw("HIST Same")
+
 
 
 
@@ -248,6 +249,8 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
     plot_max = hist0.GetXaxis().GetXmax()
 
     hist_pulls = TH1D("hist_pulls","hist_pulls",hist0.GetNbinsX(),plot_min, plot_max)
+    hist_pulls.GetXaxis().SetTitle(hist0.GetXaxis().GetTitle())
+
     for i in range(1,hist_pulls.GetNbinsX()+1):
         resid = hist0.GetBinContent(i) - hist1.GetBinContent(i)
         err = 0.0
@@ -421,13 +424,13 @@ def create_y_axis_label(x_range_min, x_range_max, binning, x_unit):
 def get_bin_width_label(x_range_min, x_range_max, binning):
     normbinwidth = (x_range_max - x_range_min) / binning
     if normbinwidth < 0.0001:
-        normbinwidth = round(normbinwidth,7)
+        normbinwidth = round(normbinwidth, 7)
     elif normbinwidth < 0.001:
-        normbinwidth = round(normbinwidth,6)
+        normbinwidth = round(normbinwidth, 6)
     elif normbinwidth < 0.01:
-        normbinwidth = round(normbinwidth,5)
+        normbinwidth = round(normbinwidth, 5)
     elif normbinwidth < 0.1:
-        normbinwidth = round(normbinwidth,4)
+        normbinwidth = round(normbinwidth, 4)
     elif normbinwidth < 1:
         normbinwidth = round(normbinwidth, 3)
     elif normbinwidth < 10:
