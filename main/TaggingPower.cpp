@@ -24,7 +24,7 @@ TString OS_mistag_observable;
 TString SS_tag_observable;
 TString SS_mistag_observable;
 
-void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, double p0_OS, double p1_OS, double etamean_OS, double deltap0_OS, double deltap1_OS, double p0_SS, double p1_SS, double etamean_SS, double deltap0_SS, double deltap1_SS, double p0error_OS, double p1error_OS, double p0error_SS, double p1error_SS, TString identifier);
+double NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, double p0_OS, double p1_OS, double etamean_OS, double deltap0_OS, double deltap1_OS, double p0_SS, double p1_SS, double etamean_SS, double deltap0_SS, double deltap1_SS, double p0error_OS, double p1error_OS, double p0error_SS, double p1error_SS, TString identifier);
 
 int main(int argc, const char * argv[]){
   if (argc != 2) {
@@ -116,12 +116,14 @@ int main(int argc, const char * argv[]){
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_BS,    p0_OS, config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "exclusive overlap");
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allOS, p0_OS, config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all OS");
   NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata_allSS, p0_OS, config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all SS");
-  NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata,       p0_OS, config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all");
+  double total_taggingpower = NewTaggingPowerCalculation(signaldata.sumEntries(), &signaldata,       p0_OS, config.getDouble("p1_OS"), mean_mistag_OS, config.getDouble("deltap0_OS"), config.getDouble("deltap1_OS"), config.getDouble("p0_SS"), config.getDouble("p1_SS"), config.getDouble("etamean_SS"), config.getDouble("deltap0_SS"), config.getDouble("deltap1_SS"), config.getDouble("p0error_OS"), config.getDouble("p1error_OS"), config.getDouble("p0error_SS"), config.getDouble("p1error_SS"), "all");
+  cout << "effective dilution: "  <<  sqrt(total_taggingpower/(signaldata_tagged.sumEntries()/signaldata.sumEntries())) <<  endl;
+  cout << "effective mistag probability: "  <<  (1. - sqrt(total_taggingpower/(signaldata_tagged.sumEntries()/signaldata.sumEntries())))/2. <<  endl;
 
   return 0;
 }
 
-void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, double p0_OS, double p1_OS, double etamean_OS, double deltap0_OS, double deltap1_OS, double p0_SS, double p1_SS, double etamean_SS, double deltap0_SS, double deltap1_SS, double p0error_OS, double p1error_OS, double p0error_SS, double p1error_SS, TString identifier){
+double NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, double p0_OS, double p1_OS, double etamean_OS, double deltap0_OS, double deltap1_OS, double p0_SS, double p1_SS, double etamean_SS, double deltap0_SS, double deltap1_SS, double p0error_OS, double p1error_OS, double p0error_SS, double p1error_SS, TString identifier){
 
   double weight = 0., etaOS = 0., etaSS = 0., tagOS = 0., tagSS = 0., omegaOS = 0., omegaSS = 0., omegaOS_B0 = 0., omegaSS_B0 = 0., omegaOS_B0bar = 0., omegaSS_B0bar = 0.;
   double taggingpower = 0., taggingpowererror = 0., taggingpowererrorp0OScomponent = 0., taggingpowererrorp1OScomponent = 0., taggingpowererrorp0SScomponent = 0., taggingpowererrorp1SScomponent = 0.;
@@ -165,5 +167,6 @@ void NewTaggingPowerCalculation(double total_signal_events, RooDataSet* data, do
   taggingpowererror /= total_signal_events;
 
   cout  <<  "Taggingpower component for "  <<  identifier <<  ": "  <<  100*taggingpower  <<  " pm " <<  100*taggingpowererror  <<  endl;
+  return taggingpower;
 }
 

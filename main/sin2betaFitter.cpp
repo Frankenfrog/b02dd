@@ -1304,7 +1304,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString id
 
   RooPlot* plot = obsTime.frame();
   c.SetLogx(true);
-  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3001),VLines());
   acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
@@ -1316,7 +1316,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString id
 
   c.SetLogx(false);
   plot = obsTime.frame();
-  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3001),VLines());
   acceptance->plotOn(plot,LineColor(4));
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
