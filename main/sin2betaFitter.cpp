@@ -898,7 +898,7 @@ int main(int argc, char * argv[]){
       RooFitResult* fit_result;
       TStopwatch  stopwatch;
 
-      for (int i = 0; i < 1000 ; ++i) {
+      for (int i = 0; i < config.getInt("nToysMassFit") ; ++i) {
         cout  <<  i <<  endl;
         try {
           data = tfac.Generate();
@@ -941,6 +941,7 @@ int main(int argc, char * argv[]){
       fitting_args.Add((TObject*)(new RooCmdArg(Hesse(true))));
       fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
       fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
+      fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
 
       RooDataSet* data_bootstrapped;
       RooDataSet* data_bootstrapped_sweighted;
@@ -963,23 +964,23 @@ int main(int argc, char * argv[]){
       RooRealVar SigWeight_single("parSigYield_sw","signal weight",-10,10);
       if (split_years) {
             if (split_final_state) {
-              set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
-              set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
-              set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
-              set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
+              set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi/*,parBkgDstDYield_11_Kpipi*/,parBkgBsDsDYield_11_Kpipi));
+              set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi/*,parBkgDstDYield_11_KKpi*/,parBkgBsDsDYield_11_KKpi));
+              set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi/*,parBkgDstDYield_12_Kpipi*/,parBkgBsDsDYield_12_Kpipi));
+              set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi/*,parBkgDstDYield_12_KKpi*/,parBkgBsDsDYield_12_KKpi));
             }
             else {
-              set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11,parBkgDstDYield_11,parBkgBsDsDYield_11));
-              set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12,parBkgDstDYield_12,parBkgBsDsDYield_12));
+              set_of_yields.add(RooArgSet(parSigYield_11,parBkgDsDYield_11,parSigBsYield_11,parBkgYield_11/*,parBkgDstDYield_11*/,parBkgBsDsDYield_11));
+              set_of_yields.add(RooArgSet(parSigYield_12,parBkgDsDYield_12,parSigBsYield_12,parBkgYield_12/*,parBkgDstDYield_12*/,parBkgBsDsDYield_12));
             }
           }
           else if (split_final_state) {
-            set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi,parBkgDstDYield_Kpipi,parBkgBsDsDYield_Kpipi));
-            set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi,parBkgDstDYield_KKpi,parBkgBsDsDYield_KKpi));
+            set_of_yields.add(RooArgSet(parSigYield_Kpipi,parBkgDsDYield_Kpipi,parSigBsYield_Kpipi,parBkgYield_Kpipi/*,parBkgDstDYield_Kpipi*/,parBkgBsDsDYield_Kpipi));
+            set_of_yields.add(RooArgSet(parSigYield_KKpi,parBkgDsDYield_KKpi,parSigBsYield_KKpi,parBkgYield_KKpi/*,parBkgDstDYield_KKpi*/,parBkgBsDsDYield_KKpi));
           }
-          else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield,parBkgDstDYield,parBkgBsDsDYield));
+          else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield/*,parBkgDstDYield*/,parBkgBsDsDYield));
 
-      for (int i = 0; i < 20 ; ++i) {
+      for (int i = 0; i < config.getInt("nBootstraps") ; ++i) {
         cout  <<  i <<  endl;
         try {
           data_bootstrapped = new RooDataSet("data_bootstrapped","data_bootstrapped",RooArgSet(observables,categories));
