@@ -77,9 +77,7 @@ using namespace doofit::plotting;
 using namespace doofit::roofit::functions;
 using namespace doofit::roofit::pdfs;
 
-void PlotTimeErr(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
-void PlotTime(RooDataSet* data, TString cut, RooAbsPdf* pdf, RooArgSet projectionargs, TString category, int num_cpu);
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree);
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree, TString cut = "");
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -97,29 +95,33 @@ int main(int argc, char * argv[]){
 
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsTime_True("obsTime_True","#it{t}_{true}",0.25,10.25,"ps");
-  RooRealVar        obsEtaOS("obsEtaOS_StdComb","#eta_{OS}",0.,0.5);
-  RooRealVar        obsEtaSSPion("obsEtaSSPion_TupleCalib","#eta_{SS#pi}",0.,0.5);
+  RooRealVar        obsEtaOS("obsEtaOSwCharm","#eta_{OS}",0.,0.5);
+  RooRealVar        obsEtaSSPion("obsEtaSS","#eta_{SS#pi}",0.,0.5);
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
   RooCategory       obsTag_True("obsTag_True","Flavour Tag");
   obsTag_True.defineType("B0",1);
   obsTag_True.defineType("B0bar",-1);
-  RooCategory       obsTagOS("obsTagOS_StdComb_NoZero","Flavour Tag");
+  RooCategory       obsTagOS("obsTagOSwCharm_NoZero","Flavour Tag");
   obsTagOS.defineType("B0",1);
   obsTagOS.defineType("B0bar",-1);
-  RooCategory       obsTagSSPion("obsTagSSPion_NoZero","Flavour Tag");
+  RooCategory       obsTagSSPion("obsTagSS_NoZero","Flavour Tag");
   obsTagSSPion.defineType("B0",1);
   obsTagSSPion.defineType("B0bar",-1);
   
   RooCategory       catYear("catYear","year of data taking");
   catYear.defineType("2011",2011);
   catYear.defineType("2012",2012);
-  RooCategory       catTag("catTaggedOSSSPion","OS or SSPion tagged");
+  RooCategory       catTag("catTaggedOSSS","OS or SSPion tagged");
   catTag.defineType("OS",1);
   catTag.defineType("SSPion",-1);
   catTag.defineType("both",10);
   if (!cp_fit)  catTag.defineType("untagged",0);
+  RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
+  if (config.getBool("Kpipi"))  catDDFinalStateParticles.defineType("Kpipi",1);
+  if (config.getBool("KKpi"))   catDDFinalStateParticles.defineType("KKpi",0);
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("signal",0);
+  catBkg.defineType("LowMassBackground",50);
   RooCategory       idxPV("idxPV","idxPV");
   idxPV.defineType("signal",0);
   
@@ -132,7 +134,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagSSPion);
   }
   if (truetag) observables.add(obsTag_True);
-  RooArgSet         categories(catYear,catBkg,idxPV,"categories");
+  RooArgSet         categories(catYear,catBkg,idxPV,catDDFinalStateParticles,"categories");
   if (!truetag) categories.add(catTag);
   
   // Get data set
@@ -207,10 +209,16 @@ int main(int argc, char * argv[]){
   
   // Decay Time Acceptance
   std::vector<double> knots;
-  knots += 0.8;
-  // knots += 1.0;
-  knots += 2.0;
-  // knots += 8.0;
+  if (!config.getBool("alternative_knots")) {
+    knots += 0.8;
+    knots += 2.0;
+  }
+  else {
+    knots += 0.7;
+    knots += 1.0;
+    knots += 1.5;
+    knots += 2.5;
+  }
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
@@ -335,24 +343,24 @@ int main(int argc, char * argv[]){
   
 //========================================================================================================================================================================================================================
   
-  // RooAbsPdf* pdf;
+  RooAbsPdf* pdf;
 
   // Build Simultaneous PDF
   RooSuperCategory  supercategory("supercategory","supercategory",RooArgSet(catYear,catTag));
-  // if (truetag) pdf = pdfSigTime_True;
-  // else {
-    RooSimultaneous* pdf = new RooSimultaneous("pdf","P",supercategory);
-    pdf->addPdf(*pdfSigTime_11_OS,"{2011;OS}");
-    pdf->addPdf(*pdfSigTime_11_SS,"{2011;SSPion}");
-    pdf->addPdf(*pdfSigTime_11_BS,"{2011;both}");
-    pdf->addPdf(*pdfSigTime_12_OS,"{2012;OS}");
-    pdf->addPdf(*pdfSigTime_12_SS,"{2012;SSPion}");
-    pdf->addPdf(*pdfSigTime_12_BS,"{2012;both}");
-    if (!cp_fit) pdf->addPdf(*pdfSigTime_11_UT,"{2011;untagged}");
-    if (!cp_fit) pdf->addPdf(*pdfSigTime_12_UT,"{2012;untagged}");
+  if (truetag) pdf = pdfSigTime_True;
+  else {
+    pdf = new RooSimultaneous("pdf","P",supercategory);
+    ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_11_OS,"{2011;OS}");
+    ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_11_SS,"{2011;SSPion}");
+    ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_11_BS,"{2011;both}");
+    ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_12_OS,"{2012;OS}");
+    ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_12_SS,"{2012;SSPion}");
+    ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_12_BS,"{2012;both}");
+    if (!cp_fit) ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_11_UT,"{2011;untagged}");
+    if (!cp_fit) ((RooSimultaneous*)pdf)->addPdf(*pdfSigTime_12_UT,"{2012;untagged}");
 
     cout  <<  "simultaneous PDF built"  <<  endl;
-  // }
+  }
 
   // Get Starting Values and Fit PDF to data
   pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_MC.txt");
@@ -425,7 +433,11 @@ int main(int argc, char * argv[]){
 
   // Plots
   pdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.txt");
-  PlotAcceptance(&accspline, fit_result, &tree);
+  if (config.getBool("Kpipi"))  {
+    if (config.getBool("KKpi")) PlotAcceptance(&accspline, fit_result, &tree);
+    else PlotAcceptance(&accspline, fit_result, &tree, "&&catDDFinalStateParticles==1");
+  }
+  else PlotAcceptance(&accspline, fit_result, &tree, "&&catDDFinalStateParticles==0");
  
   PlotConfig cfg_plot_time("cfg_plot_time");
   cfg_plot_time.set_plot_appendix("");
@@ -468,7 +480,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree, TString cut){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
@@ -481,12 +493,18 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tre
   RooRealVar        obsTime_True("obsTime_True","#it{t}_{true}",0.25,10.25,"ps");
 
   TH1D hist_acceptance("hist_acceptance","hist_acceptance",100,obsTime.getMin(),obsTime.getMax());
-  tree->Draw("obsTime_True>>hist_acceptance","exp(obsTime_True/1.519)");
-  RooDataHist datahist_acceptance("datahist_acceptance","datahist_acceptance",obsTime_True,&hist_acceptance);
-  RooAbsReal* acceptance_integral = acceptance->createIntegral(obsTime_True);
+  tree->Draw("obsTime_True>>hist_acceptance","exp(obsTime_True/1.519)*(idxPV==0&&(catBkg==0||catBkg==50)&&obsTime_True>0.25&&obsTime_True<10.25"+cut+")");
+  hist_acceptance.Print();
+  hist_acceptance.Sumw2();
+  hist_acceptance.Scale(1./hist_acceptance.GetSumOfWeights());
+  hist_acceptance.Print();
+  cout <<  hist_acceptance.GetSumOfWeights()  <<  endl;
+  RooDataHist datahist_acceptance("datahist_acceptance","datahist_acceptance",obsTime,&hist_acceptance);
+  datahist_acceptance.Print();
+  RooAbsReal* acceptance_integral = acceptance->createIntegral(obsTime);
 
   RooPlot* plot = obsTime.frame();
-  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines());
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3001),VLines());
   acceptance->plotOn(plot);
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
@@ -496,14 +514,13 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tre
   
   c.SetLogx(false);
   plot = obsTime.frame();
-  // datahist_acceptance.plotOn(plot);
-  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3004),VLines(),Normalization(0.11/acceptance_integral->getVal()));
-  acceptance->plotOn(plot,Normalization(0.11/acceptance_integral->getVal()));
+  acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3001),VLines(),Normalization(10./(hist_acceptance.GetNbinsX()*acceptance_integral->getVal())));
+  acceptance->plotOn(plot,Normalization(10./(hist_acceptance.GetNbinsX()*acceptance_integral->getVal())));
   plot->SetMinimum(0.);
-  plot->SetMaximum(0.02);
+  plot->SetMaximum(0.025);
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
-  hist_acceptance.DrawNormalized("same");
+  hist_acceptance.Draw("same");
 
   c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline_nolog.pdf");
 }

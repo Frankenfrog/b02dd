@@ -88,7 +88,7 @@ using namespace doofit::roofit::pdfs;
 using namespace doofit::fitter::splot;
 using namespace dooselection::reducer;
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result);
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString identifier = "");
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -109,6 +109,7 @@ int main(int argc, char * argv[]){
   bool SS_tagging = config.getBool("SS_tagging");
   bool split_years      = config.getBool("split_years");
   bool split_final_state  = config.getBool("split_final_state");
+  bool split_acceptance  = config.getBool("split_acceptance");
   bool calculate_sweights = config.getBool("calculate_sweights");
   bool bootstrapping = config.getBool("bootstrapping");
   bool massfittervalidation = config.getBool("massfittervalidation");
@@ -591,6 +592,42 @@ int main(int argc, char * argv[]){
 
 //=========================================================================================================================================================================================================================
 
+  RooArgList        listofsplinecoefficients_Kpipi("listofsplinecoefficients_Kpipi");
+  RooRealVar*       parSigTimeAccCSpline_Kpipi;
+  for (int i = 1; i <= (knots.size()+2) ; i++) {
+    std::string binname = "parSigTimeAccCSpline_Kpipi" + boost::lexical_cast<std::string>(i);
+    std::string bintitle = "h_{" + boost::lexical_cast<std::string>(i) + "}";
+    parSigTimeAccCSpline_Kpipi = new RooRealVar(binname.c_str(),bintitle.c_str(),1,0,2);
+    listofsplinecoefficients_Kpipi.add(*parSigTimeAccCSpline_Kpipi);
+  }
+
+  RooCubicSplineFun       accspline_Kpipi("accspline_Kpipi","Spline Acceptance",obsTime,knots,listofsplinecoefficients_Kpipi);
+  RooResolutionModel*     efficiencymodel_Kpipi;
+  RooGaussEfficiencyModel efficiencymodel1_Kpipi("efficiencymodel1_Kpipi","Gaussefficiencymodel 1",obsTime,accspline_Kpipi,parResMean,parResSigmaCorrection1);
+  RooGaussEfficiencyModel efficiencymodel2_Kpipi("efficiencymodel2_Kpipi","Gaussefficiencymodel 2",obsTime,accspline_Kpipi,parResMean,parResSigmaCorrection2);
+  RooGaussEfficiencyModel efficiencymodel3_Kpipi("efficiencymodel3_Kpipi","Gaussefficiencymodel 3",obsTime,accspline_Kpipi,parResMean,parResSigma_wrongPV);
+  if (!pereventresolution) efficiencymodel_Kpipi = new RooGaussEfficiencyModel("efficiencymodel_Kpipi","Gaussefficiencymodel",obsTime,accspline_Kpipi,parResMean,RooConst(0.05));
+  else efficiencymodel_Kpipi = new RooEffResAddModel("efficiencymodel_Kpipi","Per event resolution efficiency model",RooArgList(efficiencymodel3_Kpipi,efficiencymodel2_Kpipi,efficiencymodel1_Kpipi),RooArgList(parResFraction_wrongPV,parResFraction2));
+
+  RooArgList        listofsplinecoefficients_KKpi("listofsplinecoefficients_KKpi");
+  RooRealVar*       parSigTimeAccCSpline_KKpi;
+  for (int i = 1; i <= (knots.size()+2) ; i++) {
+    std::string binname = "parSigTimeAccCSpline_KKpi" + boost::lexical_cast<std::string>(i);
+    std::string bintitle = "h_{" + boost::lexical_cast<std::string>(i) + "}";
+    parSigTimeAccCSpline_KKpi = new RooRealVar(binname.c_str(),bintitle.c_str(),1,0,2);
+    listofsplinecoefficients_KKpi.add(*parSigTimeAccCSpline_KKpi);
+  }
+
+  RooCubicSplineFun       accspline_KKpi("accspline_KKpi","Spline Acceptance",obsTime,knots,listofsplinecoefficients_KKpi);
+  RooResolutionModel*     efficiencymodel_KKpi;
+  RooGaussEfficiencyModel efficiencymodel1_KKpi("efficiencymodel1_KKpi","Gaussefficiencymodel 1",obsTime,accspline_KKpi,parResMean,parResSigmaCorrection1);
+  RooGaussEfficiencyModel efficiencymodel2_KKpi("efficiencymodel2_KKpi","Gaussefficiencymodel 2",obsTime,accspline_KKpi,parResMean,parResSigmaCorrection2);
+  RooGaussEfficiencyModel efficiencymodel3_KKpi("efficiencymodel3_KKpi","Gaussefficiencymodel 3",obsTime,accspline_KKpi,parResMean,parResSigma_wrongPV);
+  if (!pereventresolution) efficiencymodel_KKpi = new RooGaussEfficiencyModel("efficiencymodel_KKpi","Gaussefficiencymodel",obsTime,accspline_KKpi,parResMean,RooConst(0.05));
+  else efficiencymodel_KKpi = new RooEffResAddModel("efficiencymodel_KKpi","Per event resolution efficiency model",RooArgList(efficiencymodel3_KKpi,efficiencymodel2_KKpi,efficiencymodel1_KKpi),RooArgList(parResFraction_wrongPV,parResFraction2));
+
+//=========================================================================================================================================================================================================================
+
   // Tagging calibration
   RooRealVar          parSigEtaP0_OS("parSigEtaP0_OS","p_{0}^{OS}",0.3815,0.0,0.1);
   RooRealVar          parSigEtaP0Mean_OS("parSigEtaP0Mean_OS","#bar{p}_{0}",0.3815);
@@ -684,27 +721,93 @@ int main(int argc, char * argv[]){
     pdfSigTime_12_BS = new RooDecay("pdfSigTime_12_BS","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel,RooDecay::SingleSided);
   }
 
+//=========================================================================================================================================================================================================================
+
+  // Decay Time PDF
+
+  RooAbsPdf*        pdfSigTime_11_OS_Kpipi;
+  RooAbsPdf*        pdfSigTime_11_SS_Kpipi;
+  RooAbsPdf*        pdfSigTime_12_OS_Kpipi;
+  RooAbsPdf*        pdfSigTime_12_SS_Kpipi;
+  RooAbsPdf*        pdfSigTime_11_BS_Kpipi;
+  RooAbsPdf*        pdfSigTime_12_BS_Kpipi;
+  RooAbsPdf*        pdfSigTime_11_OS_KKpi;
+  RooAbsPdf*        pdfSigTime_11_SS_KKpi;
+  RooAbsPdf*        pdfSigTime_12_OS_KKpi;
+  RooAbsPdf*        pdfSigTime_12_SS_KKpi;
+  RooAbsPdf*        pdfSigTime_11_BS_KKpi;
+  RooAbsPdf*        pdfSigTime_12_BS_KKpi;
+
+  if (cp_fit){
+    pdfSigTime_11_OS_Kpipi = new RooBDecay("pdfSigTime_11_OS_Kpipi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_OS,parSigTimeSinh,parSigTimeCos_11_OS,parSigTimeSin_11_OS,parSigTimeDeltaM,*efficiencymodel_Kpipi,RooBDecay::SingleSided);
+    pdfSigTime_11_SS_Kpipi = new RooBDecay("pdfSigTime_11_SS_Kpipi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_SS,parSigTimeSinh,parSigTimeCos_11_SS,parSigTimeSin_11_SS,parSigTimeDeltaM,*efficiencymodel_Kpipi,RooBDecay::SingleSided);
+    pdfSigTime_12_OS_Kpipi = new RooBDecay("pdfSigTime_12_OS_Kpipi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_OS,parSigTimeSinh,parSigTimeCos_12_OS,parSigTimeSin_12_OS,parSigTimeDeltaM,*efficiencymodel_Kpipi,RooBDecay::SingleSided);
+    pdfSigTime_12_SS_Kpipi = new RooBDecay("pdfSigTime_12_SS_Kpipi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_SS,parSigTimeSinh,parSigTimeCos_12_SS,parSigTimeSin_12_SS,parSigTimeDeltaM,*efficiencymodel_Kpipi,RooBDecay::SingleSided);
+    pdfSigTime_11_BS_Kpipi = new RooBDecay("pdfSigTime_11_BS_Kpipi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_BS,parSigTimeSinh,parSigTimeCos_11_BS,parSigTimeSin_11_BS,parSigTimeDeltaM,*efficiencymodel_Kpipi,RooBDecay::SingleSided);
+    pdfSigTime_12_BS_Kpipi = new RooBDecay("pdfSigTime_12_BS_Kpipi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_BS,parSigTimeSinh,parSigTimeCos_12_BS,parSigTimeSin_12_BS,parSigTimeDeltaM,*efficiencymodel_Kpipi,RooBDecay::SingleSided);
+    pdfSigTime_11_OS_KKpi  = new RooBDecay("pdfSigTime_11_OS_KKpi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_OS,parSigTimeSinh,parSigTimeCos_11_OS,parSigTimeSin_11_OS,parSigTimeDeltaM,*efficiencymodel_KKpi,RooBDecay::SingleSided);
+    pdfSigTime_11_SS_KKpi  = new RooBDecay("pdfSigTime_11_SS_KKpi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_SS,parSigTimeSinh,parSigTimeCos_11_SS,parSigTimeSin_11_SS,parSigTimeDeltaM,*efficiencymodel_KKpi,RooBDecay::SingleSided);
+    pdfSigTime_12_OS_KKpi  = new RooBDecay("pdfSigTime_12_OS_KKpi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_OS,parSigTimeSinh,parSigTimeCos_12_OS,parSigTimeSin_12_OS,parSigTimeDeltaM,*efficiencymodel_KKpi,RooBDecay::SingleSided);
+    pdfSigTime_12_SS_KKpi  = new RooBDecay("pdfSigTime_12_SS_KKpi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_SS,parSigTimeSinh,parSigTimeCos_12_SS,parSigTimeSin_12_SS,parSigTimeDeltaM,*efficiencymodel_KKpi,RooBDecay::SingleSided);
+    pdfSigTime_11_BS_KKpi  = new RooBDecay("pdfSigTime_11_BS_KKpi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_BS,parSigTimeSinh,parSigTimeCos_11_BS,parSigTimeSin_11_BS,parSigTimeDeltaM,*efficiencymodel_KKpi,RooBDecay::SingleSided);
+    pdfSigTime_12_BS_KKpi  = new RooBDecay("pdfSigTime_12_BS_KKpi","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_BS,parSigTimeSinh,parSigTimeCos_12_BS,parSigTimeSin_12_BS,parSigTimeDeltaM,*efficiencymodel_KKpi,RooBDecay::SingleSided);
+  }
+  else {
+    pdfSigTime_11_OS_Kpipi = new RooDecay("pdfSigTime_11_OS_Kpipi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_Kpipi,RooDecay::SingleSided);
+    pdfSigTime_11_SS_Kpipi = new RooDecay("pdfSigTime_11_SS_Kpipi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_Kpipi,RooDecay::SingleSided);
+    pdfSigTime_12_OS_Kpipi = new RooDecay("pdfSigTime_12_OS_Kpipi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_Kpipi,RooDecay::SingleSided);
+    pdfSigTime_12_SS_Kpipi = new RooDecay("pdfSigTime_12_SS_Kpipi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_Kpipi,RooDecay::SingleSided);
+    pdfSigTime_11_BS_Kpipi = new RooDecay("pdfSigTime_11_BS_Kpipi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_Kpipi,RooDecay::SingleSided);
+    pdfSigTime_12_BS_Kpipi = new RooDecay("pdfSigTime_12_BS_Kpipi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_Kpipi,RooDecay::SingleSided);
+    pdfSigTime_11_OS_KKpi  = new RooDecay("pdfSigTime_11_OS_KKpi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_KKpi,RooDecay::SingleSided);
+    pdfSigTime_11_SS_KKpi  = new RooDecay("pdfSigTime_11_SS_KKpi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_KKpi,RooDecay::SingleSided);
+    pdfSigTime_12_OS_KKpi  = new RooDecay("pdfSigTime_12_OS_KKpi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_KKpi,RooDecay::SingleSided);
+    pdfSigTime_12_SS_KKpi  = new RooDecay("pdfSigTime_12_SS_KKpi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_KKpi,RooDecay::SingleSided);
+    pdfSigTime_11_BS_KKpi  = new RooDecay("pdfSigTime_11_BS_KKpi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_KKpi,RooDecay::SingleSided);
+    pdfSigTime_12_BS_KKpi  = new RooDecay("pdfSigTime_12_BS_KKpi","P_{S}^{l}(t|#sigma_{t})",obsTime,parSigTimeTau,*efficiencymodel_KKpi,RooDecay::SingleSided);
+  }
+
 //========================================================================================================================================================================================================================
 
   // Build Simultaneous PDF
   RooSuperCategory  supercategory_time("supercategory_time","supercategory_time",RooArgSet(catYear,catTag));
-  RooSimultaneous   pdf("pdf","P",supercategory_time);
-  if(OS_tagging && data->sumEntries("catYear==2011") > 0) pdf.addPdf(*pdfSigTime_11_OS,"{2011;OS}");
-  if(SS_tagging && data->sumEntries("catYear==2011") > 0) pdf.addPdf(*pdfSigTime_11_SS,"{2011;SS}");
-  if(OS_tagging && SS_tagging && data->sumEntries("catYear==2011") > 0) pdf.addPdf(*pdfSigTime_11_BS,"{2011;both}");
-  if(OS_tagging && data->sumEntries("catYear==2012") > 0) pdf.addPdf(*pdfSigTime_12_OS,"{2012;OS}");
-  if(SS_tagging && data->sumEntries("catYear==2012") > 0) pdf.addPdf(*pdfSigTime_12_SS,"{2012;SS}");
-  if(OS_tagging && SS_tagging && data->sumEntries("catYear==2012") > 0) pdf.addPdf(*pdfSigTime_12_BS,"{2012;both}");
+  RooSuperCategory  supercategory_splitacceptance("supercategory_splitacceptance","supercategory_splitacceptance",RooArgSet(catYear,catTag,catDDFinalStateParticles));
+  RooSimultaneous*  pdf;
+
+  if (split_acceptance) {
+    pdf = new RooSimultaneous("pdf","P",supercategory_splitacceptance);
+    if(OS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_OS_Kpipi,"{2011;OS;Kpipi}");
+    if(SS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_SS_Kpipi,"{2011;SS;Kpipi}");
+    if(OS_tagging && SS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_BS_Kpipi,"{2011;both;Kpipi}");
+    if(OS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_OS_Kpipi,"{2012;OS;Kpipi}");
+    if(SS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_SS_Kpipi,"{2012;SS;Kpipi}");
+    if(OS_tagging && SS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_BS_Kpipi,"{2012;both;Kpipi}");
+    if(OS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_OS_KKpi,"{2011;OS;KKpi}");
+    if(SS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_SS_KKpi,"{2011;SS;KKpi}");
+    if(OS_tagging && SS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_BS_KKpi,"{2011;both;KKpi}");
+    if(OS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_OS_KKpi,"{2012;OS;KKpi}");
+    if(SS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_SS_KKpi,"{2012;SS;KKpi}");
+    if(OS_tagging && SS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_BS_KKpi,"{2012;both;KKpi}");
+  }
+  else {
+    pdf = new RooSimultaneous("pdf","P",supercategory_time);
+    if(OS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_OS,"{2011;OS}");
+    if(SS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_SS,"{2011;SS}");
+    if(OS_tagging && SS_tagging && data->sumEntries("catYear==2011") > 0) pdf->addPdf(*pdfSigTime_11_BS,"{2011;both}");
+    if(OS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_OS,"{2012;OS}");
+    if(SS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_SS,"{2012;SS}");
+    if(OS_tagging && SS_tagging && data->sumEntries("catYear==2012") > 0) pdf->addPdf(*pdfSigTime_12_BS,"{2012;both}");
+  }
 
   cout  <<  "simultaneous PDF built"  <<  endl;
 
   // Get Starting Values
-  pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
-  pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
-  pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
+  pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
+  pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
+  pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
   Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
 
-  pdf.Print();
+  pdf->Print();
 
   TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
   TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
@@ -742,7 +845,7 @@ int main(int argc, char * argv[]){
     constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
   }
 
-  pdf.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.new");
+  pdf->getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
@@ -912,7 +1015,7 @@ int main(int argc, char * argv[]){
           }
           data_bootstrapped_sweighted->Print();
           stopwatch.Start(true);
-          fit_result = pdf.fitTo(*data_bootstrapped_sweighted,fitting_args);
+          fit_result = pdf->fitTo(*data_bootstrapped_sweighted,fitting_args);
           stopwatch.Stop();
           fit_result->Print("v");
           tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
@@ -1059,8 +1162,8 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
     fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
-    RooFitResult* fit_result = pdf.fitTo(*data,fitting_args);
-    pdf.getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+    RooFitResult* fit_result = pdf->fitTo(*data,fitting_args);
+    pdf->getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     fit_result->Print("v");
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
@@ -1070,8 +1173,12 @@ int main(int argc, char * argv[]){
     fitresultwritetofile.Close();
 
     // Plots
-    pdf.getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
-    PlotAcceptance(&accspline, fit_result);
+    pdf->getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+    if (split_acceptance) {
+      PlotAcceptance(&accspline_Kpipi, fit_result, "_Kpipi");
+      PlotAcceptance(&accspline_KKpi, fit_result, "_KKpi");
+    }
+    else PlotAcceptance(&accspline, fit_result);
 
     doofit::plotting::correlations::CorrelationPlot cplot(*fit_result);
     cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
@@ -1079,10 +1186,11 @@ int main(int argc, char * argv[]){
     PlotConfig cfg_plot_time("cfg_plot_time");
     cfg_plot_time.set_plot_appendix(config.getString("identifier"));
     cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
+    cfg_plot_time.set_simultaneous_plot_all_slices(true);
     // cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
     // cfg_plot_time.set_y_axis_label("Kandidaten");
     std::vector<std::string> components_time;
-    PlotSimultaneous Time(cfg_plot_time, obsTime, *data, pdf, components_time);
+    PlotSimultaneous Time(cfg_plot_time, obsTime, *data, *pdf, components_time);
     std::vector<double> os_mistag_bins;
     os_mistag_bins += 0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5;
     RooBinning os_mistag_binning(os_mistag_bins.size()-1, os_mistag_bins.data(), "os_mistag_binning_for_plotting");
@@ -1130,8 +1238,12 @@ int main(int argc, char * argv[]){
   if (plot_acceptance) {
     TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
     RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
-    pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
-    PlotAcceptance(&accspline, read_in_fit_result);
+    pdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults.txt");
+    if (split_acceptance) {
+      PlotAcceptance(&accspline_Kpipi, read_in_fit_result, "_Kpipi");
+      PlotAcceptance(&accspline_KKpi, read_in_fit_result, "_KKpi");
+    }
+    else PlotAcceptance(&accspline, read_in_fit_result);
     fitresultfile.Close();
   }
   if (plot_correlation_matrix) {
@@ -1179,7 +1291,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString identifier){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
@@ -1199,7 +1311,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   // plot->GetYaxis()->SetTitle("Akzeptanz");
   plot->Draw();
   label.Draw("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline.pdf");
+  c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline"+identifier+".pdf");
 
   c.SetLogx(false);
   plot = obsTime.frame();
@@ -1212,6 +1324,6 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result){
   plot->Draw();
   label.SetX(7);
   label.Draw("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_nolog.pdf");
+  c.SaveAs("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAcceptance/Acceptancespline_nolog"+identifier+".pdf");
 }
 
