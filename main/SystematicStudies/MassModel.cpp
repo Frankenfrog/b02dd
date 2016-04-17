@@ -104,7 +104,7 @@ int main(int argc, char * argv[]){
   bool split_final_state  = config.getBool("split_final_state");
   TString method = config.getString("method");
 
-  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5150,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEtaOS","#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0.,0.5);
@@ -269,10 +269,10 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend_11_KKpi("pdfBkgExtend_11_KKpi","pdfBkgExtend_11_KKpi",pdfBkgMass,parBkgYield_11_KKpi);
   RooExtendPdf      pdfBkgExtend_12_KKpi("pdfBkgExtend_12_KKpi","pdfBkgExtend_12_KKpi",pdfBkgMass,parBkgYield_12_KKpi);
 
-  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi,pdfBkgDstDExtend_11_Kpipi,pdfBkgExtend_11_Kpipi));
-  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi,pdfBkgDstDExtend_12_Kpipi,pdfBkgExtend_12_Kpipi));
-  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi,pdfBkgDstDExtend_11_KKpi,pdfBkgExtend_11_KKpi));
-  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi,pdfBkgDstDExtend_12_KKpi,pdfBkgExtend_12_KKpi));
+  RooAddPdf         pdfMass_11_Kpipi("pdfMass_11_Kpipi","Mass PDF",RooArgList(pdfSigExtend_11_Kpipi,pdfBkgDsDExtend_11_Kpipi,pdfBkgBsDsDExtend_11_Kpipi,pdfSigBsExtend_11_Kpipi/*,pdfBkgDstDExtend_11_Kpipi*/,pdfBkgExtend_11_Kpipi));
+  RooAddPdf         pdfMass_12_Kpipi("pdfMass_12_Kpipi","Mass PDF",RooArgList(pdfSigExtend_12_Kpipi,pdfBkgDsDExtend_12_Kpipi,pdfBkgBsDsDExtend_12_Kpipi,pdfSigBsExtend_12_Kpipi/*,pdfBkgDstDExtend_12_Kpipi*/,pdfBkgExtend_12_Kpipi));
+  RooAddPdf         pdfMass_11_KKpi("pdfMass_11_KKpi","Mass PDF",RooArgList(pdfSigExtend_11_KKpi,pdfBkgDsDExtend_11_KKpi,pdfBkgBsDsDExtend_11_KKpi,pdfSigBsExtend_11_KKpi/*,pdfBkgDstDExtend_11_KKpi*/,pdfBkgExtend_11_KKpi));
+  RooAddPdf         pdfMass_12_KKpi("pdfMass_12_KKpi","Mass PDF",RooArgList(pdfSigExtend_12_KKpi,pdfBkgDsDExtend_12_KKpi,pdfBkgBsDsDExtend_12_KKpi,pdfSigBsExtend_12_KKpi/*,pdfBkgDstDExtend_12_KKpi*/,pdfBkgExtend_12_KKpi));
 
   RooSuperCategory  supercategory_mass("supercategory_mass","supercategory_mass",RooArgList(catYear,catDDFinalStateParticles));
   RooSimultaneous   pdfMass("pdfMass","pdfMass",supercategory_mass);
@@ -679,7 +679,38 @@ int main(int argc, char * argv[]){
   RooExtendPdf    pdfBkg_12_KKpi_BS("pdfBkg_12_KKpi_BS","pdfBkg_12_KKpi_BS",pdfBkg,parBkgYield_12_KKpi_BS);
 
   // Charmless PDF
-  RooProdPdf      pdfBkgCharmless("pdfBkgCharmless","pdfBkgCharmless",RooArgList(pdfBkgCharmlessMass,pdfBkgB0Time));
+  RooConstVar     parBkgCharmlessTimeSinh("parBkgCharmlessTimeSinh","Sh_{f}",0.0);
+  RooConstVar     parBkgCharmlessTimeCos("parBkgCharmlessTimeCos","C_{f}",0.0);
+  RooRealVar      parBkgCharmlessTimeSin2b("parBkgCharmlessTimeSin2b","S_{f}",1.0);
+
+  CPCoefficient   parBkgCharmlessTimeCosh_11_OS("parBkgCharmlessTimeCosh_11_OS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient   parBkgCharmlessTimeCosh_12_OS("parBkgCharmlessTimeCosh_12_OS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient   parBkgCharmlessTimeSin_11_OS("parBkgCharmlessTimeSin_11_OS",parBkgCharmlessTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient   parBkgCharmlessTimeSin_12_OS("parBkgCharmlessTimeSin_12_OS",parBkgCharmlessTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+
+  CPCoefficient   parBkgCharmlessTimeCosh_11_SS("parBkgCharmlessTimeCosh_11_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient   parBkgCharmlessTimeCosh_12_SS("parBkgCharmlessTimeCosh_12_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient   parBkgCharmlessTimeSin_11_SS("parBkgCharmlessTimeSin_11_SS",parBkgCharmlessTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient   parBkgCharmlessTimeSin_12_SS("parBkgCharmlessTimeSin_12_SS",parBkgCharmlessTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+
+  CPCoefficient   parBkgCharmlessTimeCosh_11_BS("parBkgCharmlessTimeCosh_11_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+  CPCoefficient   parBkgCharmlessTimeCosh_12_BS("parBkgCharmlessTimeCosh_12_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+  CPCoefficient   parBkgCharmlessTimeSin_11_BS("parBkgCharmlessTimeSin_11_BS",parBkgCharmlessTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient   parBkgCharmlessTimeSin_12_BS("parBkgCharmlessTimeSin_12_BS",parBkgCharmlessTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+
+  RooBDecay       pdfBkgCharmlessTime_11_OS("pdfBkgCharmlessTime_11_OS","P(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parBkgCharmlessTimeCosh_11_OS,parBkgCharmlessTimeSinh,parBkgCharmlessTimeCos,parBkgCharmlessTimeSin_11_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay       pdfBkgCharmlessTime_11_SS("pdfBkgCharmlessTime_11_SS","P(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parBkgCharmlessTimeCosh_11_SS,parBkgCharmlessTimeSinh,parBkgCharmlessTimeCos,parBkgCharmlessTimeSin_11_SS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay       pdfBkgCharmlessTime_12_OS("pdfBkgCharmlessTime_12_OS","P(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parBkgCharmlessTimeCosh_12_OS,parBkgCharmlessTimeSinh,parBkgCharmlessTimeCos,parBkgCharmlessTimeSin_12_OS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay       pdfBkgCharmlessTime_12_SS("pdfBkgCharmlessTime_12_SS","P(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parBkgCharmlessTimeCosh_12_SS,parBkgCharmlessTimeSinh,parBkgCharmlessTimeCos,parBkgCharmlessTimeSin_12_SS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay       pdfBkgCharmlessTime_11_BS("pdfBkgCharmlessTime_11_BS","P(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parBkgCharmlessTimeCosh_11_BS,parBkgCharmlessTimeSinh,parBkgCharmlessTimeCos,parBkgCharmlessTimeSin_11_BS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+  RooBDecay       pdfBkgCharmlessTime_12_BS("pdfBkgCharmlessTime_12_BS","P(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parBkgCharmlessTimeCosh_12_BS,parBkgCharmlessTimeSinh,parBkgCharmlessTimeCos,parBkgCharmlessTimeSin_12_BS,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+
+  RooProdPdf      pdfBkgCharmless_11_OS("pdfBkgCharmless_11_OS","pdfBkgCharmless_11_OS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_11_OS));
+  RooProdPdf      pdfBkgCharmless_11_SS("pdfBkgCharmless_11_SS","pdfBkgCharmless_11_SS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_11_SS));
+  RooProdPdf      pdfBkgCharmless_12_OS("pdfBkgCharmless_12_OS","pdfBkgCharmless_12_OS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_12_OS));
+  RooProdPdf      pdfBkgCharmless_12_SS("pdfBkgCharmless_12_SS","pdfBkgCharmless_12_SS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_12_SS));
+  RooProdPdf      pdfBkgCharmless_11_BS("pdfBkgCharmless_11_BS","pdfBkgCharmless_11_BS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_11_BS));
+  RooProdPdf      pdfBkgCharmless_12_BS("pdfBkgCharmless_12_BS","pdfBkgCharmless_12_BS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_12_BS));
 
   RooRealVar      parBkgCharmlessYield_11_Kpipi_OS("parBkgCharmlessYield_11_Kpipi_OS","parBkgCharmlessYield_11_Kpipi_OS",100,0,1000);
   RooRealVar      parBkgCharmlessYield_12_Kpipi_OS("parBkgCharmlessYield_12_Kpipi_OS","parBkgCharmlessYield_12_Kpipi_OS",100,0,1000);
@@ -694,33 +725,33 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgCharmlessYield_11_KKpi_BS("parBkgCharmlessYield_11_KKpi_BS","parBkgCharmlessYield_11_KKpi_BS",100,0,1000);
   RooRealVar      parBkgCharmlessYield_12_KKpi_BS("parBkgCharmlessYield_12_KKpi_BS","parBkgCharmlessYield_12_KKpi_BS",100,0,1000);
 
-  RooExtendPdf    pdfBkgCharmless_11_Kpipi_OS("pdfBkgCharmless_11_Kpipi_OS","pdfBkgCharmless_11_Kpipi_OS",pdfBkgCharmless,parBkgCharmlessYield_11_Kpipi_OS);
-  RooExtendPdf    pdfBkgCharmless_12_Kpipi_OS("pdfBkgCharmless_12_Kpipi_OS","pdfBkgCharmless_12_Kpipi_OS",pdfBkgCharmless,parBkgCharmlessYield_12_Kpipi_OS);
-  RooExtendPdf    pdfBkgCharmless_11_KKpi_OS("pdfBkgCharmless_11_KKpi_OS","pdfBkgCharmless_11_KKpi_OS",pdfBkgCharmless,parBkgCharmlessYield_11_KKpi_OS);
-  RooExtendPdf    pdfBkgCharmless_12_KKpi_OS("pdfBkgCharmless_12_KKpi_OS","pdfBkgCharmless_12_KKpi_OS",pdfBkgCharmless,parBkgCharmlessYield_12_KKpi_OS);
-  RooExtendPdf    pdfBkgCharmless_11_Kpipi_SS("pdfBkgCharmless_11_Kpipi_SS","pdfBkgCharmless_11_Kpipi_SS",pdfBkgCharmless,parBkgCharmlessYield_11_Kpipi_SS);
-  RooExtendPdf    pdfBkgCharmless_12_Kpipi_SS("pdfBkgCharmless_12_Kpipi_SS","pdfBkgCharmless_12_Kpipi_SS",pdfBkgCharmless,parBkgCharmlessYield_12_Kpipi_SS);
-  RooExtendPdf    pdfBkgCharmless_11_KKpi_SS("pdfBkgCharmless_11_KKpi_SS","pdfBkgCharmless_11_KKpi_SS",pdfBkgCharmless,parBkgCharmlessYield_11_KKpi_SS);
-  RooExtendPdf    pdfBkgCharmless_12_KKpi_SS("pdfBkgCharmless_12_KKpi_SS","pdfBkgCharmless_12_KKpi_SS",pdfBkgCharmless,parBkgCharmlessYield_12_KKpi_SS);
-  RooExtendPdf    pdfBkgCharmless_11_Kpipi_BS("pdfBkgCharmless_11_Kpipi_BS","pdfBkgCharmless_11_Kpipi_BS",pdfBkgCharmless,parBkgCharmlessYield_11_Kpipi_BS);
-  RooExtendPdf    pdfBkgCharmless_12_Kpipi_BS("pdfBkgCharmless_12_Kpipi_BS","pdfBkgCharmless_12_Kpipi_BS",pdfBkgCharmless,parBkgCharmlessYield_12_Kpipi_BS);
-  RooExtendPdf    pdfBkgCharmless_11_KKpi_BS("pdfBkgCharmless_11_KKpi_BS","pdfBkgCharmless_11_KKpi_BS",pdfBkgCharmless,parBkgCharmlessYield_11_KKpi_BS);
-  RooExtendPdf    pdfBkgCharmless_12_KKpi_BS("pdfBkgCharmless_12_KKpi_BS","pdfBkgCharmless_12_KKpi_BS",pdfBkgCharmless,parBkgCharmlessYield_12_KKpi_BS);  
+  RooExtendPdf    pdfBkgCharmless_11_Kpipi_OS("pdfBkgCharmless_11_Kpipi_OS","pdfBkgCharmless_11_Kpipi_OS",pdfBkgCharmless_11_OS,parBkgCharmlessYield_11_Kpipi_OS);
+  RooExtendPdf    pdfBkgCharmless_12_Kpipi_OS("pdfBkgCharmless_12_Kpipi_OS","pdfBkgCharmless_12_Kpipi_OS",pdfBkgCharmless_12_OS,parBkgCharmlessYield_12_Kpipi_OS);
+  RooExtendPdf    pdfBkgCharmless_11_KKpi_OS("pdfBkgCharmless_11_KKpi_OS","pdfBkgCharmless_11_KKpi_OS",pdfBkgCharmless_11_OS,parBkgCharmlessYield_11_KKpi_OS);
+  RooExtendPdf    pdfBkgCharmless_12_KKpi_OS("pdfBkgCharmless_12_KKpi_OS","pdfBkgCharmless_12_KKpi_OS",pdfBkgCharmless_12_OS,parBkgCharmlessYield_12_KKpi_OS);
+  RooExtendPdf    pdfBkgCharmless_11_Kpipi_SS("pdfBkgCharmless_11_Kpipi_SS","pdfBkgCharmless_11_Kpipi_SS",pdfBkgCharmless_11_SS,parBkgCharmlessYield_11_Kpipi_SS);
+  RooExtendPdf    pdfBkgCharmless_12_Kpipi_SS("pdfBkgCharmless_12_Kpipi_SS","pdfBkgCharmless_12_Kpipi_SS",pdfBkgCharmless_12_SS,parBkgCharmlessYield_12_Kpipi_SS);
+  RooExtendPdf    pdfBkgCharmless_11_KKpi_SS("pdfBkgCharmless_11_KKpi_SS","pdfBkgCharmless_11_KKpi_SS",pdfBkgCharmless_11_SS,parBkgCharmlessYield_11_KKpi_SS);
+  RooExtendPdf    pdfBkgCharmless_12_KKpi_SS("pdfBkgCharmless_12_KKpi_SS","pdfBkgCharmless_12_KKpi_SS",pdfBkgCharmless_12_SS,parBkgCharmlessYield_12_KKpi_SS);
+  RooExtendPdf    pdfBkgCharmless_11_Kpipi_BS("pdfBkgCharmless_11_Kpipi_BS","pdfBkgCharmless_11_Kpipi_BS",pdfBkgCharmless_11_BS,parBkgCharmlessYield_11_Kpipi_BS);
+  RooExtendPdf    pdfBkgCharmless_12_Kpipi_BS("pdfBkgCharmless_12_Kpipi_BS","pdfBkgCharmless_12_Kpipi_BS",pdfBkgCharmless_12_BS,parBkgCharmlessYield_12_Kpipi_BS);
+  RooExtendPdf    pdfBkgCharmless_11_KKpi_BS("pdfBkgCharmless_11_KKpi_BS","pdfBkgCharmless_11_KKpi_BS",pdfBkgCharmless_11_BS,parBkgCharmlessYield_11_KKpi_BS);
+  RooExtendPdf    pdfBkgCharmless_12_KKpi_BS("pdfBkgCharmless_12_KKpi_BS","pdfBkgCharmless_12_KKpi_BS",pdfBkgCharmless_12_BS,parBkgCharmlessYield_12_KKpi_BS);  
 
 //========================================================================================================================================================================================================================
 
-  RooAddPdf       pdf_11_Kpipi_OS("pdf_11_Kpipi_OS","pdf_11_Kpipi_OS",RooArgList(pdfSig_11_Kpipi_OS,pdfSigBs_11_Kpipi_OS,pdfBkgDsD_11_Kpipi_OS,pdfBkg_11_Kpipi_OS,pdfBkgDstD_11_Kpipi_OS,pdfBkgBsDstD_11_Kpipi_OS,pdfBkgBsDsD_11_Kpipi_OS,pdfBkgCharmless_11_Kpipi_OS));
-  RooAddPdf       pdf_11_Kpipi_SS("pdf_11_Kpipi_SS","pdf_11_Kpipi_SS",RooArgList(pdfSig_11_Kpipi_SS,pdfSigBs_11_Kpipi_SS,pdfBkgDsD_11_Kpipi_SS,pdfBkg_11_Kpipi_SS,pdfBkgDstD_11_Kpipi_SS,pdfBkgBsDstD_11_Kpipi_SS,pdfBkgBsDsD_11_Kpipi_SS,pdfBkgCharmless_11_Kpipi_SS));
-  RooAddPdf       pdf_11_Kpipi_BS("pdf_11_Kpipi_BS","pdf_11_Kpipi_BS",RooArgList(pdfSig_11_Kpipi_BS,pdfSigBs_11_Kpipi_BS,pdfBkgDsD_11_Kpipi_BS,pdfBkg_11_Kpipi_BS,pdfBkgDstD_11_Kpipi_BS,pdfBkgBsDstD_11_Kpipi_BS,pdfBkgBsDsD_11_Kpipi_BS,pdfBkgCharmless_11_Kpipi_BS));
-  RooAddPdf       pdf_12_Kpipi_OS("pdf_12_Kpipi_OS","pdf_12_Kpipi_OS",RooArgList(pdfSig_12_Kpipi_OS,pdfSigBs_12_Kpipi_OS,pdfBkgDsD_12_Kpipi_OS,pdfBkg_12_Kpipi_OS,pdfBkgDstD_12_Kpipi_OS,pdfBkgBsDstD_12_Kpipi_OS,pdfBkgBsDsD_12_Kpipi_OS,pdfBkgCharmless_12_Kpipi_OS));
-  RooAddPdf       pdf_12_Kpipi_SS("pdf_12_Kpipi_SS","pdf_12_Kpipi_SS",RooArgList(pdfSig_12_Kpipi_SS,pdfSigBs_12_Kpipi_SS,pdfBkgDsD_12_Kpipi_SS,pdfBkg_12_Kpipi_SS,pdfBkgDstD_12_Kpipi_SS,pdfBkgBsDstD_12_Kpipi_SS,pdfBkgBsDsD_12_Kpipi_SS,pdfBkgCharmless_12_Kpipi_SS));
-  RooAddPdf       pdf_12_Kpipi_BS("pdf_12_Kpipi_BS","pdf_12_Kpipi_BS",RooArgList(pdfSig_12_Kpipi_BS,pdfSigBs_12_Kpipi_BS,pdfBkgDsD_12_Kpipi_BS,pdfBkg_12_Kpipi_BS,pdfBkgDstD_12_Kpipi_BS,pdfBkgBsDstD_12_Kpipi_BS,pdfBkgBsDsD_12_Kpipi_BS,pdfBkgCharmless_12_Kpipi_BS));
-  RooAddPdf       pdf_11_KKpi_OS("pdf_11_KKpi_OS","pdf_11_KKpi_OS",RooArgList(pdfSig_11_KKpi_OS,pdfSigBs_11_KKpi_OS,pdfBkgDsD_11_KKpi_OS,pdfBkg_11_KKpi_OS,pdfBkgDstD_11_KKpi_OS,pdfBkgBsDstD_11_KKpi_OS,pdfBkgBsDsD_11_KKpi_OS,pdfBkgCharmless_11_KKpi_OS));
-  RooAddPdf       pdf_11_KKpi_SS("pdf_11_KKpi_SS","pdf_11_KKpi_SS",RooArgList(pdfSig_11_KKpi_SS,pdfSigBs_11_KKpi_SS,pdfBkgDsD_11_KKpi_SS,pdfBkg_11_KKpi_SS,pdfBkgDstD_11_KKpi_SS,pdfBkgBsDstD_11_KKpi_SS,pdfBkgBsDsD_11_KKpi_SS,pdfBkgCharmless_11_KKpi_SS));
-  RooAddPdf       pdf_11_KKpi_BS("pdf_11_KKpi_BS","pdf_11_KKpi_BS",RooArgList(pdfSig_11_KKpi_BS,pdfSigBs_11_KKpi_BS,pdfBkgDsD_11_KKpi_BS,pdfBkg_11_KKpi_BS,pdfBkgDstD_11_KKpi_BS,pdfBkgBsDstD_11_KKpi_BS,pdfBkgBsDsD_11_KKpi_BS,pdfBkgCharmless_11_KKpi_BS));
-  RooAddPdf       pdf_12_KKpi_OS("pdf_12_KKpi_OS","pdf_12_KKpi_OS",RooArgList(pdfSig_12_KKpi_OS,pdfSigBs_12_KKpi_OS,pdfBkgDsD_12_KKpi_OS,pdfBkg_12_KKpi_OS,pdfBkgDstD_12_KKpi_OS,pdfBkgBsDstD_12_KKpi_OS,pdfBkgBsDsD_12_KKpi_OS,pdfBkgCharmless_12_KKpi_OS));
-  RooAddPdf       pdf_12_KKpi_SS("pdf_12_KKpi_SS","pdf_12_KKpi_SS",RooArgList(pdfSig_12_KKpi_SS,pdfSigBs_12_KKpi_SS,pdfBkgDsD_12_KKpi_SS,pdfBkg_12_KKpi_SS,pdfBkgDstD_12_KKpi_SS,pdfBkgBsDstD_12_KKpi_SS,pdfBkgBsDsD_12_KKpi_SS,pdfBkgCharmless_12_KKpi_SS));
-  RooAddPdf       pdf_12_KKpi_BS("pdf_12_KKpi_BS","pdf_12_KKpi_BS",RooArgList(pdfSig_12_KKpi_BS,pdfSigBs_12_KKpi_BS,pdfBkgDsD_12_KKpi_BS,pdfBkg_12_KKpi_BS,pdfBkgDstD_12_KKpi_BS,pdfBkgBsDstD_12_KKpi_BS,pdfBkgBsDsD_12_KKpi_BS,pdfBkgCharmless_12_KKpi_BS));
+  RooAddPdf       pdf_11_Kpipi_OS("pdf_11_Kpipi_OS","pdf_11_Kpipi_OS",RooArgList(pdfSig_11_Kpipi_OS,pdfSigBs_11_Kpipi_OS,pdfBkgDsD_11_Kpipi_OS,pdfBkg_11_Kpipi_OS,/*pdfBkgDstD_11_Kpipi_OS,*/pdfBkgBsDstD_11_Kpipi_OS,pdfBkgBsDsD_11_Kpipi_OS,pdfBkgCharmless_11_Kpipi_OS));
+  RooAddPdf       pdf_11_Kpipi_SS("pdf_11_Kpipi_SS","pdf_11_Kpipi_SS",RooArgList(pdfSig_11_Kpipi_SS,pdfSigBs_11_Kpipi_SS,pdfBkgDsD_11_Kpipi_SS,pdfBkg_11_Kpipi_SS,/*pdfBkgDstD_11_Kpipi_SS,*/pdfBkgBsDstD_11_Kpipi_SS,pdfBkgBsDsD_11_Kpipi_SS,pdfBkgCharmless_11_Kpipi_SS));
+  RooAddPdf       pdf_11_Kpipi_BS("pdf_11_Kpipi_BS","pdf_11_Kpipi_BS",RooArgList(pdfSig_11_Kpipi_BS,pdfSigBs_11_Kpipi_BS,pdfBkgDsD_11_Kpipi_BS,pdfBkg_11_Kpipi_BS,/*pdfBkgDstD_11_Kpipi_BS,*/pdfBkgBsDstD_11_Kpipi_BS,pdfBkgBsDsD_11_Kpipi_BS,pdfBkgCharmless_11_Kpipi_BS));
+  RooAddPdf       pdf_12_Kpipi_OS("pdf_12_Kpipi_OS","pdf_12_Kpipi_OS",RooArgList(pdfSig_12_Kpipi_OS,pdfSigBs_12_Kpipi_OS,pdfBkgDsD_12_Kpipi_OS,pdfBkg_12_Kpipi_OS,/*pdfBkgDstD_12_Kpipi_OS,*/pdfBkgBsDstD_12_Kpipi_OS,pdfBkgBsDsD_12_Kpipi_OS,pdfBkgCharmless_12_Kpipi_OS));
+  RooAddPdf       pdf_12_Kpipi_SS("pdf_12_Kpipi_SS","pdf_12_Kpipi_SS",RooArgList(pdfSig_12_Kpipi_SS,pdfSigBs_12_Kpipi_SS,pdfBkgDsD_12_Kpipi_SS,pdfBkg_12_Kpipi_SS,/*pdfBkgDstD_12_Kpipi_SS,*/pdfBkgBsDstD_12_Kpipi_SS,pdfBkgBsDsD_12_Kpipi_SS,pdfBkgCharmless_12_Kpipi_SS));
+  RooAddPdf       pdf_12_Kpipi_BS("pdf_12_Kpipi_BS","pdf_12_Kpipi_BS",RooArgList(pdfSig_12_Kpipi_BS,pdfSigBs_12_Kpipi_BS,pdfBkgDsD_12_Kpipi_BS,pdfBkg_12_Kpipi_BS,/*pdfBkgDstD_12_Kpipi_BS,*/pdfBkgBsDstD_12_Kpipi_BS,pdfBkgBsDsD_12_Kpipi_BS,pdfBkgCharmless_12_Kpipi_BS));
+  RooAddPdf       pdf_11_KKpi_OS("pdf_11_KKpi_OS","pdf_11_KKpi_OS",RooArgList(pdfSig_11_KKpi_OS,pdfSigBs_11_KKpi_OS,pdfBkgDsD_11_KKpi_OS,pdfBkg_11_KKpi_OS,/*pdfBkgDstD_11_KKpi_OS,*/pdfBkgBsDstD_11_KKpi_OS,pdfBkgBsDsD_11_KKpi_OS,pdfBkgCharmless_11_KKpi_OS));
+  RooAddPdf       pdf_11_KKpi_SS("pdf_11_KKpi_SS","pdf_11_KKpi_SS",RooArgList(pdfSig_11_KKpi_SS,pdfSigBs_11_KKpi_SS,pdfBkgDsD_11_KKpi_SS,pdfBkg_11_KKpi_SS,/*pdfBkgDstD_11_KKpi_SS,*/pdfBkgBsDstD_11_KKpi_SS,pdfBkgBsDsD_11_KKpi_SS,pdfBkgCharmless_11_KKpi_SS));
+  RooAddPdf       pdf_11_KKpi_BS("pdf_11_KKpi_BS","pdf_11_KKpi_BS",RooArgList(pdfSig_11_KKpi_BS,pdfSigBs_11_KKpi_BS,pdfBkgDsD_11_KKpi_BS,pdfBkg_11_KKpi_BS,/*pdfBkgDstD_11_KKpi_BS,*/pdfBkgBsDstD_11_KKpi_BS,pdfBkgBsDsD_11_KKpi_BS,pdfBkgCharmless_11_KKpi_BS));
+  RooAddPdf       pdf_12_KKpi_OS("pdf_12_KKpi_OS","pdf_12_KKpi_OS",RooArgList(pdfSig_12_KKpi_OS,pdfSigBs_12_KKpi_OS,pdfBkgDsD_12_KKpi_OS,pdfBkg_12_KKpi_OS,/*pdfBkgDstD_12_KKpi_OS,*/pdfBkgBsDstD_12_KKpi_OS,pdfBkgBsDsD_12_KKpi_OS,pdfBkgCharmless_12_KKpi_OS));
+  RooAddPdf       pdf_12_KKpi_SS("pdf_12_KKpi_SS","pdf_12_KKpi_SS",RooArgList(pdfSig_12_KKpi_SS,pdfSigBs_12_KKpi_SS,pdfBkgDsD_12_KKpi_SS,pdfBkg_12_KKpi_SS,/*pdfBkgDstD_12_KKpi_SS,*/pdfBkgBsDstD_12_KKpi_SS,pdfBkgBsDsD_12_KKpi_SS,pdfBkgCharmless_12_KKpi_SS));
+  RooAddPdf       pdf_12_KKpi_BS("pdf_12_KKpi_BS","pdf_12_KKpi_BS",RooArgList(pdfSig_12_KKpi_BS,pdfSigBs_12_KKpi_BS,pdfBkgDsD_12_KKpi_BS,pdfBkg_12_KKpi_BS,/*pdfBkgDstD_12_KKpi_BS,*/pdfBkgBsDstD_12_KKpi_BS,pdfBkgBsDsD_12_KKpi_BS,pdfBkgCharmless_12_KKpi_BS));
 
   RooSuperCategory  supercategory_generate("supercategory_generate","supercategory_generate",RooArgList(catYear,catTag,catDDFinalStateParticles));
   RooSimultaneous   pdf_generate("pdf_generate","P",supercategory_generate);
@@ -838,10 +869,10 @@ int main(int argc, char * argv[]){
     RooRealVar SigWeight_12_Kpipi("parSigYield_12_Kpipi_sw","signal weight for 12 Kpipi",-10,10);
     RooRealVar SigWeight_12_KKpi("parSigYield_12_KKpi_sw","signal weight for 12 KKpi",-10,10);
     RooFormulaVar sum_of_signal_weights_year_finalstate("sum_of_signal_weights_year_finalstate","sum of signal weights","@0+@1+@2+@3",RooArgList(SigWeight_11_Kpipi,SigWeight_11_KKpi,SigWeight_12_Kpipi,SigWeight_12_KKpi));
-    set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi,parBkgDstDYield_11_Kpipi,parBkgBsDsDYield_11_Kpipi));
-    set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi,parBkgDstDYield_11_KKpi,parBkgBsDsDYield_11_KKpi));
-    set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi,parBkgDstDYield_12_Kpipi,parBkgBsDsDYield_12_Kpipi));
-    set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi,parBkgDstDYield_12_KKpi,parBkgBsDsDYield_12_KKpi));
+    set_of_yields.add(RooArgSet(parSigYield_11_Kpipi,parBkgDsDYield_11_Kpipi,parSigBsYield_11_Kpipi,parBkgYield_11_Kpipi/*,parBkgDstDYield_11_Kpipi*/,parBkgBsDsDYield_11_Kpipi));
+    set_of_yields.add(RooArgSet(parSigYield_11_KKpi,parBkgDsDYield_11_KKpi,parSigBsYield_11_KKpi,parBkgYield_11_KKpi/*,parBkgDstDYield_11_KKpi*/,parBkgBsDsDYield_11_KKpi));
+    set_of_yields.add(RooArgSet(parSigYield_12_Kpipi,parBkgDsDYield_12_Kpipi,parSigBsYield_12_Kpipi,parBkgYield_12_Kpipi/*,parBkgDstDYield_12_Kpipi*/,parBkgBsDsDYield_12_Kpipi));
+    set_of_yields.add(RooArgSet(parSigYield_12_KKpi,parBkgDsDYield_12_KKpi,parSigBsYield_12_KKpi,parBkgYield_12_KKpi/*,parBkgDstDYield_12_KKpi*/,parBkgBsDsDYield_12_KKpi));
     for (int i = 0; i < 5 ; ++i) {
       cout  <<  i <<  endl;
       try {
