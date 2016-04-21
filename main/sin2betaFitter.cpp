@@ -40,6 +40,7 @@
 #include "RooAddPdf.h"
 #include "RooExtendPdf.h"
 #include "RooCBShape.h"
+#include "RooChebychev.h"
 
 // from DooCore
 #include "doocore/io/MsgStream.h"
@@ -122,15 +123,17 @@ int main(int argc, char * argv[]){
   bool massfit = config.getBool("massfit");
   bool decaytimefit = config.getBool("decaytimefit");
   bool mistag_histograms = config.getBool("mistag_histograms");
+  bool timeerr_histograms = config.getBool("timeerr_histograms");
   bool plot_acceptance = config.getBool("plot_acceptance");
   bool plot_correlation_matrix = config.getBool("plot_correlation_matrix");
   bool plot_mass_distribution = config.getBool("plot_mass_distribution");
-  if (mistag_histograms || plot_acceptance || plot_correlation_matrix || plot_mass_distribution) {
+  if (mistag_histograms || plot_acceptance || plot_correlation_matrix || plot_mass_distribution || timeerr_histograms) {
     bootstrapping = false;
     massfit = false;
     calculate_sweights = false;
     decaytimefit = false;
     massfittervalidation = false;
+    if (timeerr_histograms) pereventresolution = true;
   }
   std::string cut = config.getString("cut");
   bool more_knots = config.getBool("more_knots");
@@ -226,7 +229,7 @@ int main(int argc, char * argv[]){
     observables.add(obsTagSS);
   }
   RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catDminusFinalState,catDplusFinalState,catMag,"categories");
-  if (decaytimefit || mistag_histograms) categories.add(SigWeight);
+  if (decaytimefit || mistag_histograms || timeerr_histograms) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
   
   // Get data set
@@ -235,7 +238,7 @@ int main(int argc, char * argv[]){
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
   else if (decaytimefit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
-  else if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms)) {
+  else if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms || timeerr_histograms)) {
     cout << "What do you want to do? No use case is activated right now!" <<  endl;
     return 0;
   }
@@ -243,9 +246,64 @@ int main(int argc, char * argv[]){
     data->Print();
   }
 
+  if (mistag_histograms) {
+    TFile* file_mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","recreate");
+    TTree&            tree = tuple.tree();
+    TH1D* hist_Sig_OS_eta = new TH1D("hist_Sig_OS_eta","hist_Sig_OS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaOS.GetName())+">>hist_Sig_OS_eta",TString(cut+"*SigWeight"));
+    TH1D* hist_Sig_SS_eta = new TH1D("hist_Sig_SS_eta","hist_Sig_SS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaSS.GetName())+">>hist_Sig_SS_eta",TString(cut+"*SigWeight"));
+    TH1D* hist_Bkg_OS_eta = new TH1D("hist_Bkg_OS_eta","hist_Bkg_OS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaOS.GetName())+">>hist_Bkg_OS_eta",TString(cut+"*(1-SigWeight)"));
+    TH1D* hist_Bkg_SS_eta = new TH1D("hist_Bkg_SS_eta","hist_Bkg_SS_eta",100,0,0.5);
+    tree.Draw(TString(obsEtaSS.GetName())+">>hist_Bkg_SS_eta",TString(cut+"*(1-SigWeight)"));
+    hist_Sig_OS_eta->Write();
+    hist_Sig_SS_eta->Write();
+    hist_Bkg_OS_eta->Write();
+    hist_Bkg_SS_eta->Write();
+    file_mistag_histograms->Close();
+    if (!timeerr_histograms) return 0;
+  }
+  if (timeerr_histograms) {
+    TFile* file_timeerr_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_TimeErr_Distributions.root","recreate");
+    TTree&            tree = tuple.tree();
+    TH1D* hist_Sig_timeerr = new TH1D("hist_Sig_timeerr","hist_Sig_timeerr",100,0.005,0.2);
+    tree.Draw(TString(obsTimeErr.GetName())+">>hist_Sig_timeerr",TString(cut+"*SigWeight"));
+    TH1D* hist_Bkg_timeerr = new TH1D("hist_Bkg_timeerr","hist_Bkg_timeerr",100,0.005,0.2);
+    tree.Draw(TString(obsTimeErr.GetName())+">>hist_Bkg_timeerr",TString(cut+"*(1-SigWeight)"));
+    hist_Sig_timeerr->Write();
+    hist_Bkg_timeerr->Write();
+    file_timeerr_histograms->Close();
+    return 0;
+  }
+  if (plot_correlation_matrix) {
+    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
+    RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
+    doofit::plotting::correlations::CorrelationPlot cplot(*read_in_fit_result);
+    cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
+    return 0;
+  }
+  if (plot_mass_distribution) {
+    PlotConfig cfg_plot_mass("cfg_plot_mass");
+    cfg_plot_mass.InitializeOptions();
+    cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots/"+config.getString("identifier"));
+    cfg_plot_mass.set_simultaneous_plot_all_categories(true);
+    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+    // cfg_plot_mass.set_y_axis_label("Kandidaten");
+    Plot Mass(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
+    Mass.set_scaletype_x(kLinear);
+    Mass.set_scaletype_y(kBoth);
+    Mass.PlotIt();
+    return 0;
+  }
+
+//=========================================================================================================================================================================================================================
+
   // Mass PDF
   // Signal
   RooRealVar        parSigMassMean("parSigMassMean","Bd Mean Mass",5280,5270,5290,"MeV/c^{2}");
+  RooRealVar        parSigMassSigma("parSigMassSigma","Sigma of Gaussian Mass",9,7,20,"MeV/c^{2}");
+  // RooGaussian       pdfSigMass("pdfSigMass","pdfSigMass",obsMass,parSigMassMean,parSigMassSigma);
   RooRealVar        parSigMassSigmaScale("parSigMassSigmaScale","Scale of MC resolution",1,0,2);
 
   RooRealVar        parSigMassSigma1("parSigMassSigma1","Sigma of Gaussian Mass",9,7,20,"MeV/c^{2}");
@@ -298,6 +356,7 @@ int main(int argc, char * argv[]){
   RooCBShape        pdfSigBsMassCB2("pdfSigBsMassCB2","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma2Product,parSigMassCB2Alpha,parSigMassCB2Expo);
   RooCBShape        pdfSigBsMassCB3("pdfSigBsMassCB3","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma3Product,parSigMassCB3Alpha,parSigMassCB3Expo);
   RooAddPdf         pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",RooArgList(pdfSigBsMassCB1,pdfSigBsMassCB3,pdfSigBsMassCB2),RooArgList(parSigMassCBFraction,parSigMassCBFraction2));
+  // RooGaussian       pdfSigBsMass("pdfSigBsMass","Bs Mass PDF",obsMass,parSigBsMassMean,parSigMassSigma);
 
   // Bd --> D*+ D- with D*+ --> D+ pi0 Background
   RooRealVar        parBkgDstDLowMassMean("parBkgDstDLowMassMean","Mean Mass",5060,5050,5070,"MeV/c^{2}");
@@ -334,9 +393,19 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
   RooRealVar        parBkgExponent_Kpipi("parBkgExponent_Kpipi","parBkgExponent_Kpipi",-0.001,-1,1);
-  RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
+  // RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
   RooRealVar        parBkgExponent_KKpi("parBkgExponent_KKpi","parBkgExponent_KKpi",-0.001,-1,1);
-  RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
+  // RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
+
+  // Build Chebychev polynomial p.d.f.
+  RooRealVar        a0_Kpipi("a0_Kpipi","a0_Kpipi",-0.7,-1.,1.);
+  RooRealVar        a1_Kpipi("a1_Kpipi","a1_Kpipi",0.03,-1.,1.);
+  RooRealVar        a2_Kpipi("a2_Kpipi","a2_Kpipi",-0.07,-1.,1.);
+  RooChebychev      pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","Background",obsMass,RooArgSet(a0_Kpipi,a1_Kpipi,a2_Kpipi));
+  RooRealVar        a0_KKpi("a0_KKpi","a0_KKpi",-0.5,-1.,1.);
+  RooRealVar        a1_KKpi("a1_KKpi","a1_KKpi",0.18,-1.,1.);
+  RooRealVar        a2_KKpi("a2_KKpi","a2_KKpi",-0.04,-1.,1.);
+  RooChebychev      pdfBkgMass_KKpi("pdfBkgMass_KKpi","Background",obsMass,RooArgSet(a0_KKpi,a1_KKpi,a2_KKpi));
 
   RooRealVar        parSigYield_11_Kpipi("parSigYield_11_Kpipi","N_{B^{0}_{d}}^{11,K#pi#pi}",500,0,1000);
   RooRealVar        parSigYield_12_Kpipi("parSigYield_12_Kpipi","N_{B^{0}_{d}}^{12,K#pi#pi}",500,0,1000);
@@ -499,6 +568,8 @@ int main(int argc, char * argv[]){
   }
   else  pdfMass = new RooAddPdf("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfBkgDsDExtend,pdfSigBsExtend,pdfBkgExtend,/*pdfBkgDstDExtend,*/pdfBkgBsDsDExtend/*,pdfBkgBsDstDExtend*/));
 
+//=========================================================================================================================================================================================================================
+
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
   RooRealVar          parSigTimeTauMean("parSigTimeTauMean","#tau",1.519);
@@ -639,12 +710,12 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{1}}",0.007);  // B+ value 0.012   Kstar 0.024
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",-0.102);
-  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",0.036);
-  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_OS("parSigEtaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between p0 and Delta p1 OS",0.001);
-  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",-0.002);
-  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",-0.037);
-  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.059);
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",0.15);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",-0.013);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_OS("parSigEtaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between p0 and Delta p1 OS",0.008);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",0.007);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",-0.024);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.086);
 
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
@@ -658,12 +729,12 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{1}}",0.064);
   if (SS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
 
-  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.053);
-  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",0.013);
-  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",-0.009);
-  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",-0.009);
-  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",0.015);
-  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.025);
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.052);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",0.025);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",-0.007);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",-0.006);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",0.022);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.02);
 
   RooRealVar          parSigEtaMean_SS("parSigEtaMean_SS","Mean on per-event mistag",0.42484);
 
@@ -853,7 +924,7 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","minimize"))));
+  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","migrad"))));
   if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
   if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
@@ -1218,24 +1289,6 @@ int main(int argc, char * argv[]){
     Time.set_scaletype_y(kLogarithmic);
     /*if (!pereventresolution)*/  Time.PlotIt();
   }
-  if (mistag_histograms) {
-    TFile* file_mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","recreate");
-    EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
-    TTree&            tree = tuple.tree();
-    TH1D* hist_Sig_OS_eta = new TH1D("hist_Sig_OS_eta","hist_Sig_OS_eta",100,0,0.5);
-    tree.Draw(TString(obsEtaOS.GetName())+">>hist_Sig_OS_eta",TString(cut+"*SigWeight"));
-    TH1D* hist_Sig_SS_eta = new TH1D("hist_Sig_SS_eta","hist_Sig_SS_eta",100,0,0.5);
-    tree.Draw(TString(obsEtaSS.GetName())+">>hist_Sig_SS_eta",TString(cut+"*SigWeight"));
-    TH1D* hist_Bkg_OS_eta = new TH1D("hist_Bkg_OS_eta","hist_Bkg_OS_eta",100,0,0.5);
-    tree.Draw(TString(obsEtaOS.GetName())+">>hist_Bkg_OS_eta",TString(cut+"*(1-SigWeight)"));
-    TH1D* hist_Bkg_SS_eta = new TH1D("hist_Bkg_SS_eta","hist_Bkg_SS_eta",100,0,0.5);
-    tree.Draw(TString(obsEtaSS.GetName())+">>hist_Bkg_SS_eta",TString(cut+"*(1-SigWeight)"));
-    hist_Sig_OS_eta->Write();
-    hist_Sig_SS_eta->Write();
-    hist_Bkg_OS_eta->Write();
-    hist_Bkg_SS_eta->Write();
-    file_mistag_histograms->Close();
-  }
   if (plot_acceptance) {
     TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
     RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
@@ -1246,24 +1299,6 @@ int main(int argc, char * argv[]){
     }
     else PlotAcceptance(&accspline, read_in_fit_result);
     fitresultfile.Close();
-  }
-  if (plot_correlation_matrix) {
-    TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
-    RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
-    doofit::plotting::correlations::CorrelationPlot cplot(*read_in_fit_result);
-    cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
-  }
-  if (plot_mass_distribution) {
-    PlotConfig cfg_plot_mass("cfg_plot_mass");
-    cfg_plot_mass.InitializeOptions();
-    cfg_plot_mass.set_plot_directory("/home/fmeier/storage03/b02dd/run/Mass/Plots/"+config.getString("identifier"));
-    cfg_plot_mass.set_simultaneous_plot_all_categories(true);
-    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
-    // cfg_plot_mass.set_y_axis_label("Kandidaten");
-    Plot Mass(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
-    Mass.set_scaletype_x(kLinear);
-    Mass.set_scaletype_y(kBoth);
-    Mass.PlotIt();
   }
 
   return 0;

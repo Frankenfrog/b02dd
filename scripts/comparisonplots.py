@@ -48,7 +48,7 @@ def create_input_dicts(config):
             pass
 
         input_dict = {
-            'name':   input_sec.lstrip('input.'),
+            'name':   input_sec.replace('input.',''),
             'file':   tfile,
             'tree':   ttree,
             'weight': config.get(input_sec, 'weight_branch'),
@@ -68,7 +68,7 @@ def create_plot_dicts(config, input_dicts):
         x_range_min = config.getfloat(plot_sec, 'x_range_min')
         x_range_max = config.getfloat(plot_sec, 'x_range_max')
         if x_range_min >= x_range_max:
-            print("Range definition for plot " + name + " is strange. Min >= Max.")
+            print("Range definition for " + plot_sec + " is strange. Min >= Max.")
         cuts = {}
         binnings = {}
         branches = {}
@@ -239,9 +239,6 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
     hist1 = hist_array[1]
     hist0.Draw("E1")
     hist1.Draw("E1 Same")
-
-
-
 
     canvaswpulls.cd(2)
 
@@ -417,7 +414,7 @@ def create_x_axis_label(x_title, x_unit):
 def create_y_axis_label(x_range_min, x_range_max, binning, x_unit):
     bin_width_label = get_bin_width_label(x_range_min, x_range_max, binning)
     if x_unit:
-        bin_width_label += " (" + x_unit + ")"
+        bin_width_label = " (" + bin_width_label + " " + x_unit + ")"
     return "Candidates / " + bin_width_label
 
 

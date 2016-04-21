@@ -15,6 +15,7 @@ add_executable(FitterValidation FitterValidation.cpp)
 add_executable(Sim09Comparisons Sim09Comparisons.cpp)
 add_executable(Efficiencies Efficiencies.cpp)
 add_executable(VetoCuts VetoCuts.cpp)
+add_executable(DecayTimeAcceptanceKnots DecayTimeAcceptanceKnots.cpp)
 
 # Aliases for module libs
 
@@ -31,3 +32,4 @@ target_link_libraries(FitterValidation ${ALL_LIBRARIES})
 target_link_libraries(Sim09Comparisons ${ALL_LIBRARIES})
 target_link_libraries(Efficiencies ${ALL_LIBRARIES})
 target_link_libraries(VetoCuts ${ALL_LIBRARIES})
+target_link_libraries(DecayTimeAcceptanceKnots ${ALL_LIBRARIES})
