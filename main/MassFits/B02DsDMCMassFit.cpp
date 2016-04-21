@@ -74,6 +74,7 @@ int main(int argc, char * argv[]){
   RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
   catDDFinalStateParticles.defineType("Kpipi",1);
   catDDFinalStateParticles.defineType("KKpi",0);
+  RooRealVar        BDTwPIDs_classifier("BDT_wPIDs_LowMass_Kpipi_classifier","BDT_wPIDs_LowMass_Kpipi_classifier",-1,1);
 
   RooCategory       catBkg("catBkg","catBkg");
   catBkg.defineType("Signal",0);
@@ -85,7 +86,7 @@ int main(int argc, char * argv[]){
   RooCategory       idxPV("idxPV","idxPV");
   idxPV.defineType("best PV",0);
 
-  RooArgSet         observables(obsMass,"observables");
+  RooArgSet         observables(obsMass,BDTwPIDs_classifier,"observables");
   RooArgSet         categories(catDDFinalState,catDDFinalStateParticles,idxPV,catBkg,"categories");
 
   // Get data set

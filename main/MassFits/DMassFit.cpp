@@ -79,8 +79,8 @@ int main(int argc, char * argv[]){
   }
   doocore::config::EasyConfig config(argv[1]);
 
-  RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),TString(config.getString("observable_title_DauOne")),1845,1895,"MeV/c^{2}");
-  RooRealVar        obsMassDauTwo(TString(config.getString("observable_name_DauTwo")),TString(config.getString("observable_title_DauTwo")),1845,1895,"MeV/c^{2}");
+  RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),TString(config.getString("observable_title_DauOne")),1825,1915,"MeV/c^{2}");
+  RooRealVar        obsMassDauTwo(TString(config.getString("observable_name_DauTwo")),TString(config.getString("observable_title_DauTwo")),1825,1915,"MeV/c^{2}");
   RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5150,5500,"MeV/c^{2}");
 
   RooRealVar        varDMinTauSignificance("varDMinTauSignificance","varDMinTauSignificance",0,1000);

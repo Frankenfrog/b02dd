@@ -15,10 +15,10 @@ parResSigmaCorrectionFactor1  =  1.000 C
 parResSigmaCorrectionFactor2  =  1.000 C
 parResFraction2				  =  0.500 C
 
-parSigTimeAccCSpline1 =  0.73  L(0 - 2)
-parSigTimeAccCSpline2 =  0.94  L(0 - 2)
-parSigTimeAccCSpline3 =  1     C L(0 - 2)
-parSigTimeAccCSpline4 =  0.992 L(0 - 2)
+parSigTimeAccCSpline1 =  0.63  L(0 - 2)
+parSigTimeAccCSpline2 =  0.84  L(0 - 2)
+parSigTimeAccCSpline3 =  0.9   L(0 - 2)
+parSigTimeAccCSpline4 =  0.9   C L(0 - 2)
 
 // parSigTimeAccCSpline1 =  0.73 L(0 - 2)
 // parSigTimeAccCSpline2 =  0.8  L(0 - 2)
