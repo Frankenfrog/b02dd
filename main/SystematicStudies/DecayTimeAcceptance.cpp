@@ -54,6 +54,7 @@
 #include "P2VV/RooCubicSplineKnot.h"
 #include "P2VV/RooAbsGaussModelEfficiency.h"
 #include "P2VV/RooGaussEfficiencyModel.h"
+#include "P2VV/RooEffResModel.h"
 #include "P2VV/RooEffResAddModel.h"
 #include "doofit/roofit/functions/LinearFunctionWithOffset.h"
 #include "doofit/roofit/functions/CPCoefficient.h"
@@ -192,6 +193,14 @@ int main(int argc, char * argv[]){
 //=========================================================================================================================================================================================================================
 
 // Decay Time Acceptance in Generation
+  TFile* file_acceptance_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_DecayTimeAcceptance.root","read");
+  TH1D* hist_acceptance_Kpipi = dynamic_cast<TH1D*>(file_acceptance_histograms->Get("hist_acceptance_Kpipi"));
+  TH1D* hist_acceptance_KKpi = dynamic_cast<TH1D*>(file_acceptance_histograms->Get("hist_acceptance_KKpi"));
+  RooDataHist DataHist_Sig_Acceptance_Kpipi("DataHist_Sig_Acceptance_Kpipi","DataHist_Sig_Acceptance_Kpipi",obsTime,hist_acceptance_Kpipi);
+  RooDataHist DataHist_Sig_Acceptance_KKpi("DataHist_Sig_Acceptance_KKpi","DataHist_Sig_Acceptance_KKpi",obsTime,hist_acceptance_KKpi);
+  RooHistPdf HistPdf_Sig_Acceptance_Kpipi("HistPdf_Sig_Acceptance_Kpipi","HistPdf_Sig_Acceptance_Kpipi",obsTime,DataHist_Sig_Acceptance_Kpipi);
+  RooHistPdf HistPdf_Sig_Acceptance_KKpi("HistPdf_Sig_Acceptance_KKpi","HistPdf_Sig_Acceptance_KKpi",obsTime,DataHist_Sig_Acceptance_KKpi);
+
   std::vector<double> knots_generate;
   knots_generate += 0.8;
   knots_generate += 2.0;
@@ -205,10 +214,18 @@ int main(int argc, char * argv[]){
   }
   RooCubicSplineFun       accspline_generate_Kpipi("accspline_generate_Kpipi","Spline Acceptance",obsTime,knots_generate,listofsplinecoefficients_generate_Kpipi);
   RooResolutionModel*     efficiencymodel_generate_Kpipi;
-  RooGaussEfficiencyModel efficiencymodel1_generate_Kpipi("efficiencymodel1_generate_Kpipi","Gaussefficiencymodel 1",obsTime,accspline_generate_Kpipi,parResMean,parResSigmaCorrection1);
-  RooGaussEfficiencyModel efficiencymodel2_generate_Kpipi("efficiencymodel2_generate_Kpipi","Gaussefficiencymodel 2",obsTime,accspline_generate_Kpipi,parResMean,parResSigmaCorrection2);
-  RooGaussEfficiencyModel efficiencymodel3_generate_Kpipi("efficiencymodel3_generate_Kpipi","Gaussefficiencymodel 3",obsTime,accspline_generate_Kpipi,parResMean,parResSigma_wrongPV);
-  if (!pereventresolution) efficiencymodel_generate_Kpipi = new RooGaussEfficiencyModel("efficiencymodel_generate_Kpipi","Gaussefficiencymodel",obsTime,accspline_generate_Kpipi,parResMean,RooConst(0.05));
+  // RooGaussEfficiencyModel efficiencymodel1_generate_Kpipi("efficiencymodel1_generate_Kpipi","Gaussefficiencymodel 1",obsTime,HistPdf_Sig_Acceptance_Kpipi,parResMean,parResSigmaCorrection1);
+  // RooGaussEfficiencyModel efficiencymodel2_generate_Kpipi("efficiencymodel2_generate_Kpipi","Gaussefficiencymodel 2",obsTime,HistPdf_Sig_Acceptance_Kpipi,parResMean,parResSigmaCorrection2);
+  // RooGaussEfficiencyModel efficiencymodel3_generate_Kpipi("efficiencymodel3_generate_Kpipi","Gaussefficiencymodel 3",obsTime,HistPdf_Sig_Acceptance_Kpipi,parResMean,parResSigma_wrongPV);
+  RooGaussModel           gaussmodel1_generate_Kpipi("gaussmodel1_generate_Kpipi","Gaussmodel 1",obsTime,parResMean,parResSigmaCorrection1);
+  RooGaussModel           gaussmodel2_generate_Kpipi("gaussmodel2_generate_Kpipi","Gaussmodel 2",obsTime,parResMean,parResSigmaCorrection2);
+  RooGaussModel           gaussmodel3_generate_Kpipi("gaussmodel3_generate_Kpipi","Gaussmodel 3",obsTime,parResMean,parResSigma_wrongPV);
+  RooEffResModel          efficiencymodel1_generate_Kpipi("efficiencymodel1_generate_Kpipi","Gaussefficiencymodel 1",gaussmodel1_generate_Kpipi,HistPdf_Sig_Acceptance_Kpipi);
+  RooEffResModel          efficiencymodel2_generate_Kpipi("efficiencymodel2_generate_Kpipi","Gaussefficiencymodel 2",gaussmodel2_generate_Kpipi,HistPdf_Sig_Acceptance_Kpipi);
+  RooEffResModel          efficiencymodel3_generate_Kpipi("efficiencymodel3_generate_Kpipi","Gaussefficiencymodel 3",gaussmodel3_generate_Kpipi,HistPdf_Sig_Acceptance_Kpipi);
+  // if (!pereventresolution) efficiencymodel_generate_Kpipi = new RooGaussEfficiencyModel("efficiencymodel_generate_Kpipi","Gaussefficiencymodel",obsTime,HistPdf_Sig_Acceptance_Kpipi,parResMean,RooConst(0.05));
+  RooGaussModel           gaussmodel_generate_Kpipi("gaussmodel_generate_Kpipi","Gaussmodel",obsTime,parResMean,RooConst(0.05));
+  if (!pereventresolution) efficiencymodel_generate_Kpipi = new RooEffResModel("efficiencymodel_generate_Kpipi","Gaussefficiencymodel",gaussmodel_generate_Kpipi,HistPdf_Sig_Acceptance_Kpipi);
   else efficiencymodel_generate_Kpipi = new RooEffResAddModel("efficiencymodel_generate_Kpipi","Per event resolution efficiency model",RooArgList(efficiencymodel3_generate_Kpipi,efficiencymodel2_generate_Kpipi,efficiencymodel1_generate_Kpipi),RooArgList(parResFraction_wrongPV,parResFraction2));
 
   RooArgList        listofsplinecoefficients_generate_KKpi("listofsplinecoefficients_generate_KKpi");
@@ -220,10 +237,18 @@ int main(int argc, char * argv[]){
   }
   RooCubicSplineFun       accspline_generate_KKpi("accspline_generate_KKpi","Spline Acceptance",obsTime,knots_generate,listofsplinecoefficients_generate_KKpi);
   RooResolutionModel*     efficiencymodel_generate_KKpi;
-  RooGaussEfficiencyModel efficiencymodel1_generate_KKpi("efficiencymodel1_generate_KKpi","Gaussefficiencymodel 1",obsTime,accspline_generate_KKpi,parResMean,parResSigmaCorrection1);
-  RooGaussEfficiencyModel efficiencymodel2_generate_KKpi("efficiencymodel2_generate_KKpi","Gaussefficiencymodel 2",obsTime,accspline_generate_KKpi,parResMean,parResSigmaCorrection2);
-  RooGaussEfficiencyModel efficiencymodel3_generate_KKpi("efficiencymodel3_generate_KKpi","Gaussefficiencymodel 3",obsTime,accspline_generate_KKpi,parResMean,parResSigma_wrongPV);
-  if (!pereventresolution) efficiencymodel_generate_KKpi = new RooGaussEfficiencyModel("efficiencymodel_generate_KKpi","Gaussefficiencymodel",obsTime,accspline_generate_KKpi,parResMean,RooConst(0.05));
+  // RooGaussEfficiencyModel efficiencymodel1_generate_KKpi("efficiencymodel1_generate_KKpi","Gaussefficiencymodel 1",obsTime,HistPdf_Sig_Acceptance_KKpi,parResMean,parResSigmaCorrection1);
+  // RooGaussEfficiencyModel efficiencymodel2_generate_KKpi("efficiencymodel2_generate_KKpi","Gaussefficiencymodel 2",obsTime,HistPdf_Sig_Acceptance_KKpi,parResMean,parResSigmaCorrection2);
+  // RooGaussEfficiencyModel efficiencymodel3_generate_KKpi("efficiencymodel3_generate_KKpi","Gaussefficiencymodel 3",obsTime,HistPdf_Sig_Acceptance_KKpi,parResMean,parResSigma_wrongPV);
+  // if (!pereventresolution) efficiencymodel_generate_KKpi = new RooGaussEfficiencyModel("efficiencymodel_generate_KKpi","Gaussefficiencymodel",obsTime,HistPdf_Sig_Acceptance_KKpi,parResMean,RooConst(0.05));
+  RooGaussModel           gaussmodel1_generate_KKpi("gaussmodel1_generate_KKpi","Gaussmodel 1",obsTime,parResMean,parResSigmaCorrection1);
+  RooGaussModel           gaussmodel2_generate_KKpi("gaussmodel2_generate_KKpi","Gaussmodel 2",obsTime,parResMean,parResSigmaCorrection2);
+  RooGaussModel           gaussmodel3_generate_KKpi("gaussmodel3_generate_KKpi","Gaussmodel 3",obsTime,parResMean,parResSigma_wrongPV);
+  RooEffResModel          efficiencymodel1_generate_KKpi("efficiencymodel1_generate_KKpi","Gaussefficiencymodel 1",gaussmodel1_generate_KKpi,HistPdf_Sig_Acceptance_KKpi);
+  RooEffResModel          efficiencymodel2_generate_KKpi("efficiencymodel2_generate_KKpi","Gaussefficiencymodel 2",gaussmodel2_generate_KKpi,HistPdf_Sig_Acceptance_KKpi);
+  RooEffResModel          efficiencymodel3_generate_KKpi("efficiencymodel3_generate_KKpi","Gaussefficiencymodel 3",gaussmodel3_generate_KKpi,HistPdf_Sig_Acceptance_KKpi);
+  RooGaussModel           gaussmodel_generate_KKpi("gaussmodel_generate_KKpi","Gaussmodel",obsTime,parResMean,RooConst(0.05));
+  if (!pereventresolution) efficiencymodel_generate_KKpi = new RooEffResModel("efficiencymodel_generate_KKpi","Gaussefficiencymodel",gaussmodel_generate_KKpi,HistPdf_Sig_Acceptance_KKpi);
   else efficiencymodel_generate_KKpi = new RooEffResAddModel("efficiencymodel_generate_KKpi","Per event resolution efficiency model",RooArgList(efficiencymodel3_generate_KKpi,efficiencymodel2_generate_KKpi,efficiencymodel1_generate_KKpi),RooArgList(parResFraction_wrongPV,parResFraction2));
 
 //=========================================================================================================================================================================================================================
@@ -495,7 +520,7 @@ int main(int argc, char * argv[]){
     RooFitResult* fit_result;
     TStopwatch  stopwatch;
     RooDataSet* data_newconstrain_etaOS, *data_newconstrain_etaSS, *data_newconstrain_deltaetaOS, *data_newconstrain_deltaetaSS;
-    for (int i = 0; i < 10 ; ++i) {
+    for (int i = 0; i < 2 ; ++i) {
       cout  <<  i <<  endl;
       try {
         data = tfac.Generate();
