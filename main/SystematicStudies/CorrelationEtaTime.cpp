@@ -78,7 +78,7 @@ int main(int argc, char * argv[]){
   int num_cpu = config.getInt("num_cpu");
   TString method = config.getString("method");
 
-  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5000,5500,"MeV/c^{2}");
+  RooRealVar        obsMass("obsMass","#it{m_{D^{+} D^{-}}}",5150,5500,"MeV/c^{2}");
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEtaOS","#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEtaSS","#eta_{SS}",0.,0.5);
@@ -131,6 +131,7 @@ int main(int argc, char * argv[]){
   RooAddPdf         pdfMass("pdfMass","Mass PDF",RooArgList(pdfSigExtend,pdfSigBsExtend,pdfBkgExtend));
 
 //=========================================================================================================================================================================================================================
+
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
   RooRealVar          parSigTimeTauMean("parSigTimeTauMean","#tau",1.519);
@@ -224,7 +225,6 @@ int main(int argc, char * argv[]){
 //=========================================================================================================================================================================================================================
 
   // Decay Time PDF
-
   RooBDecay  pdfSigTime_OS("pdfSigTime_OS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_OS,parSigTimeSinh,parSigTimeCos_OS,parSigTimeSin_OS,parSigTimeDeltaM,resmodel,RooBDecay::SingleSided);
   RooBDecay  pdfSigTime_SS("pdfSigTime_SS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_SS,parSigTimeSinh,parSigTimeCos_SS,parSigTimeSin_SS,parSigTimeDeltaM,resmodel,RooBDecay::SingleSided);
   RooBDecay  pdfSigTime_BS("pdfSigTime_BS","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_BS,parSigTimeSinh,parSigTimeCos_BS,parSigTimeSin_BS,parSigTimeDeltaM,resmodel,RooBDecay::SingleSided);
@@ -303,8 +303,8 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
     fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
-    fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","minimize"))));
-    fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
+    fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","migrad"))));
+    // fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
     fitting_args.Add((TObject*)(new RooCmdArg(Hesse(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
@@ -313,10 +313,10 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
     RooArgSet set_of_yields;
     set_of_yields.add(RooArgSet(parSigYield,parSigBsYield,parBkgYield));
-    for (int i = 0; i < 50 ; ++i) {
+    for (int i = 0; i < 100 ; ++i) {
       cout  <<  i <<  endl;
       try {
-        TFile out_file("ToyMC.root","RECREATE");
+        // TFile out_file("ToyMC.root","RECREATE");
         TTree tree("ToyMCTreetree","Tree of generation");
         cptoymc.GenerateToy(tree);
         // out_file.Write();
@@ -343,27 +343,27 @@ int main(int argc, char * argv[]){
         data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),TString(catTag.GetName())+"!=0","parSigYield_sw");
         data_sweighted->Print();
         pdfTime.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/CorrelationEtaTime/generation.par");
-        iterator = constrainingPdfs.createIterator();
-        while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/CorrelationEtaTime/generation.par");
-        }
-        parSigEtaDeltaProdMean.setVal(conpdfSigEtaDeltaProd.generate(parSigEtaDeltaProd,1)->get()->getRealValue("parSigEtaDeltaProd"));
-        parSigEtaP0Mean_OS.setVal(conpdfSigEtaP0_OS.generate(parSigEtaP0_OS,1)->get()->getRealValue("parSigEtaP0_OS"));
-        parSigEtaP1Mean_OS.setVal(conpdfSigEtaP1_OS.generate(parSigEtaP1_OS,1)->get()->getRealValue("parSigEtaP1_OS"));
-        parSigEtaDeltaP0Mean_OS.setVal(conpdfSigEtaDeltaP0_OS.generate(parSigEtaDeltaP0_OS,1)->get()->getRealValue("parSigEtaDeltaP0_OS"));
-        parSigEtaDeltaP1Mean_OS.setVal(conpdfSigEtaDeltaP1_OS.generate(parSigEtaDeltaP1_OS,1)->get()->getRealValue("parSigEtaDeltaP1_OS"));
-        parSigEtaP0Mean_SS.setVal(conpdfSigEtaP0_SS.generate(parSigEtaP0_SS,1)->get()->getRealValue("parSigEtaP0_SS"));
-        parSigEtaP1Mean_SS.setVal(conpdfSigEtaP1_SS.generate(parSigEtaP1_SS,1)->get()->getRealValue("parSigEtaP1_SS"));
-        parSigEtaDeltaP0Mean_SS.setVal(conpdfSigEtaDeltaP0_SS.generate(parSigEtaDeltaP0_SS,1)->get()->getRealValue("parSigEtaDeltaP0_SS"));
-        parSigEtaDeltaP1Mean_SS.setVal(conpdfSigEtaDeltaP1_SS.generate(parSigEtaDeltaP1_SS,1)->get()->getRealValue("parSigEtaDeltaP1_SS"));
-        parSigTimeTauMean.setVal(conpdfSigTimeTau.generate(parSigTimeTau,1)->get()->getRealValue("parSigTimeTau"));
-        parSigTimeDeltaMMean.setVal(conpdfSigTimeDeltaM.generate(parSigTimeDeltaM,1)->get()->getRealValue("parSigTimeDeltaM"));
+        // iterator = constrainingPdfs.createIterator();
+        // while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
+        //   constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/CorrelationEtaTime/generation.par");
+        // }
+        // parSigEtaDeltaProdMean.setVal(conpdfSigEtaDeltaProd.generate(parSigEtaDeltaProd,1)->get()->getRealValue("parSigEtaDeltaProd"));
+        // parSigEtaP0Mean_OS.setVal(conpdfSigEtaP0_OS.generate(parSigEtaP0_OS,1)->get()->getRealValue("parSigEtaP0_OS"));
+        // parSigEtaP1Mean_OS.setVal(conpdfSigEtaP1_OS.generate(parSigEtaP1_OS,1)->get()->getRealValue("parSigEtaP1_OS"));
+        // parSigEtaDeltaP0Mean_OS.setVal(conpdfSigEtaDeltaP0_OS.generate(parSigEtaDeltaP0_OS,1)->get()->getRealValue("parSigEtaDeltaP0_OS"));
+        // parSigEtaDeltaP1Mean_OS.setVal(conpdfSigEtaDeltaP1_OS.generate(parSigEtaDeltaP1_OS,1)->get()->getRealValue("parSigEtaDeltaP1_OS"));
+        // parSigEtaP0Mean_SS.setVal(conpdfSigEtaP0_SS.generate(parSigEtaP0_SS,1)->get()->getRealValue("parSigEtaP0_SS"));
+        // parSigEtaP1Mean_SS.setVal(conpdfSigEtaP1_SS.generate(parSigEtaP1_SS,1)->get()->getRealValue("parSigEtaP1_SS"));
+        // parSigEtaDeltaP0Mean_SS.setVal(conpdfSigEtaDeltaP0_SS.generate(parSigEtaDeltaP0_SS,1)->get()->getRealValue("parSigEtaDeltaP0_SS"));
+        // parSigEtaDeltaP1Mean_SS.setVal(conpdfSigEtaDeltaP1_SS.generate(parSigEtaDeltaP1_SS,1)->get()->getRealValue("parSigEtaDeltaP1_SS"));
+        // parSigTimeTauMean.setVal(conpdfSigTimeTau.generate(parSigTimeTau,1)->get()->getRealValue("parSigTimeTau"));
+        // parSigTimeDeltaMMean.setVal(conpdfSigTimeDeltaM.generate(parSigTimeDeltaM,1)->get()->getRealValue("parSigTimeDeltaM"));
         stopwatch.Start(true);
         fit_result = pdfTime.fitTo(*data_sweighted,fitting_args);
         stopwatch.Stop();
         fit_result->Print("v");
         tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
-        delete iterator;
+        // delete iterator;
         delete data_sweighted;
       } catch (...) {
         i--;
