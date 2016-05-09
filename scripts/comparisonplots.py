@@ -42,8 +42,10 @@ def create_input_dicts(config):
             print("Could not open tree " + tree_name + " in file " + file_name)
 
         markertype = 1
+        markersize = 1
         try:
             markertype = config.getint(input_sec, 'marker')
+            markersize = config.getint(input_sec, 'markersize')
         except: 
             pass
 
@@ -55,6 +57,7 @@ def create_input_dicts(config):
             'cut':    config.get(input_sec, 'cut'),
             'colour': config.getint(input_sec, 'colour'),
             'marker': markertype,
+            'markersize': markersize,
             'legend': config.get(input_sec, 'legend')
         }
         input_dicts.append(input_dict)
@@ -78,6 +81,12 @@ def create_plot_dicts(config, input_dicts):
             binnings[input_name] = config.getint(plot_sec, 'binning.' + input_name)
             branches[input_name] = config.get(plot_sec, 'branch.' + input_name)
 
+        legend_right = True
+        try:
+            legend_right = config.getboolean(plot_sec, 'legend_right')
+        except:
+            pass
+
         plot_dict = {
                 'name' :                plot_sec.lstrip('plot.'),
                 'x_range_min':          x_range_min,
@@ -90,7 +99,8 @@ def create_plot_dicts(config, input_dicts):
                 'y_axis_log':           config.getboolean(plot_sec, 'y_axis_log'),
                 'cuts':                 cuts,
                 'branches':             branches,
-                'binnings':             binnings
+                'binnings':             binnings,
+                'legend_right':         legend_right
         }
         plot_dicts.append(plot_dict)
     return plot_dicts
@@ -111,7 +121,11 @@ def create_plot(general_dict, input_dicts, plot_dict):
     pad.SetBottomMargin(0.16)
     pad.SetLogy(plot_dict['y_axis_log'])
 
-    tlegend = TLegend(0.6,0.75,0.9,0.85)
+    legend_xmin = 0.6
+    if not plot_dict['legend_right']:
+        legend_xmin = 0.2
+
+    tlegend = TLegend(legend_xmin,0.75,legend_xmin+0.3,0.85)
     tlegend.SetTextFont(132);
     tlegend.SetEntrySeparation(0.1)  
     
@@ -122,6 +136,7 @@ def create_plot(general_dict, input_dicts, plot_dict):
         cut_complete = create_cut(input_dict['cut'], input_dict['weight'], plot_dict['cuts'][input_name])
         plot_hist(input_dict['tree'],
                   input_name,
+                  plot_name,
                   plot_dict['branches'][input_name],
                   cut_complete,
                   plot_dict['binnings'][input_name],
@@ -134,6 +149,7 @@ def create_plot(general_dict, input_dicts, plot_dict):
                   plot_dict['normalise'],
                   input_dict['colour'],
                   input_dict['marker'],
+                  input_dict['markersize'],
                   input_dict['legend'],
                   hist_array,
                   tlegend)
@@ -219,6 +235,7 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
         cut_complete = create_cut(input_dict['cut'], input_dict['weight'], plot_dict['cuts'][input_name])
         plot_hist(input_dict['tree'],
                   input_name,
+                  plot_name,
                   plot_dict['branches'][input_name],
                   cut_complete,
                   plot_dict['binnings'][input_name],
@@ -231,6 +248,7 @@ def create_plotwpulls(general_dict, input_dicts, plot_dict):
                   plot_dict['normalise'],
                   input_dict['colour'],
                   input_dict['marker'],
+                  input_dict['markersize'],
                   input_dict['legend'],
                   hist_array,
                   tlegend)
@@ -372,15 +390,15 @@ def save_plot(canvas, plot_name, general_dict,suffix=''):
     canvas.SaveAs(save_dir + suffix + '.tex')
 
 
-def plot_hist(tree, input_name, varname, cut, binning,
+def plot_hist(tree, input_name, plot_name, varname, cut, binning,
               x_range_min, x_range_max, x_unit, x_title,
               y_range_min, y_range_max_scale, drawnorm,
-              color, marker, legend_desc,
+              color, marker, markersize, legend_desc,
               hist_list, tlegend):
 
-    hits_name = "hist" + input_name + varname
-    hist = TH1D(hits_name, hits_name, binning, x_range_min, x_range_max)
-    tree.Draw(varname + ">>" + hits_name, cut)
+    hist_name = "hist" + input_name + plot_name
+    hist = TH1D(hist_name, hist_name, binning, x_range_min, x_range_max)
+    tree.Draw(varname + ">>" + hist_name, cut)
 
     if drawnorm:
         norm = hist.GetSumOfWeights()
@@ -390,6 +408,7 @@ def plot_hist(tree, input_name, varname, cut, binning,
     hist.SetLineColor(color)
     hist.SetMarkerColor(color)
     hist.SetMarkerStyle(marker)
+    hist.SetMarkerSize(markersize)
 
     hist.GetXaxis().SetTitle(create_x_axis_label(x_title, x_unit))
     hist.GetYaxis().SetTitle(create_y_axis_label(x_range_min, x_range_max, binning, x_unit))
