@@ -108,7 +108,8 @@ int main(int argc, char * argv[]){
   RooRealVar        parSigDMassMean("parSigDMassMean","D Mean Mass",1870,1860,1880,"MeV/c^{2}");
   RooRealVar        parSigDMassSigma("parSigDMassSigma","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
   RooGaussian       pdfSigDplusMass("pdfSigDplusMass","Signal Mass PDF",obsMassDauOne,parSigDMassMean,parSigDMassSigma);
-  RooGaussian       pdfSigDminusMass("pdfSigDminusMass","Signal Mass PDF",obsMassDauTwo,parSigDMassMean,parSigDMassSigma);
+  RooRealVar        parSigDMassSigma_KKpi("parSigDMassSigma_KKpi","Sigma of Gaussian Mass",8.0,1.0,10.0,"MeV/c^{2}");
+  RooGaussian       pdfSigDminusMass("pdfSigDminusMass","Signal Mass PDF",obsMassDauTwo,parSigDMassMean,parSigDMassSigma_KKpi);
 
   RooRealVar        parBkgDExponent("parBkgDExponent","parBkgDExponent",-0.005,-1,1);
   RooExponential    pdfBkgDplusMass("pdfBkgDplusMass","pdfBkgDplusMass",obsMassDauOne,parBkgDExponent);
@@ -145,6 +146,9 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(false))));
   fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
+
+  obsMassDauOne.setBins(60);
+  obsMassDauTwo.setBins(60);
 
   if (config.getBool("optimize_DtauSignificance")){
     RooDataSet* reduced_data;
