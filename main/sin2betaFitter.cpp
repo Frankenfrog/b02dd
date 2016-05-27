@@ -179,7 +179,7 @@ int main(int argc, char * argv[]){
   catMag.defineType("up",1);
   catMag.defineType("down",-1);
 
-  RooRealVar        BDTwPIDs_classifier("BDT_wPIDs_LowMass_Kpipi_classifier","BDT_wPIDs_LowMass_Kpipi_classifier",-1,1);
+  RooRealVar        BDTwPIDs_classifier("BDT_wProbNNs_noVELO_LowMass_Kpipi_classifier","BDT_wPIDs_LowMass_Kpipi_classifier",-1,1);
   RooRealVar        BDTwPIDs_KKpi_classifier("BDT_wPIDs_LowMass_KKpi_classifier","BDT_wPIDs_LowMass_KKpi_classifier",-1,1);
   RooRealVar        idxRunNumber("idxRunNumber","idxRunNumber",0);
 
@@ -393,19 +393,19 @@ int main(int argc, char * argv[]){
   RooRealVar        parBkgExponent("parBkgExponent","parBkgExponent",-0.1,-1,1);
   RooExponential    pdfBkgMass("pdfBkgMass","pdfBkgMass",obsMass,parBkgExponent);
   RooRealVar        parBkgExponent_Kpipi("parBkgExponent_Kpipi","parBkgExponent_Kpipi",-0.001,-1,1);
-  // RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
+  RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
   RooRealVar        parBkgExponent_KKpi("parBkgExponent_KKpi","parBkgExponent_KKpi",-0.001,-1,1);
-  // RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
+  RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
 
   // Build Chebychev polynomial p.d.f.
   RooRealVar        a0_Kpipi("a0_Kpipi","a0_Kpipi",-0.7,-1.,1.);
   RooRealVar        a1_Kpipi("a1_Kpipi","a1_Kpipi",0.03,-1.,1.);
   RooRealVar        a2_Kpipi("a2_Kpipi","a2_Kpipi",-0.07,-1.,1.);
-  RooChebychev      pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","Background",obsMass,RooArgSet(a0_Kpipi,a1_Kpipi,a2_Kpipi));
+  // RooChebychev      pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","Background",obsMass,RooArgSet(a0_Kpipi,a1_Kpipi,a2_Kpipi));
   RooRealVar        a0_KKpi("a0_KKpi","a0_KKpi",-0.5,-1.,1.);
   RooRealVar        a1_KKpi("a1_KKpi","a1_KKpi",0.18,-1.,1.);
   RooRealVar        a2_KKpi("a2_KKpi","a2_KKpi",-0.04,-1.,1.);
-  RooChebychev      pdfBkgMass_KKpi("pdfBkgMass_KKpi","Background",obsMass,RooArgSet(a0_KKpi,a1_KKpi,a2_KKpi));
+  // RooChebychev      pdfBkgMass_KKpi("pdfBkgMass_KKpi","Background",obsMass,RooArgSet(a0_KKpi,a1_KKpi,a2_KKpi));
 
   RooRealVar        parSigYield_11_Kpipi("parSigYield_11_Kpipi","N_{B^{0}_{d}}^{11,K#pi#pi}",500,0,1000);
   RooRealVar        parSigYield_12_Kpipi("parSigYield_12_Kpipi","N_{B^{0}_{d}}^{12,K#pi#pi}",500,0,1000);
@@ -924,7 +924,7 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","migrad"))));
+  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","minimize"))));
   if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
   if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
