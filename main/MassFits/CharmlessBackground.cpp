@@ -78,8 +78,7 @@ int main(int argc, char * argv[]){
   if (plot_mass_distribution) massfit = false;
   std::string cut = config.getString("cut");
 
-  RooRealVar        obsMass(TString(config.getString("observable_name_BMass")),"#it{m_{K^{-}#pi^{+}#pi^{+} K^{+}#pi^{-}#pi^{-}}}",5150,5500,"MeV/c^{2}");
-  // RooRealVar        obsMass(TString(config.getString("observable_name_BMass")),"#it{m_{KK#pi K#pi#pi}}",5150,5500,"MeV/c^{2}");
+  RooRealVar        obsMass(TString(config.getString("observable_name_BMass")),TString(config.getString("observable_title_BMass")),5150,5500,"MeV/c^{2}");
 
   RooRealVar        obsMassDauOne(TString(config.getString("observable_name_DauOne")),TString(config.getString("observable_title_DauOne")),1829.62,1909.62,"MeV/c^{2}");
   RooRealVar        obsMassDauTwo(TString(config.getString("observable_name_DauTwo")),TString(config.getString("observable_title_DauTwo")),1829.62,1909.62,"MeV/c^{2}");
@@ -204,16 +203,6 @@ int main(int argc, char * argv[]){
   RooExponential    pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","pdfBkgMass_Kpipi",obsMass,parBkgExponent_Kpipi);
   RooRealVar        parBkgExponent_KKpi("parBkgExponent_KKpi","parBkgExponent_KKpi",-0.001,-1,1);
   RooExponential    pdfBkgMass_KKpi("pdfBkgMass_KKpi","pdfBkgMass_KKpi",obsMass,parBkgExponent_KKpi);
-
-  // Build Chebychev polynomial p.d.f.
-  RooRealVar        a0_Kpipi("a0_Kpipi","a0_Kpipi",-0.7,-1.,1.);
-  RooRealVar        a1_Kpipi("a1_Kpipi","a1_Kpipi",0.03,-1.,1.);
-  RooRealVar        a2_Kpipi("a2_Kpipi","a2_Kpipi",-0.07,-1.,1.);
-  // RooChebychev      pdfBkgMass_Kpipi("pdfBkgMass_Kpipi","Background",obsMass,RooArgSet(a0_Kpipi,a1_Kpipi,a2_Kpipi));
-  RooRealVar        a0_KKpi("a0_KKpi","a0_KKpi",-0.5,-1.,1.);
-  RooRealVar        a1_KKpi("a1_KKpi","a1_KKpi",0.18,-1.,1.);
-  RooRealVar        a2_KKpi("a2_KKpi","a2_KKpi",-0.04,-1.,1.);
-  // RooChebychev      pdfBkgMass_KKpi("pdfBkgMass_KKpi","Background",obsMass,RooArgSet(a0_KKpi,a1_KKpi,a2_KKpi));
 
   RooRealVar        parSigYield_11_Kpipi("parSigYield_11_Kpipi","N_{B^{0}_{d}}^{11,K#pi#pi}",500,0,1000);
   RooRealVar        parSigYield_12_Kpipi("parSigYield_12_Kpipi","N_{B^{0}_{d}}^{12,K#pi#pi}",500,0,1000);
