@@ -179,7 +179,7 @@ int main(int argc, char * argv[]){
   catMag.defineType("up",1);
   catMag.defineType("down",-1);
 
-  RooRealVar        BDTwPIDs_classifier("BDT_wProbNNs_noVELO_LowMass_Kpipi_classifier","BDT_wPIDs_LowMass_Kpipi_classifier",-1,1);
+  RooRealVar        BDTwPIDs_classifier("BDT_wPIDs_LowMass_Kpipi_classifier","BDT_wPIDs_LowMass_Kpipi_classifier",-1,1);
   RooRealVar        BDTwPIDs_KKpi_classifier("BDT_wPIDs_LowMass_KKpi_classifier","BDT_wPIDs_LowMass_KKpi_classifier",-1,1);
   RooRealVar        idxRunNumber("idxRunNumber","idxRunNumber",0);
 
@@ -1086,6 +1086,8 @@ int main(int argc, char * argv[]){
             data_bootstrapped_sweighted = new RooDataSet("data_bootstrapped_sweighted","data_bootstrapped_sweighted",data_bootstrapped,*(data_bootstrapped->get()),TString(catTag.GetName())+"!=0","parSigYield_sw");
           }
           data_bootstrapped_sweighted->Print();
+          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
+          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
           stopwatch.Start(true);
           fit_result = pdf->fitTo(*data_bootstrapped_sweighted,fitting_args);
           stopwatch.Stop();
