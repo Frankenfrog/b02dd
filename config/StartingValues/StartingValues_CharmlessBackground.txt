@@ -26,10 +26,10 @@ parBkgDsDMassSigma1     =  18.9   C L(5 - 100) // [MeV/c^{2}]
 parBkgDsDMassSigma2     =  24     C L(5 - 100) // [MeV/c^{2}]
 
 parBkgBsDsDYield     =  0      C L(0 - 1000)
-parBkgDsDYield       =  1      L(0 - 5000)
+parBkgDsDYield       =  1      L(-100 - 5000)
 parBkgYield          =  100    L(0 - 100000)
-parSigBsYield        =  10     L(0 - 2000)
-parSigYield          =  10     L(0 - 2000)
+parSigBsYield        =  10     L(-100 - 2000)
+parSigYield          =  10     L(-100 - 2000)
 
 parBkgBsDsDYield_11     =  0     L(0 - 1000)
 parBkgBsDsDYield_12     =  0     L(0 - 1000)

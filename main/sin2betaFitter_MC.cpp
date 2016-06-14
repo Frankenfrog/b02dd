@@ -492,6 +492,15 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tre
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsTime_True("obsTime_True","#it{t}_{true}",0.25,10.25,"ps");
 
+  TFile* file_acceptance_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_DecayTimeAcceptance.root","recreate");
+  TH1D* hist_acceptance_Kpipi = new TH1D("hist_acceptance_Kpipi","hist_acceptance_Kpipi",100,obsTime.getMin(),obsTime.getMax());
+  tree->Draw("obsTime_True>>hist_acceptance_Kpipi","exp(obsTime_True/1.519)*(idxPV==0&&(catBkg==0||catBkg==50)&&obsTime_True>0.25&&obsTime_True<10.25&&catDDFinalStateParticles==1)");
+  TH1D* hist_acceptance_KKpi = new TH1D("hist_acceptance_KKpi","hist_acceptance_KKpi",100,obsTime.getMin(),obsTime.getMax());
+  tree->Draw("obsTime_True>>hist_acceptance_KKpi","exp(obsTime_True/1.519)*(idxPV==0&&(catBkg==0||catBkg==50)&&obsTime_True>0.25&&obsTime_True<10.25&&catDDFinalStateParticles==0)");
+  hist_acceptance_Kpipi->Write();
+  hist_acceptance_KKpi->Write();
+  file_acceptance_histograms->Close();
+
   TH1D hist_acceptance("hist_acceptance","hist_acceptance",100,obsTime.getMin(),obsTime.getMax());
   tree->Draw("obsTime_True>>hist_acceptance","exp(obsTime_True/1.519)*(idxPV==0&&(catBkg==0||catBkg==50)&&obsTime_True>0.25&&obsTime_True<10.25"+cut+")");
   hist_acceptance.Print();
