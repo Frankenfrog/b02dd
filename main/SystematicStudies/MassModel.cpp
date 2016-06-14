@@ -123,7 +123,6 @@ int main(int argc, char * argv[]){
   catTag.defineType("OS",1);
   catTag.defineType("SS",-1);
   catTag.defineType("both",10);
-  // catTag.defineType("untagged",0);
   RooCategory       catDDFinalStateParticles("catDDFinalStateParticles","catDDFinalStateParticles");
   catDDFinalStateParticles.defineType("Kpipi",1);
   catDDFinalStateParticles.defineType("KKpi",0);
@@ -459,6 +458,8 @@ int main(int argc, char * argv[]){
 
 //========================================================================================================================================================================================================================
 
+  RooArgList      Yields("Yields");
+
   // Signal PDF
   RooProdPdf      pdfSig_11_OS("pdfSig_11_OS","pdfSig_11_OS",RooArgList(pdfSigMass,pdfSigTime_11_OS));
   RooProdPdf      pdfSig_11_SS("pdfSig_11_SS","pdfSig_11_SS",RooArgList(pdfSigMass,pdfSigTime_11_SS));
@@ -479,6 +480,9 @@ int main(int argc, char * argv[]){
   RooRealVar      parSigYield_12_Kpipi_BS("parSigYield_12_Kpipi_BS","parSigYield_12_Kpipi_BS",500,0,1000);
   RooRealVar      parSigYield_11_KKpi_BS("parSigYield_11_KKpi_BS","parSigYield_11_KKpi_BS",500,0,1000);
   RooRealVar      parSigYield_12_KKpi_BS("parSigYield_12_KKpi_BS","parSigYield_12_KKpi_BS",500,0,1000);
+  Yields.add(RooArgSet(parSigYield_11_Kpipi_OS,parSigYield_12_Kpipi_OS,parSigYield_11_KKpi_OS,parSigYield_12_KKpi_OS));
+  Yields.add(RooArgSet(parSigYield_11_Kpipi_SS,parSigYield_12_Kpipi_SS,parSigYield_11_KKpi_SS,parSigYield_12_KKpi_SS));
+  Yields.add(RooArgSet(parSigYield_11_Kpipi_BS,parSigYield_12_Kpipi_BS,parSigYield_11_KKpi_BS,parSigYield_12_KKpi_BS));
 
   RooExtendPdf    pdfSig_11_Kpipi_OS("pdfSig_11_Kpipi_OS","pdfSig_11_Kpipi_OS",pdfSig_11_OS,parSigYield_11_Kpipi_OS);
   RooExtendPdf    pdfSig_11_Kpipi_SS("pdfSig_11_Kpipi_SS","pdfSig_11_Kpipi_SS",pdfSig_11_SS,parSigYield_11_Kpipi_SS);
@@ -510,6 +514,9 @@ int main(int argc, char * argv[]){
   RooRealVar      parSigBsYield_12_Kpipi_BS("parSigBsYield_12_Kpipi_BS","parSigBsYield_12_Kpipi_BS",100,0,1000);
   RooRealVar      parSigBsYield_11_KKpi_BS("parSigBsYield_11_KKpi_BS","parSigBsYield_11_KKpi_BS",100,0,1000);
   RooRealVar      parSigBsYield_12_KKpi_BS("parSigBsYield_12_KKpi_BS","parSigBsYield_12_KKpi_BS",100,0,1000);
+  Yields.add(RooArgSet(parSigBsYield_11_Kpipi_OS,parSigBsYield_12_Kpipi_OS,parSigBsYield_11_KKpi_OS,parSigBsYield_12_KKpi_OS));
+  Yields.add(RooArgSet(parSigBsYield_11_Kpipi_SS,parSigBsYield_12_Kpipi_SS,parSigBsYield_11_KKpi_SS,parSigBsYield_12_KKpi_SS));
+  Yields.add(RooArgSet(parSigBsYield_11_Kpipi_BS,parSigBsYield_12_Kpipi_BS,parSigBsYield_11_KKpi_BS,parSigBsYield_12_KKpi_BS));
 
   RooExtendPdf    pdfSigBs_11_Kpipi_OS("pdfSigBs_11_Kpipi_OS","pdfSigBs_11_Kpipi_OS",pdfSigBs,parSigBsYield_11_Kpipi_OS);
   RooExtendPdf    pdfSigBs_11_Kpipi_SS("pdfSigBs_11_Kpipi_SS","pdfSigBs_11_Kpipi_SS",pdfSigBs,parSigBsYield_11_Kpipi_SS);
@@ -540,6 +547,9 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgDsDYield_12_Kpipi_BS("parBkgDsDYield_12_Kpipi_BS","parBkgDsDYield_12_Kpipi_BS",1000,0,2000);
   RooRealVar      parBkgDsDYield_11_KKpi_BS("parBkgDsDYield_11_KKpi_BS","parBkgDsDYield_11_KKpi_BS",1000,0,2000);
   RooRealVar      parBkgDsDYield_12_KKpi_BS("parBkgDsDYield_12_KKpi_BS","parBkgDsDYield_12_KKpi_BS",1000,0,2000);
+  Yields.add(RooArgSet(parBkgDsDYield_11_Kpipi_OS,parBkgDsDYield_12_Kpipi_OS,parBkgDsDYield_11_KKpi_OS,parBkgDsDYield_12_KKpi_OS));
+  Yields.add(RooArgSet(parBkgDsDYield_11_Kpipi_SS,parBkgDsDYield_12_Kpipi_SS,parBkgDsDYield_11_KKpi_SS,parBkgDsDYield_12_KKpi_SS));
+  Yields.add(RooArgSet(parBkgDsDYield_11_Kpipi_BS,parBkgDsDYield_12_Kpipi_BS,parBkgDsDYield_11_KKpi_BS,parBkgDsDYield_12_KKpi_BS));
 
   RooExtendPdf    pdfBkgDsD_11_Kpipi_OS("pdfBkgDsD_11_Kpipi_OS","pdfBkgDsD_11_Kpipi_OS",pdfBkgDsD,parBkgDsDYield_11_Kpipi_OS);
   RooExtendPdf    pdfBkgDsD_11_Kpipi_SS("pdfBkgDsD_11_Kpipi_SS","pdfBkgDsD_11_Kpipi_SS",pdfBkgDsD,parBkgDsDYield_11_Kpipi_SS);
@@ -569,6 +579,9 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgBsDsDYield_12_Kpipi_BS("parBkgBsDsDYield_12_Kpipi_BS","parBkgBsDsDYield_12_Kpipi_BS",100,0,1000);
   RooRealVar      parBkgBsDsDYield_11_KKpi_BS("parBkgBsDsDYield_11_KKpi_BS","parBkgBsDsDYield_11_KKpi_BS",100,0,1000);
   RooRealVar      parBkgBsDsDYield_12_KKpi_BS("parBkgBsDsDYield_12_KKpi_BS","parBkgBsDsDYield_12_KKpi_BS",100,0,1000);
+  Yields.add(RooArgSet(parBkgBsDsDYield_11_Kpipi_OS,parBkgBsDsDYield_12_Kpipi_OS,parBkgBsDsDYield_11_KKpi_OS,parBkgBsDsDYield_12_KKpi_OS));
+  Yields.add(RooArgSet(parBkgBsDsDYield_11_Kpipi_SS,parBkgBsDsDYield_12_Kpipi_SS,parBkgBsDsDYield_11_KKpi_SS,parBkgBsDsDYield_12_KKpi_SS));
+  Yields.add(RooArgSet(parBkgBsDsDYield_11_Kpipi_BS,parBkgBsDsDYield_12_Kpipi_BS,parBkgBsDsDYield_11_KKpi_BS,parBkgBsDsDYield_12_KKpi_BS));
 
   RooExtendPdf    pdfBkgBsDsD_11_Kpipi_OS("pdfBkgBsDsD_11_Kpipi_OS","pdfBkgBsDsD_11_Kpipi_OS",pdfBkgBsDsD,parBkgBsDsDYield_11_Kpipi_OS);
   RooExtendPdf    pdfBkgBsDsD_12_Kpipi_OS("pdfBkgBsDsD_12_Kpipi_OS","pdfBkgBsDsD_12_Kpipi_OS",pdfBkgBsDsD,parBkgBsDsDYield_12_Kpipi_OS);
@@ -627,6 +640,9 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgBsDstDYield_12_Kpipi_BS("parBkgBsDstDYield_12_Kpipi_BS","parBkgBsDstDYield_12_Kpipi_BS",100,0,1000);
   RooRealVar      parBkgBsDstDYield_11_KKpi_BS("parBkgBsDstDYield_11_KKpi_BS","parBkgBsDstDYield_11_KKpi_BS",100,0,1000);
   RooRealVar      parBkgBsDstDYield_12_KKpi_BS("parBkgBsDstDYield_12_KKpi_BS","parBkgBsDstDYield_12_KKpi_BS",100,0,1000);
+  Yields.add(RooArgSet(parBkgBsDstDYield_11_Kpipi_OS,parBkgBsDstDYield_12_Kpipi_OS,parBkgBsDstDYield_11_KKpi_OS,parBkgBsDstDYield_12_KKpi_OS));
+  Yields.add(RooArgSet(parBkgBsDstDYield_11_Kpipi_SS,parBkgBsDstDYield_12_Kpipi_SS,parBkgBsDstDYield_11_KKpi_SS,parBkgBsDstDYield_12_KKpi_SS));
+  Yields.add(RooArgSet(parBkgBsDstDYield_11_Kpipi_BS,parBkgBsDstDYield_12_Kpipi_BS,parBkgBsDstDYield_11_KKpi_BS,parBkgBsDstDYield_12_KKpi_BS));
 
   RooExtendPdf    pdfBkgBsDstD_11_Kpipi_OS("pdfBkgBsDstD_11_Kpipi_OS","pdfBkgBsDstD_11_Kpipi_OS",pdfBkgBsDstD,parBkgBsDstDYield_11_Kpipi_OS);
   RooExtendPdf    pdfBkgBsDstD_12_Kpipi_OS("pdfBkgBsDstD_12_Kpipi_OS","pdfBkgBsDstD_12_Kpipi_OS",pdfBkgBsDstD,parBkgBsDstDYield_12_Kpipi_OS);
@@ -664,6 +680,9 @@ int main(int argc, char * argv[]){
   RooRealVar      parBkgYield_12_Kpipi_BS("parBkgYield_12_Kpipi_BS","parBkgYield_12_Kpipi_BS",5000,0,10000);
   RooRealVar      parBkgYield_11_KKpi_BS("parBkgYield_11_KKpi_BS","parBkgYield_11_KKpi_BS",5000,0,10000);
   RooRealVar      parBkgYield_12_KKpi_BS("parBkgYield_12_KKpi_BS","parBkgYield_12_KKpi_BS",5000,0,10000);
+  Yields.add(RooArgSet(parBkgYield_11_Kpipi_OS,parBkgYield_12_Kpipi_OS,parBkgYield_11_KKpi_OS,parBkgYield_12_KKpi_OS));
+  Yields.add(RooArgSet(parBkgYield_11_Kpipi_SS,parBkgYield_12_Kpipi_SS,parBkgYield_11_KKpi_SS,parBkgYield_12_KKpi_SS));
+  Yields.add(RooArgSet(parBkgYield_11_Kpipi_BS,parBkgYield_12_Kpipi_BS,parBkgYield_11_KKpi_BS,parBkgYield_12_KKpi_BS));
 
   RooExtendPdf    pdfBkg_11_Kpipi_OS("pdfBkg_11_Kpipi_OS","pdfBkg_11_Kpipi_OS",pdfBkg,parBkgYield_11_Kpipi_OS);
   RooExtendPdf    pdfBkg_11_Kpipi_SS("pdfBkg_11_Kpipi_SS","pdfBkg_11_Kpipi_SS",pdfBkg,parBkgYield_11_Kpipi_SS);
@@ -712,18 +731,34 @@ int main(int argc, char * argv[]){
   RooProdPdf      pdfBkgCharmless_11_BS("pdfBkgCharmless_11_BS","pdfBkgCharmless_11_BS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_11_BS));
   RooProdPdf      pdfBkgCharmless_12_BS("pdfBkgCharmless_12_BS","pdfBkgCharmless_12_BS",RooArgList(pdfBkgCharmlessMass,pdfBkgCharmlessTime_12_BS));
 
-  RooRealVar      parBkgCharmlessYield_11_Kpipi_OS("parBkgCharmlessYield_11_Kpipi_OS","parBkgCharmlessYield_11_Kpipi_OS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_12_Kpipi_OS("parBkgCharmlessYield_12_Kpipi_OS","parBkgCharmlessYield_12_Kpipi_OS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_11_KKpi_OS("parBkgCharmlessYield_11_KKpi_OS","parBkgCharmlessYield_11_KKpi_OS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_12_KKpi_OS("parBkgCharmlessYield_12_KKpi_OS","parBkgCharmlessYield_12_KKpi_OS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_11_Kpipi_SS("parBkgCharmlessYield_11_Kpipi_SS","parBkgCharmlessYield_11_Kpipi_SS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_12_Kpipi_SS("parBkgCharmlessYield_12_Kpipi_SS","parBkgCharmlessYield_12_Kpipi_SS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_11_KKpi_SS("parBkgCharmlessYield_11_KKpi_SS","parBkgCharmlessYield_11_KKpi_SS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_12_KKpi_SS("parBkgCharmlessYield_12_KKpi_SS","parBkgCharmlessYield_12_KKpi_SS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_11_Kpipi_BS("parBkgCharmlessYield_11_Kpipi_BS","parBkgCharmlessYield_11_Kpipi_BS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_12_Kpipi_BS("parBkgCharmlessYield_12_Kpipi_BS","parBkgCharmlessYield_12_Kpipi_BS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_11_KKpi_BS("parBkgCharmlessYield_11_KKpi_BS","parBkgCharmlessYield_11_KKpi_BS",100,0,1000);
-  RooRealVar      parBkgCharmlessYield_12_KKpi_BS("parBkgCharmlessYield_12_KKpi_BS","parBkgCharmlessYield_12_KKpi_BS",100,0,1000);
+  RooRealVar      parBkgCharmlessYield_Kpipi("parBkgCharmlessYield_Kpipi","parBkgCharmlessYield_Kpipi",0);
+  RooRealVar      parBkgCharmlessYield_KKpi("parBkgCharmlessYield_KKpi","parBkgCharmlessYield_KKpi",0);
+  // RooFormulaVar   parBkgCharmlessYield_11_Kpipi_OS("parBkgCharmlessYield_11_Kpipi_OS","parBkgCharmlessYield_11_Kpipi_OS","@0*@1",RooArgList(parBkgCharmlessYield_Kpipi,RooConst(0.027)));
+  // RooFormulaVar   parBkgCharmlessYield_12_Kpipi_OS("parBkgCharmlessYield_12_Kpipi_OS","parBkgCharmlessYield_12_Kpipi_OS","@0*@1",RooArgList(parBkgCharmlessYield_Kpipi,RooConst(0.063)));
+  // RooFormulaVar   parBkgCharmlessYield_11_KKpi_OS("parBkgCharmlessYield_11_KKpi_OS","parBkgCharmlessYield_11_KKpi_OS","@0*@1",RooArgList(parBkgCharmlessYield_KKpi,RooConst(0.027)));
+  // RooFormulaVar   parBkgCharmlessYield_12_KKpi_OS("parBkgCharmlessYield_12_KKpi_OS","parBkgCharmlessYield_12_KKpi_OS","@0*@1",RooArgList(parBkgCharmlessYield_KKpi,RooConst(0.063)));
+  // RooFormulaVar   parBkgCharmlessYield_11_Kpipi_SS("parBkgCharmlessYield_11_Kpipi_SS","parBkgCharmlessYield_11_Kpipi_SS","@0*@1",RooArgList(parBkgCharmlessYield_Kpipi,RooConst(0.168)));
+  // RooFormulaVar   parBkgCharmlessYield_12_Kpipi_SS("parBkgCharmlessYield_12_Kpipi_SS","parBkgCharmlessYield_12_Kpipi_SS","@0*@1",RooArgList(parBkgCharmlessYield_Kpipi,RooConst(0.349)));
+  // RooFormulaVar   parBkgCharmlessYield_11_KKpi_SS("parBkgCharmlessYield_11_KKpi_SS","parBkgCharmlessYield_11_KKpi_SS","@0*@1",RooArgList(parBkgCharmlessYield_KKpi,RooConst(0.168)));
+  // RooFormulaVar   parBkgCharmlessYield_12_KKpi_SS("parBkgCharmlessYield_12_KKpi_SS","parBkgCharmlessYield_12_KKpi_SS","@0*@1",RooArgList(parBkgCharmlessYield_KKpi,RooConst(0.349)));
+  // RooFormulaVar   parBkgCharmlessYield_11_Kpipi_BS("parBkgCharmlessYield_11_Kpipi_BS","parBkgCharmlessYield_11_Kpipi_BS","@0*@1",RooArgList(parBkgCharmlessYield_Kpipi,RooConst(0.12)));
+  // RooFormulaVar   parBkgCharmlessYield_12_Kpipi_BS("parBkgCharmlessYield_12_Kpipi_BS","parBkgCharmlessYield_12_Kpipi_BS","@0*@1",RooArgList(parBkgCharmlessYield_Kpipi,RooConst(0.273)));
+  // RooFormulaVar   parBkgCharmlessYield_11_KKpi_BS("parBkgCharmlessYield_11_KKpi_BS","parBkgCharmlessYield_11_KKpi_BS","@0*@1",RooArgList(parBkgCharmlessYield_KKpi,RooConst(0.12)));
+  // RooFormulaVar   parBkgCharmlessYield_12_KKpi_BS("parBkgCharmlessYield_12_KKpi_BS","parBkgCharmlessYield_12_KKpi_BS","@0*@1",RooArgList(parBkgCharmlessYield_KKpi,RooConst(0.273)));
+  RooRealVar      parBkgCharmlessYield_11_Kpipi_OS("parBkgCharmlessYield_11_Kpipi_OS","parBkgCharmlessYield_11_Kpipi_OS",0.027);
+  RooRealVar      parBkgCharmlessYield_12_Kpipi_OS("parBkgCharmlessYield_12_Kpipi_OS","parBkgCharmlessYield_12_Kpipi_OS",0.063);
+  RooRealVar      parBkgCharmlessYield_11_KKpi_OS("parBkgCharmlessYield_11_KKpi_OS","parBkgCharmlessYield_11_KKpi_OS",0.027);
+  RooRealVar      parBkgCharmlessYield_12_KKpi_OS("parBkgCharmlessYield_12_KKpi_OS","parBkgCharmlessYield_12_KKpi_OS",0.063);
+  RooRealVar      parBkgCharmlessYield_11_Kpipi_SS("parBkgCharmlessYield_11_Kpipi_SS","parBkgCharmlessYield_11_Kpipi_SS",0.168);
+  RooRealVar      parBkgCharmlessYield_12_Kpipi_SS("parBkgCharmlessYield_12_Kpipi_SS","parBkgCharmlessYield_12_Kpipi_SS",0.349);
+  RooRealVar      parBkgCharmlessYield_11_KKpi_SS("parBkgCharmlessYield_11_KKpi_SS","parBkgCharmlessYield_11_KKpi_SS",0.168);
+  RooRealVar      parBkgCharmlessYield_12_KKpi_SS("parBkgCharmlessYield_12_KKpi_SS","parBkgCharmlessYield_12_KKpi_SS",0.349);
+  RooRealVar      parBkgCharmlessYield_11_Kpipi_BS("parBkgCharmlessYield_11_Kpipi_BS","parBkgCharmlessYield_11_Kpipi_BS",0.12);
+  RooRealVar      parBkgCharmlessYield_12_Kpipi_BS("parBkgCharmlessYield_12_Kpipi_BS","parBkgCharmlessYield_12_Kpipi_BS",0.273);
+  RooRealVar      parBkgCharmlessYield_11_KKpi_BS("parBkgCharmlessYield_11_KKpi_BS","parBkgCharmlessYield_11_KKpi_BS",0.12);
+  RooRealVar      parBkgCharmlessYield_12_KKpi_BS("parBkgCharmlessYield_12_KKpi_BS","parBkgCharmlessYield_12_KKpi_BS",0.273);
+  RooArgList      parBkgCharmlessYields_Kpipi(parBkgCharmlessYield_11_Kpipi_OS,parBkgCharmlessYield_12_Kpipi_OS,parBkgCharmlessYield_11_Kpipi_SS,parBkgCharmlessYield_12_Kpipi_SS,parBkgCharmlessYield_11_Kpipi_BS,parBkgCharmlessYield_12_Kpipi_BS);
+  RooArgList      parBkgCharmlessYields_KKpi(parBkgCharmlessYield_11_KKpi_OS,parBkgCharmlessYield_12_KKpi_OS,parBkgCharmlessYield_11_KKpi_SS,parBkgCharmlessYield_12_KKpi_SS,parBkgCharmlessYield_11_KKpi_BS,parBkgCharmlessYield_12_KKpi_BS);
 
   RooExtendPdf    pdfBkgCharmless_11_Kpipi_OS("pdfBkgCharmless_11_Kpipi_OS","pdfBkgCharmless_11_Kpipi_OS",pdfBkgCharmless_11_OS,parBkgCharmlessYield_11_Kpipi_OS);
   RooExtendPdf    pdfBkgCharmless_12_Kpipi_OS("pdfBkgCharmless_12_Kpipi_OS","pdfBkgCharmless_12_Kpipi_OS",pdfBkgCharmless_12_OS,parBkgCharmlessYield_12_Kpipi_OS);
@@ -770,7 +805,7 @@ int main(int argc, char * argv[]){
 
 //========================================================================================================================================================================================================================
 
-  Gaussian_Constraints.readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/generation.par");
+  Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
   pdfTime.Print();
 
   TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
@@ -812,8 +847,8 @@ int main(int argc, char * argv[]){
 
   // Workspace initializing
   RooWorkspace* ws = new RooWorkspace("ws");
-  ws->import(pdf_generate);
-  ws->import(RooArgSet(HistPdf_Sig_OS_eta,HistPdf_Sig_SS_eta,HistPdf_Bkg_OS_eta,HistPdf_Bkg_SS_eta));
+  ws->import(pdf_generate,Silence());
+  ws->import(RooArgSet(HistPdf_Sig_OS_eta,HistPdf_Sig_SS_eta,HistPdf_Bkg_OS_eta,HistPdf_Bkg_SS_eta),Silence());
   ws->defineSet("allobservables",observables);
 
   doofit::config::CommonConfig cfg_com("common");
@@ -837,6 +872,7 @@ int main(int argc, char * argv[]){
 
   RooDataSet* data = NULL;
   RooDataSet* data_sweighted = NULL;
+  TRandom3 random(0);
   PlotConfig cfg_plot("cfg_plot");
   ToyStudyStd tstudy(cfg_com, cfg_tstudy, cfg_plot);
 
@@ -844,6 +880,7 @@ int main(int argc, char * argv[]){
     
     TIterator*  iterator = constrainingPdfs.createIterator();
     RooAbsPdf*  constrainingPdf;
+    RooRealVar*  yield;
     SPlotFit2* splotfit;
     RooFitResult* fit_result;
     TStopwatch  stopwatch;
@@ -876,14 +913,52 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < 5 ; ++i) {
       cout  <<  i <<  endl;
       try {
+        pdf_generate.getParameters(data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
+        parBkgCharmlessYield_KKpi.setVal(random.Gaus(28.7,19.5));
+        cout << parBkgCharmlessYield_KKpi.GetName() << "\t"  <<  parBkgCharmlessYield_KKpi.getVal() <<  endl;
+        while (parBkgCharmlessYield_KKpi.getVal() <= 0.0) {
+          parBkgCharmlessYield_KKpi.setVal(random.Gaus(28.7,19.5));
+          cout << parBkgCharmlessYield_KKpi.GetName() << "\t"  <<  parBkgCharmlessYield_KKpi.getVal() <<  endl;
+        }
+        for (int j = 0; j < parBkgCharmlessYields_KKpi.getSize(); ++j) {
+          yield = dynamic_cast<RooRealVar*>(parBkgCharmlessYields_KKpi.at(j));
+          if (yield->getTitle().EndsWith("11_KKpi_OS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.027*parBkgCharmlessYield_KKpi.getVal());
+          else if (yield->getTitle().EndsWith("12_KKpi_OS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.063*parBkgCharmlessYield_KKpi.getVal());
+          else if (yield->getTitle().EndsWith("11_KKpi_SS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.168*parBkgCharmlessYield_KKpi.getVal());
+          else if (yield->getTitle().EndsWith("12_KKpi_SS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.349*parBkgCharmlessYield_KKpi.getVal());
+          else if (yield->getTitle().EndsWith("11_KKpi_BS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.120*parBkgCharmlessYield_KKpi.getVal());
+          else if (yield->getTitle().EndsWith("12_KKpi_BS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.273*parBkgCharmlessYield_KKpi.getVal());
+          cout << yield->GetName()  <<  "\t"  <<  ((RooRealVar*)ws->arg(yield->GetName()))->getVal() << endl;
+        }
+        parBkgCharmlessYield_Kpipi.setVal(random.Gaus(0.0,27.8));
+        cout << parBkgCharmlessYield_Kpipi.GetName() << "\t"  <<  parBkgCharmlessYield_Kpipi.getVal() <<  endl;
+        while (parBkgCharmlessYield_Kpipi.getVal() <= 0.0) {
+          parBkgCharmlessYield_Kpipi.setVal(random.Gaus(0.0,27.8));
+          cout << parBkgCharmlessYield_Kpipi.GetName() << "\t"  <<  parBkgCharmlessYield_Kpipi.getVal() <<  endl;
+        }
+        for (int j = 0; j < parBkgCharmlessYields_Kpipi.getSize(); ++j) {
+          yield = dynamic_cast<RooRealVar*>(parBkgCharmlessYields_Kpipi.at(j));
+          if (yield->getTitle().EndsWith("11_Kpipi_OS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.027*parBkgCharmlessYield_Kpipi.getVal());
+          else if (yield->getTitle().EndsWith("12_Kpipi_OS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.063*parBkgCharmlessYield_Kpipi.getVal());
+          else if (yield->getTitle().EndsWith("11_Kpipi_SS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.168*parBkgCharmlessYield_Kpipi.getVal());
+          else if (yield->getTitle().EndsWith("12_Kpipi_SS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.349*parBkgCharmlessYield_Kpipi.getVal());
+          else if (yield->getTitle().EndsWith("11_Kpipi_BS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.120*parBkgCharmlessYield_Kpipi.getVal());
+          else if (yield->getTitle().EndsWith("12_Kpipi_BS")) ((RooRealVar*)ws->arg(yield->GetName()))->setVal(0.273*parBkgCharmlessYield_Kpipi.getVal());
+          cout << yield->GetName()  <<  "\t"  <<  ((RooRealVar*)ws->arg(yield->GetName()))->getVal() << endl;
+        }
+        for (int j = 0; j < Yields.getSize(); ++j) {
+          yield = dynamic_cast<RooRealVar*>(Yields.at(j));
+          ((RooRealVar*)ws->arg(yield->GetName()))->setVal(random.PoissonD(yield->getVal()));
+        }
+        // return 1;
         data = tfac.Generate();
         // EasyTuple tuple(*data);
         // tuple.WriteDataSetToTree("testsignalgenerationdatasample.root","TestTree");
-        // pdfMass.getParameters(data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/generation.par");
+        // pdfMass.getParameters(data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         splotfit = new SPlotFit2(pdfMass,*data,set_of_yields);
         splotfit->set_use_minos(false);
         splotfit->set_num_cpu(config.getInt("num_cpu"));
-        splotfit->set_startingvalues("/home/fmeier/storage03/b02dd/Systematics/MassModel/generation.par");
+        splotfit->set_startingvalues("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         RooMsgService::instance().setStreamStatus(0, false);
         RooMsgService::instance().setStreamStatus(1, false);
         stopwatch.Start(true);
@@ -893,13 +968,12 @@ int main(int argc, char * argv[]){
         RooMsgService::instance().setStreamStatus(1, true);
         delete splotfit;
         data->addColumn(sum_of_signal_weights_year_finalstate);
-        // data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year_finalstate");
         data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),"","sum_of_signal_weights_year_finalstate");
         data_sweighted->Print();
-        pdfTime.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/generation.par");
+        pdfTime.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         iterator = constrainingPdfs.createIterator();
         while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/generation.par");
+          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         }
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));

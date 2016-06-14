@@ -8,6 +8,8 @@
 #include "TTree.h"
 #include "TROOT.h"
 #include "TRandom3.h"
+#include "TProfile.h"
+#include "TF1.h"
 
 //from RooFit
 #include "RooCmdArg.h"
@@ -93,7 +95,7 @@ int main(int argc, char * argv[]){
   catTag.defineType("OS",1);
   catTag.defineType("SS",-1);
   catTag.defineType("both",10);
-  catTag.defineType("untagged",0);
+  // catTag.defineType("untagged",0);
 
   RooArgSet         observables(obsTime,obsMass,"observables");
   observables.add(obsEtaOS);
@@ -241,7 +243,7 @@ int main(int argc, char * argv[]){
 
 //========================================================================================================================================================================================================================
 
-  Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
+  Gaussian_Constraints.readFromFile("/home/fmeier/storage03/b02dd/Systematics/CorrelationEtaTime/generation.par");
   pdfTime.Print();
 
   RooArgSet             constrainingPdfs("constrainingPdfs");
@@ -283,6 +285,9 @@ int main(int argc, char * argv[]){
 
   RooDataSet* data = NULL;
   RooDataSet* data_sweighted = NULL;
+  TTree*      tree = NULL;
+  TProfile*   profile = NULL;
+  TF1*        f1 = new TF1("calib","[0] + [1]*(x-[2])",0.29,0.5);
   PlotConfig cfg_plot("cfg_plot");
   ToyStudyStd tstudy(cfg_com, cfg_tstudy, cfg_plot);
   
@@ -313,16 +318,22 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
     RooArgSet set_of_yields;
     set_of_yields.add(RooArgSet(parSigYield,parSigBsYield,parBkgYield));
-    for (int i = 0; i < 100 ; ++i) {
+    for (int i = 0; i < 20 ; ++i) {
       cout  <<  i <<  endl;
       try {
         // TFile out_file("ToyMC.root","RECREATE");
-        TTree tree("ToyMCTreetree","Tree of generation");
-        cptoymc.GenerateToy(tree);
+        tree = new TTree("ToyMCTreetree","Tree of generation");
+        cptoymc.GenerateToy(*tree);
+        // tree->Draw("(obsTagSS!=obsTagTrue):obsEtaSS>>profile(100,0.29,0.5)","catBkg==1&&(catTaggedOSSS==-1||catTaggedOSSS==10)","profile");
+        // profile = (TProfile*)gDirectory->Get("profile");
+        // profile->Print("base");
+        // f1->SetParameters(0.4313,1.00);
+        // f1->FixParameter(2,profile->GetMean(1));
+        // profile->Fit(f1,"N");
         // out_file.Write();
         // out_file.Close();
         // return 1;
-        data = new RooDataSet("data","Toy MC data",&tree, RooArgSet(observables,categories));
+        data = new RooDataSet("data","Toy MC data",tree, RooArgSet(observables,categories));
         data->Print();
         // EasyTuple tuple(*data);
         // tuple.WriteDataSetToTree("testsignalgenerationdatasample.root","TestTree");
@@ -343,6 +354,9 @@ int main(int argc, char * argv[]){
         data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),TString(catTag.GetName())+"!=0","parSigYield_sw");
         data_sweighted->Print();
         pdfTime.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/CorrelationEtaTime/generation.par");
+        // parSigEtaP0_SS.setVal(f1->GetParameter(0));
+        // parSigEtaP1_SS.setVal(f1->GetParameter(1));
+        // parSigEtaMean_SS.setVal(f1->GetParameter(2));
         // iterator = constrainingPdfs.createIterator();
         // while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
         //   constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/CorrelationEtaTime/generation.par");
@@ -365,6 +379,7 @@ int main(int argc, char * argv[]){
         tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
         // delete iterator;
         delete data_sweighted;
+        delete tree;
       } catch (...) {
         i--;
       }
