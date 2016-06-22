@@ -598,12 +598,12 @@ int main(int argc, char * argv[]){
   // OS tags
   RooRealVar          parSigEtaDeltaP0_OS("parSigEtaDeltaP0_OS","#Delta p_{0}^{OS}",0.0140,0.,0.03);
   RooRealVar          parSigEtaDeltaP0Mean_OS("parSigEtaDeltaP0Mean_OS","#bar{#delta p_{0}}",0.0148);
-  RooRealVar          parSigEtaDeltaP0Sigma_OS("parSigEtaDeltaP0Sigma_OS","#sigma_{#bar{#delta p_{0}}}",0.0012);  // B+ value 0.0016  Kstar 0.0031
+  RooRealVar          parSigEtaDeltaP0Sigma_OS("parSigEtaDeltaP0Sigma_OS","#sigma_{#bar{#delta p_{0}}}",0.0012);
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP0Sigma_OS);
 
   RooRealVar          parSigEtaDeltaP1_OS("parSigEtaDeltaP1_OS","#Delta p_{1}^{OS}",0.066,0.,0.1);
   RooRealVar          parSigEtaDeltaP1Mean_OS("parSigEtaDeltaP1Mean_OS","#bar{#delta p_{1}}",0.070);
-  RooRealVar          parSigEtaDeltaP1Sigma_OS("parSigEtaDeltaP1Sigma_OS","#sigma_{#bar{#delta p_{1}}}",0.012);   // B+ value 0.018   Kstar 0.035
+  RooRealVar          parSigEtaDeltaP1Sigma_OS("parSigEtaDeltaP1Sigma_OS","#sigma_{#bar{#delta p_{1}}}",0.012);
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaDeltaP1Sigma_OS);
 
   // SS tags
@@ -702,12 +702,12 @@ int main(int argc, char * argv[]){
   // Tagging calibration
   RooRealVar          parSigEtaP0_OS("parSigEtaP0_OS","p_{0}^{OS}",0.3815,0.0,0.1);
   RooRealVar          parSigEtaP0Mean_OS("parSigEtaP0Mean_OS","#bar{p}_{0}",0.3815);
-  RooRealVar          parSigEtaP0Sigma_OS("parSigEtaP0Sigma_OS","#sigma_{#bar{p}_{0}}",0.0019);   // B+ value 0.0011  Kstar 0.0022
+  RooRealVar          parSigEtaP0Sigma_OS("parSigEtaP0Sigma_OS","#sigma_{#bar{p}_{0}}",0.0019);
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaP0Sigma_OS);
 
   RooRealVar          parSigEtaP1_OS("parSigEtaP1_OS","p_{1}^{OS}",0.978,0.9,1.1);
   RooRealVar          parSigEtaP1Mean_OS("parSigEtaP1Mean_OS","#bar{p}_{1}",0.978);
-  RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{1}}",0.007);  // B+ value 0.012   Kstar 0.024
+  RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{1}}",0.007);
   if (OS_tagging) Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
   RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",0.15);
@@ -904,7 +904,13 @@ int main(int argc, char * argv[]){
     constrainingPdfs.add(conpdfSigTimeDeltaM);
     constrainingPdfs.add(conpdfSigEtaDeltaProd_11);
     if (data->sumEntries("catYear==2012") > 0)  constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
-    if (OS_tagging)  constrainingPdfs.add(conpdfSigEta_OS);
+    if (OS_tagging) {
+      // constrainingPdfs.add(conpdfSigEtaP0_OS);
+      // constrainingPdfs.add(conpdfSigEtaP1_OS);
+      // constrainingPdfs.add(conpdfSigEtaDeltaP0_OS);
+      // constrainingPdfs.add(conpdfSigEtaDeltaP1_OS);
+      constrainingPdfs.add(conpdfSigEta_OS);
+    }
     if (SS_tagging)  constrainingPdfs.add(conpdfSigEta_SS);
   }
   cout  <<  "Constraints added" <<  endl;
@@ -924,7 +930,7 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","minimize"))));
+  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","migrad"))));
   if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
   if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
@@ -1088,6 +1094,7 @@ int main(int argc, char * argv[]){
           data_bootstrapped_sweighted->Print();
           pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
           pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
+          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
           stopwatch.Start(true);
           fit_result = pdf->fitTo(*data_bootstrapped_sweighted,fitting_args);
           stopwatch.Stop();

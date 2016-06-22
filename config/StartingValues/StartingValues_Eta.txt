@@ -51,12 +51,12 @@ parSigEtaDeltaP1_OS      =  0.03   L(-0.3 - 0.3)
 parSigEtaDeltaP1Mean_OS  =  0.03   C
 parSigEtaDeltaP1Sigma_OS =  0.11   C
 parSigEtaMean_OS         =  0.3627 C
-parSigEtaP0_OS           =  0.369  L(0 - 0.4)
+parSigEtaP0_OS           =  0.369  L(0.3 - 0.4)
 parSigEtaP0Mean_OS       =  0.369  C
-parSigEtaP0Sigma_OS      =  0.008  C
+parSigEtaP0Sigma_OS      =  0.0001 C // 0.008
 parSigEtaP1_OS           =  1.07   L(0.8 - 1.3)
 parSigEtaP1Mean_OS       =  1.07   C
-parSigEtaP1Sigma_OS      =  0.07   C
+parSigEtaP1Sigma_OS      =  0.001  C // 0.07
 
 // 2011 only values
 // parSigEtaDeltaP0_SS      = -0.0003 L(-0.02 - 0.02)
