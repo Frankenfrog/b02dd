@@ -922,12 +922,13 @@ int main(int argc, char * argv[]){
           //   hist_eta_min_converged->Fill(data_vector.front());
           //   hist_eta_max_converged->Fill(data_vector.back());
           // }
+          if (fit_result->status() != 3) throw 1;
           fit_result->Print("v");
           tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
           RooAbsReal* nll = pdf->createNLL(*data_bootstrapped,ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)),NumCPU(num_cpu,0),Optimize(0),ExternalConstraints(constrainingPdfs),Offset(config.getBool("offset")));
-          RooPlot* frame = parSigTimeSin2b.frame(Bins(10),Range(0.5,1.));
+          RooPlot* frame = parSigTimeSin2b.frame(Range(parSigTimeSin2b.getVal()-3*parSigTimeSin2b.getError(),parSigTimeSin2b.getVal()+3*parSigTimeSin2b.getError()));
           nll->plotOn(frame, ShiftToZero());
-          RooAbsReal* profile = nll->createProfile(parSigTimeSin2b);
+          RooAbsReal* profile = nll->createProfile(RooArgSet(parSigTimeSin2b,parSigTimeC));
           profile->plotOn(frame,LineColor(2));
           TLatex* label = new TLatex(1,1,"");
           PlotSimple("Likelihoodscan",frame,*label,"/home/fmeier/storage03/b02dd/Bootstrapping/MCTest");
