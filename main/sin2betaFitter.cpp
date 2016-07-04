@@ -103,6 +103,7 @@ int main(int argc, char * argv[]){
   int num_cpu = config.getInt("num_cpu");
   bool pereventresolution = config.getBool("pereventresolution");
   bool cp_fit = config.getBool("cp_fit");
+  bool correct_sweights = config.getBool("correct_sweights");
   TString taggingcategory = config.getString("taggingcategory");
   TString OS_tagger = config.getString("OS_tagger");
   TString SS_tagger = config.getString("SS_tagger");
@@ -229,15 +230,15 @@ int main(int argc, char * argv[]){
     observables.add(obsTagSS);
   }
   RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catDminusFinalState,catDplusFinalState,catMag,"categories");
-  if (decaytimefit || mistag_histograms || timeerr_histograms) categories.add(SigWeight);
+  if (decaytimefit || cp_fit || mistag_histograms || timeerr_histograms) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
-  
+
   // Get data set
   RooDataSet*       data;
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-  else if (decaytimefit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || correct_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+  else if (decaytimefit || cp_fit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
   else if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms || timeerr_histograms)) {
     cout << "What do you want to do? No use case is activated right now!" <<  endl;
     return 0;
@@ -926,7 +927,7 @@ int main(int argc, char * argv[]){
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
-  fitting_args.Add((TObject*)(new RooCmdArg(Minos(config.getBool("minos")))));
+  if (config.getBool("minos")) fitting_args.Add((TObject*)(new RooCmdArg(Minos(minosargset))));
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
@@ -1241,9 +1242,25 @@ int main(int argc, char * argv[]){
   if (decaytimefit) {
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(false))));
     fitting_args.Add((TObject*)(new RooCmdArg(ExternalConstraints(constrainingPdfs))));
-    fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
-    RooFitResult* fit_result = pdf->fitTo(*data,fitting_args);
+    RooFitResult* fit_result;
+    if (correct_sweights) {
+      double sum_weights(0), sum_squared_weights(0);
+      for (int i = 0; i < data->numEntries(); ++i) {
+        data->get(i);
+        sum_weights += data->get()->getRealValue("SigWeight");
+        sum_squared_weights += data->get()->getRealValue("SigWeight")*data->get()->getRealValue("SigWeight");
+      }
+      RooFormulaVar corrected_sweight("corrected_sweight","sweights corrected to enable minos calculations","@0*@1/@2",RooArgList(SigWeight,RooConst(sum_weights),RooConst(sum_squared_weights)));
+      data->addColumn(corrected_sweight);
+      RooDataSet* data_with_corrected_sweight = new RooDataSet("data_with_corrected_sweight","data_with_corrected_sweight",data,*(data->get()),"","corrected_sweight");
+      fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(false))));
+      fit_result = pdf->fitTo(*data_with_corrected_sweight,fitting_args);
+    }
+    else {
+      fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
+      fit_result = pdf->fitTo(*data,fitting_args);
+    }
     pdf->getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     fit_result->Print("v");
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
