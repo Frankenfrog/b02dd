@@ -44,19 +44,19 @@
 // parSigEtaP1Sigma_OS      =  0.09   C
 
 // combined 2011 + 2012 values
-parSigEtaDeltaP0_OS      = -0.009  L(-0.03 - 0.03)
+parSigEtaDeltaP0_OS      = -0.009  C L(-0.03 - 0.03)
 parSigEtaDeltaP0Mean_OS  = -0.009  C
 parSigEtaDeltaP0Sigma_OS =  0.012  C
-parSigEtaDeltaP1_OS      =  0.03   L(-0.3 - 0.3)
+parSigEtaDeltaP1_OS      =  0.03   C L(-0.3 - 0.3)
 parSigEtaDeltaP1Mean_OS  =  0.03   C
 parSigEtaDeltaP1Sigma_OS =  0.11   C
 parSigEtaMean_OS         =  0.3627 C
-parSigEtaP0_OS           =  0.369  L(0.3 - 0.4)
+parSigEtaP0_OS           =  0.369  C L(0.3 - 0.4)
 parSigEtaP0Mean_OS       =  0.369  C
-parSigEtaP0Sigma_OS      =  0.0001 C // 0.008
-parSigEtaP1_OS           =  1.07   L(0.8 - 1.3)
+parSigEtaP0Sigma_OS      =  0.008  C // 0.008
+parSigEtaP1_OS           =  1.07   C L(0.8 - 1.3)
 parSigEtaP1Mean_OS       =  1.07   C
-parSigEtaP1Sigma_OS      =  0.001  C // 0.07
+parSigEtaP1Sigma_OS      =  0.07   C // 0.07
 
 // 2011 only values
 // parSigEtaDeltaP0_SS      = -0.0003 L(-0.02 - 0.02)
@@ -89,16 +89,16 @@ parSigEtaP1Sigma_OS      =  0.001  C // 0.07
 // parSigEtaMean_SS         = 0.4294 C
 
 // combined 2011 + 2012 values
-parSigEtaDeltaP0_SS      = -0.007  L(-0.2 - 0.2)
+parSigEtaDeltaP0_SS      = -0.007  C L(-0.2 - 0.2)
 parSigEtaDeltaP0Mean_SS  = -0.007  C
 parSigEtaDeltaP0Sigma_SS =  0.009  C
-parSigEtaDeltaP1_SS      =  0.07   L(-0.3 - 0.3)
+parSigEtaDeltaP1_SS      =  0.07   C L(-0.3 - 0.3)
 parSigEtaDeltaP1Mean_SS  =  0.07   C
 parSigEtaDeltaP1Sigma_SS =  0.13   C
-parSigEtaP0_SS           =  0.430  L(0.3 - 0.5)
+parSigEtaP0_SS           =  0.430  C L(0.3 - 0.5)
 parSigEtaP0Mean_SS       =  0.430  C
 parSigEtaP0Sigma_SS      =  0.006  C
-parSigEtaP1_SS           =  0.84   L(0.6 - 1.2)
+parSigEtaP1_SS           =  0.84   C L(0.6 - 1.2)
 parSigEtaP1Mean_SS       =  0.84   C
 parSigEtaP1Sigma_SS      =  0.09   C
 parSigEtaMean_SS         =  0.4282 C
