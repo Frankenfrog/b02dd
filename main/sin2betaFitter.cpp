@@ -221,8 +221,8 @@ int main(int argc, char * argv[]){
   observables.add(RooArgSet(varDplusMassHypo_KpiK,varDminusMassHypo_KpiK,varPiTwominus_PID,varPiTwoplus_PID));
   observables.add(RooArgSet(BDTwPIDs_classifier,BDTwPIDs_KKpi_classifier));
   observables.add(idxRunNumber);
-  if (pereventresolution) observables.add(obsTimeErr);
-  if (cp_fit){
+  if (pereventresolution || timeerr_histograms) observables.add(obsTimeErr);
+  if (cp_fit || mistag_histograms){
     observables.add(obsEtaOS);
     observables.add(obsEtaSS);
     observables.add(obsTagOS);
@@ -247,7 +247,7 @@ int main(int argc, char * argv[]){
   }
 
   if (mistag_histograms) {
-    TFile* file_mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","recreate");
+    TFile* file_mistag_histograms = new TFile("/home/fmeier/storage03/b02dd/Histograms/HIST_Eta_Distributions.root","recreate");
     TTree&            tree = tuple.tree();
     TH1D* hist_Sig_OS_eta = new TH1D("hist_Sig_OS_eta","hist_Sig_OS_eta",100,0,0.5);
     tree.Draw(TString(obsEtaOS.GetName())+">>hist_Sig_OS_eta",TString(cut+"*SigWeight"));
@@ -265,7 +265,7 @@ int main(int argc, char * argv[]){
     if (!timeerr_histograms) return 0;
   }
   if (timeerr_histograms) {
-    TFile* file_timeerr_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_TimeErr_Distributions.root","recreate");
+    TFile* file_timeerr_histograms = new TFile("/home/fmeier/storage03/b02dd/Histograms/HIST_TimeErr_Distributions.root","recreate");
     TTree&            tree = tuple.tree();
     TH1D* hist_Sig_timeerr = new TH1D("hist_Sig_timeerr","hist_Sig_timeerr",100,0.005,0.2);
     tree.Draw(TString(obsTimeErr.GetName())+">>hist_Sig_timeerr",TString(cut+"*SigWeight"));
