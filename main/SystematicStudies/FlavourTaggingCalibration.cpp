@@ -222,6 +222,13 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Sigma_OS("parSigEtaP1Sigma_OS","#sigma_{#bar{p}_{1}}",0.007);  // B+ value 0.012   Kstar 0.024
   Gaussian_Constraints.add(parSigEtaP1Sigma_OS);
   
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between p0 and p1 OS",0.15);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_OS("parSigEtaP0DeltaP0CorrelationCoeff_OS","correlation coefficient between p0 and Delta p0 OS",-0.013);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_OS("parSigEtaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between p0 and Delta p1 OS",0.008);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_OS("parSigEtaP1DeltaP0CorrelationCoeff_OS","correlation coefficient between p1 and Delta p0 OS",0.007);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_OS("parSigEtaP1DeltaP1CorrelationCoeff_OS","correlation coefficient between p1 and Delta p1 OS",-0.024);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between Delta p0 and Delta p1 OS",0.086);
+
   RooRealVar          parSigEtaMean_OS("parSigEtaMean_OS","Mean on per-event mistag",0.3786);
 
   RooRealVar          parSigEtaP0_SS("parSigEtaP0_SS","p_{0}^{SS}",0.4228,0.3,0.5);
@@ -233,6 +240,13 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaP1Mean_SS("parSigEtaP1Mean_SS","#bar{p}_{1}",1.011);
   RooRealVar          parSigEtaP1Sigma_SS("parSigEtaP1Sigma_SS","#sigma_{#bar{p}_{1}}",0.064);
   Gaussian_Constraints.add(parSigEtaP1Sigma_SS);
+
+  RooRealVar          parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.052);
+  RooRealVar          parSigEtaP0DeltaP0CorrelationCoeff_SS("parSigEtaP0DeltaP0CorrelationCoeff_SS","correlation coefficient between p0 and Delta p0 SS",0.025);
+  RooRealVar          parSigEtaP0DeltaP1CorrelationCoeff_SS("parSigEtaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between p0 and Delta p1 SS",-0.007);
+  RooRealVar          parSigEtaP1DeltaP0CorrelationCoeff_SS("parSigEtaP1DeltaP0CorrelationCoeff_SS","correlation coefficient between p1 and Delta p0 SS",-0.006);
+  RooRealVar          parSigEtaP1DeltaP1CorrelationCoeff_SS("parSigEtaP1DeltaP1CorrelationCoeff_SS","correlation coefficient between p1 and Delta p1 SS",0.022);
+  RooRealVar          parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.02);
 
   RooRealVar          parSigEtaMean_SS("parSigEtaMean_SS","Mean on per-event mistag",0.42484);
 
@@ -313,14 +327,12 @@ int main(int argc, char * argv[]){
 
   Gaussian_Constraints.readFromFile("/home/fmeier/storage03/b02dd/Systematics/FlavourTaggingCalibration/generation.par");
 
-  RooRealVar            parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS","correlation coefficient between calibration parameters Delta p0 and Delta p1 for OS",0.086);
-  TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
-  RooRealVar            parSigEtaP0P1CorrelationCoeff_OS("parSigEtaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 for OS",0.15);
-  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
-  RooRealVar            parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS("parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS","correlation coefficient between Delta p0 and Delta p1 SS",0.02);
-  TMatrixDSym           covariancematrixSigEtaDelta_SS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
-  RooRealVar            parSigEtaP0P1CorrelationCoeff_SS("parSigEtaP0P1CorrelationCoeff_SS","correlation coefficient between p0 and p1 SS",0.052);
-  TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS);
+  // TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
+  // TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS);
+  // TMatrixDSym           covariancematrixSigEtaDelta_SS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
+  // TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(2, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS);
+  TMatrixDSym           covariancematrixSigEta_OS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_OS, &parSigEtaP1Sigma_OS, &parSigEtaP0P1CorrelationCoeff_OS, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaP0DeltaP0CorrelationCoeff_OS, &parSigEtaP0DeltaP1CorrelationCoeff_OS, &parSigEtaP1DeltaP0CorrelationCoeff_OS, &parSigEtaP1DeltaP1CorrelationCoeff_OS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_OS);
+  TMatrixDSym           covariancematrixSigEta_SS = CreateCovarianceMatrix(4, &parSigEtaP0Sigma_SS, &parSigEtaP1Sigma_SS, &parSigEtaP0P1CorrelationCoeff_SS, &parSigEtaDeltaP0Sigma_SS, &parSigEtaDeltaP1Sigma_SS, &parSigEtaP0DeltaP0CorrelationCoeff_SS, &parSigEtaP0DeltaP1CorrelationCoeff_SS, &parSigEtaP1DeltaP0CorrelationCoeff_SS, &parSigEtaP1DeltaP1CorrelationCoeff_SS, &parSigEtaDeltaP0DeltaP1CorrelationCoeff_SS);
 
   RooArgSet             constrainingPdfs("constrainingPdfs");
   RooGaussian           conpdfSigTimeTau("conpdfSigTimeTau","constraint for #tau",parSigTimeTau,parSigTimeTauMean,parSigTimeTauSigma);
@@ -329,32 +341,30 @@ int main(int argc, char * argv[]){
   RooGaussian           conpdfSigEtaDeltaProd_12("conpdfSigEtaDeltaProd_12","Gaussian Constraint for production asymmetry 2012",parSigEtaDeltaProdOffset,parSigEtaDeltaProdOffsetMean,parSigEtaDeltaProdOffsetSigma);
   RooGaussian           conpdfSigEtaDeltaP0_OS("conpdfSigEtaDeltaP0_OS","conpdfSigEtaDeltaP0_OS",parSigEtaDeltaP0_OS,parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP0Sigma_OS);
   RooGaussian           conpdfSigEtaDeltaP1_OS("conpdfSigEtaDeltaP1_OS","conpdfSigEtaDeltaP1_OS",parSigEtaDeltaP1_OS,parSigEtaDeltaP1Mean_OS,parSigEtaDeltaP1Sigma_OS);
-  RooMultiVarGaussian   conpdfSigEtaDelta_OS("conpdfSigEtaDelta_OS","constraint for Delta p0 and Delta p1 of OS FT calibration",RooArgList(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),RooArgList(parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP1Mean_OS),covariancematrixSigEtaDelta_OS);
   RooGaussian           conpdfSigEtaDeltaP0_SS("conpdfSigEtaDeltaP0_SS","conpdfSigEtaDeltaP0_SS",parSigEtaDeltaP0_SS,parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP0Sigma_SS);
   RooGaussian           conpdfSigEtaDeltaP1_SS("conpdfSigEtaDeltaP1_SS","conpdfSigEtaDeltaP1_SS",parSigEtaDeltaP1_SS,parSigEtaDeltaP1Mean_SS,parSigEtaDeltaP1Sigma_SS);
-  RooMultiVarGaussian   conpdfSigEtaDelta_SS("conpdfSigEtaDelta_SS","constraint for Delta p0 and Delta p1 of SS FT calibration",RooArgList(parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),RooArgList(parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP1Mean_SS),covariancematrixSigEtaDelta_SS);
   RooGaussian           conpdfSigEtaP0_OS("conpdfSigEtaP0_OS","Gaussian Constraint for Offset parameter",parSigEtaP0_OS,parSigEtaP0Mean_OS,parSigEtaP0Sigma_OS);
   RooGaussian           conpdfSigEtaP1_OS("conpdfSigEtaP1_OS","Gaussian Constraint for Scale parameter",parSigEtaP1_OS,parSigEtaP1Mean_OS,parSigEtaP1Sigma_OS);
-  RooMultiVarGaussian   conpdfSigEta_OS("conpdfSigEta_OS","constraint for p0 and p1 of OS FT calibration",RooArgList(parSigEtaP0_OS,parSigEtaP1_OS),RooArgList(parSigEtaP0Mean_OS,parSigEtaP1Mean_OS),covariancematrixSigEta_OS);
+  RooMultiVarGaussian   conpdfSigEta_OS("conpdfSigEta_OS","constraint for p0 and p1 of OS FT calibration",RooArgList(parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),RooArgList(parSigEtaP0Mean_OS,parSigEtaP1Mean_OS,parSigEtaDeltaP0Mean_OS,parSigEtaDeltaP1Mean_OS),covariancematrixSigEta_OS);
   RooGaussian           conpdfSigEtaP0_SS("conpdfSigEtaP0_SS","Gaussian Constraint for Offset parameter",parSigEtaP0_SS,parSigEtaP0Mean_SS,parSigEtaP0Sigma_SS);
   RooGaussian           conpdfSigEtaP1_SS("conpdfSigEtaP1_SS","Gaussian Constraint for Scale parameter",parSigEtaP1_SS,parSigEtaP1Mean_SS,parSigEtaP1Sigma_SS);
-  RooMultiVarGaussian   conpdfSigEta_SS("conpdfSigEta_SS","constraint for SS FT calibration",RooArgList(parSigEtaP0_SS,parSigEtaP1_SS),RooArgList(parSigEtaP0Mean_SS,parSigEtaP1Mean_SS),covariancematrixSigEta_SS);
+  RooMultiVarGaussian   conpdfSigEta_SS("conpdfSigEta_SS","constraint for SS FT calibration",RooArgList(parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),RooArgList(parSigEtaP0Mean_SS,parSigEtaP1Mean_SS,parSigEtaDeltaP0Mean_SS,parSigEtaDeltaP1Mean_SS),covariancematrixSigEta_SS);
 
   constrainingPdfs.add(conpdfSigTimeTau);
   constrainingPdfs.add(conpdfSigTimeDeltaM);
   constrainingPdfs.add(conpdfSigEtaDeltaProd_11);
   constrainingPdfs.add(conpdfSigEtaDeltaProd_12);
-  constrainingPdfs.add(conpdfSigEta_OS);
-  constrainingPdfs.add(conpdfSigEta_SS);
-  constrainingPdfs.add(conpdfSigEtaDelta_OS);
-  constrainingPdfs.add(conpdfSigEtaDelta_SS);
+  // constrainingPdfs.add(conpdfSigEta_OS);
+  // constrainingPdfs.add(conpdfSigEta_SS);
+  // constrainingPdfs.add(conpdfSigEtaDelta_OS);
+  // constrainingPdfs.add(conpdfSigEtaDelta_SS);
 
   cout  <<  "Constraints added" <<  endl;
 
 //========================================================================================================================================================================================================================
 
   // Mistag distributions
-  TFile* mistag_histograms = new TFile("/fhgfs/groups/e5/lhcb/NTuples/B02DD/Histograms/HIST_Eta_Distributions.root","read");
+  TFile* mistag_histograms = new TFile("/home/fmeier/storage03/b02dd/Histograms/HIST_Eta_Distributions.root","read");
   TH1D*    TH1_Sig_OS_eta = dynamic_cast<TH1D*>(mistag_histograms->Get("hist_Sig_OS_eta"));
   TH1D*    TH1_Sig_SS_eta = dynamic_cast<TH1D*>(mistag_histograms->Get("hist_Sig_SS_eta"));
   RooDataHist DataHist_Sig_OS_eta("DataHist_Sig_OS_eta","DataHist_Sig_OS_eta",obsEtaOS,TH1_Sig_OS_eta);
@@ -376,8 +386,8 @@ int main(int argc, char * argv[]){
   while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
     constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/FlavourTaggingCalibration/generation.par");
   }
-  ws->import(constrainingPdfs);
-  ws->defineSet("constrainingPdfs",constrainingPdfs);
+  // ws->import(constrainingPdfs);
+  ws->defineSet("constrainingPdfs",RooArgSet(conpdfSigEtaP0_OS,conpdfSigEtaP1_OS,conpdfSigEtaDeltaP0_OS,conpdfSigEtaDeltaP1_OS,conpdfSigEtaP0_SS,conpdfSigEtaP1_SS,conpdfSigEtaDeltaP0_SS,conpdfSigEtaDeltaP1_SS),true);
 
   doofit::config::CommonConfig cfg_com("common");
   cfg_com.InitializeOptions(argc, argv);
@@ -402,7 +412,8 @@ int main(int argc, char * argv[]){
   ToyStudyStd tstudy(cfg_com, cfg_tstudy, cfg_plot);
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Minos(config.getBool("minos")))));
+  RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
+  if (config.getBool("minos")) fitting_args.Add((TObject*)(new RooCmdArg(Minos(minosargset))));  
   fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
   fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
@@ -419,7 +430,8 @@ int main(int argc, char * argv[]){
     
     RooFitResult* fit_result;
     TStopwatch  stopwatch;
-    RooDataSet* data_newconstrain_etaOS, *data_newconstrain_etaSS, *data_newconstrain_deltaetaOS, *data_newconstrain_deltaetaSS;
+    // RooDataSet* data_newconstrain_etaOS;
+    // RooDataSet* data_newconstrain_etaSS;
     for (int i = 0; i < 10 ; ++i) {
       cout  <<  i <<  endl;
       try {
@@ -431,26 +443,24 @@ int main(int argc, char * argv[]){
         }
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));
-        parSigEtaDeltaP0Mean_OS.setVal(config.getDouble("deltap0_OS"));
-        parSigEtaDeltaP1Mean_OS.setVal(config.getDouble("deltap1_OS"));
-        data_newconstrain_deltaetaOS = conpdfSigEtaDelta_OS.generate(RooArgSet(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS),1);
-        parSigEtaDeltaP0Mean_OS.setVal(data_newconstrain_deltaetaOS->get()->getRealValue("parSigEtaDeltaP0_OS"));
-        parSigEtaDeltaP1Mean_OS.setVal(data_newconstrain_deltaetaOS->get()->getRealValue("parSigEtaDeltaP1_OS"));
-        parSigEtaP0Mean_OS.setVal(config.getDouble("p0_OS"));
-        parSigEtaP1Mean_OS.setVal(config.getDouble("p1_OS"));
-        data_newconstrain_etaOS = conpdfSigEta_OS.generate(RooArgSet(parSigEtaP0_OS,parSigEtaP1_OS),1);
-        parSigEtaP0Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP0_OS"));
-        parSigEtaP1Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP1_OS"));
-        parSigEtaDeltaP0Mean_SS.setVal(config.getDouble("deltap0_SS"));
-        parSigEtaDeltaP1Mean_SS.setVal(config.getDouble("deltap1_SS"));
-        data_newconstrain_deltaetaSS = conpdfSigEtaDelta_SS.generate(RooArgSet(parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS),1);
-        parSigEtaDeltaP0Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP0_SS"));
-        parSigEtaDeltaP1Mean_SS.setVal(data_newconstrain_deltaetaSS->get()->getRealValue("parSigEtaDeltaP1_SS"));
-        parSigEtaP0Mean_SS.setVal(config.getDouble("p0_SS"));
-        parSigEtaP1Mean_SS.setVal(config.getDouble("p1_SS"));
-        data_newconstrain_etaSS = conpdfSigEta_SS.generate(RooArgSet(parSigEtaP0_SS,parSigEtaP1_SS),1);
-        parSigEtaP0Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP0_SS"));
-        parSigEtaP1Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP1_SS"));
+        // parSigEtaDeltaP0Mean_OS.setVal(config.getDouble("deltap0_OS"));
+        // parSigEtaDeltaP1Mean_OS.setVal(config.getDouble("deltap1_OS"));
+        // parSigEtaP0Mean_OS.setVal(config.getDouble("p0_OS"));
+        // parSigEtaP1Mean_OS.setVal(config.getDouble("p1_OS"));
+        // data_newconstrain_etaOS = conpdfSigEta_OS.generate(RooArgSet(parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaP0_OS,parSigEtaP1_OS),1);
+        // parSigEtaDeltaP0Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaDeltaP0_OS"));
+        // parSigEtaDeltaP1Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaDeltaP1_OS"));
+        // parSigEtaP0Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP0_OS"));
+        // parSigEtaP1Mean_OS.setVal(data_newconstrain_etaOS->get()->getRealValue("parSigEtaP1_OS"));
+        // parSigEtaDeltaP0Mean_SS.setVal(config.getDouble("deltap0_SS"));
+        // parSigEtaDeltaP1Mean_SS.setVal(config.getDouble("deltap1_SS"));
+        // parSigEtaP0Mean_SS.setVal(config.getDouble("p0_SS"));
+        // parSigEtaP1Mean_SS.setVal(config.getDouble("p1_SS"));
+        // data_newconstrain_etaSS = conpdfSigEta_SS.generate(RooArgSet(parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaP0_SS,parSigEtaP1_SS),1);
+        // parSigEtaDeltaP0Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaDeltaP0_SS"));
+        // parSigEtaDeltaP1Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaDeltaP1_SS"));
+        // parSigEtaP0Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP0_SS"));
+        // parSigEtaP1Mean_SS.setVal(data_newconstrain_etaSS->get()->getRealValue("parSigEtaP1_SS"));
         parSigTimeTauMean.setVal(conpdfSigTimeTau.generate(parSigTimeTau,1)->get()->getRealValue("parSigTimeTau"));
         parSigTimeDeltaMMean.setVal(conpdfSigTimeDeltaM.generate(parSigTimeDeltaM,1)->get()->getRealValue("parSigTimeDeltaM"));
         stopwatch.Start(true);
@@ -460,10 +470,8 @@ int main(int argc, char * argv[]){
         tstudy.StoreFitResult(fit_result, NULL, &stopwatch);
         delete iterator;
         delete data;
-        delete data_newconstrain_etaOS;
-        delete data_newconstrain_etaSS;
-        delete data_newconstrain_deltaetaOS;
-        delete data_newconstrain_deltaetaSS;
+        // delete data_newconstrain_etaOS;
+        // delete data_newconstrain_etaSS;
       } catch (...) {
         i--;
       }
