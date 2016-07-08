@@ -7,6 +7,8 @@
 #include "TFile.h"
 #include "TROOT.h"
 #include "TRandom3.h"
+#include "TMinuit.h"
+#include "TMarker.h"
 
 //from RooFit
 #include "RooCmdArg.h"
@@ -24,6 +26,7 @@
 #include "RooAddition.h"
 #include "RooWorkspace.h"
 #include "RooProduct.h"
+#include "RooMinuit.h"
 
 // from RooFit PDFs
 #include "RooGaussModel.h"
@@ -47,6 +50,7 @@
 #include "doocore/io/EasyTuple.h"
 #include "doocore/lutils/lutils.h"
 #include "doocore/config/EasyConfig.h"
+#include "doocore/io/Progress.h"
 
 // from DooFit
 #include "P2VV/RooCubicSplineFun.h"
@@ -128,6 +132,14 @@ int main(int argc, char * argv[]){
   bool plot_acceptance = config.getBool("plot_acceptance");
   bool plot_correlation_matrix = config.getBool("plot_correlation_matrix");
   bool plot_mass_distribution = config.getBool("plot_mass_distribution");
+  bool plot_time_distribution = config.getBool("plot_time_distribution");
+  bool plot_asymmetry = config.getBool("plot_asymmetry");
+  bool plot_likelihood = config.getBool("plot_likelihood");
+  if (plot_likelihood) {
+    decaytimefit = true;
+    correct_sweights = true;
+    cp_fit = true;
+  }
   if (mistag_histograms || plot_acceptance || plot_correlation_matrix || plot_mass_distribution || timeerr_histograms) {
     bootstrapping = false;
     massfit = false;
@@ -136,6 +148,7 @@ int main(int argc, char * argv[]){
     massfittervalidation = false;
     if (timeerr_histograms) pereventresolution = true;
   }
+
   std::string cut = config.getString("cut");
   bool more_knots = config.getBool("more_knots");
 
@@ -143,6 +156,8 @@ int main(int argc, char * argv[]){
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsEtaOS("obsEta"+OS_tagger,"#eta_{OS}",0.,0.5);
   RooRealVar        obsEtaSS("obsEta"+SS_tagger,"#eta_{SS}",0.,0.5);
+  RooRealVar        obsEta_B0("obsEta_B0_combined","#eta_{B0}",0.,0.6);
+  RooRealVar        obsEta_B0bar("obsEta_B0bar_combined","#eta_{B0bar}",0.,0.6);
   RooRealVar        obsTimeErr("obsTimeErr","#sigma_{t}",0.005,0.2,"ps");
   RooCategory       obsTagOS("obsTag"+OS_tagger+"_NoZero","Flavour Tag");
   obsTagOS.defineType("B0",1);
@@ -150,6 +165,12 @@ int main(int argc, char * argv[]){
   RooCategory       obsTagSS("obsTag"+SS_tagger+"_NoZero","Flavour Tag");
   obsTagSS.defineType("B0",1);
   obsTagSS.defineType("B0bar",-1);
+  RooCategory       obsTag_combined("obsTag_combined","combined OS + SS tag");
+  obsTag_combined.defineType("B0",1);
+  obsTag_combined.defineType("B0bar",-1);
+  RooCategory       catTagged_combined("catTagged_combined","tagged by combination of OS and SS");
+  catTagged_combined.defineType("tagged",1);
+  catTagged_combined.defineType("untagged",0);
   
   RooCategory       catYear("catYear","year of data taking");
   catYear.defineType("2011",2011);
@@ -229,8 +250,9 @@ int main(int argc, char * argv[]){
     observables.add(obsTagOS);
     observables.add(obsTagSS);
   }
+  if (plot_asymmetry) observables.add(RooArgSet(obsTag_combined,obsEta_B0,obsEta_B0bar,catTagged_combined));
   RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catDminusFinalState,catDplusFinalState,catMag,"categories");
-  if (decaytimefit || cp_fit || mistag_histograms || timeerr_histograms) categories.add(SigWeight);
+  if (decaytimefit || cp_fit || mistag_histograms || timeerr_histograms || plot_time_distribution || plot_asymmetry || plot_likelihood) categories.add(SigWeight);
   RooArgSet         Gaussian_Constraints("Gaussian_Constraints");
 
   // Get data set
@@ -238,12 +260,12 @@ int main(int argc, char * argv[]){
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
   if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || correct_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-  else if (decaytimefit || cp_fit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  else if (decaytimefit || cp_fit || plot_acceptance || plot_asymmetry)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
   else if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms || timeerr_histograms)) {
     cout << "What do you want to do? No use case is activated right now!" <<  endl;
     return 0;
   }
-  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || decaytimefit || plot_acceptance) {
+  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || decaytimefit || plot_acceptance || plot_asymmetry) {
     data->Print();
   }
 
@@ -746,24 +768,24 @@ int main(int argc, char * argv[]){
 
   CPCoefficient     parSigTimeCosh_11_OS("parSigTimeCosh_11_OS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
   CPCoefficient     parSigTimeCosh_12_OS("parSigTimeCosh_12_OS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_OS("parSigTimeSin_11_OS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_OS("parSigTimeSin_12_OS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_OS("parSigTimeCos_11_OS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_OS("parSigTimeCos_12_OS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeSin_11_OS("parSigTimeSin_11_OS",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_OS("parSigTimeSin_12_OS",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_OS("parSigTimeCos_11_OS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_OS("parSigTimeCos_12_OS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
   CPCoefficient     parSigTimeCosh_11_SS("parSigTimeCosh_11_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
   CPCoefficient     parSigTimeCosh_12_SS("parSigTimeCosh_12_SS",RooConst(1.0),obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_SS("parSigTimeSin_11_SS",parSigTimeBlindedSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_SS("parSigTimeSin_12_SS",parSigTimeBlindedSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_SS("parSigTimeCos_11_SS",parSigTimeBlindedC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_SS("parSigTimeCos_12_SS",parSigTimeBlindedC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeSin_11_SS("parSigTimeSin_11_SS",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_SS("parSigTimeSin_12_SS",parSigTimeSin2b,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_SS("parSigTimeCos_11_SS",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_SS("parSigTimeCos_12_SS",parSigTimeC,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
   CPCoefficient     parSigTimeCosh_11_BS("parSigTimeCosh_11_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCosh);
   CPCoefficient     parSigTimeCosh_12_BS("parSigTimeCosh_12_BS",RooConst(1.0),obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCosh);
-  CPCoefficient     parSigTimeSin_11_BS("parSigTimeSin_11_BS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeSin_12_BS("parSigTimeSin_12_BS",parSigTimeBlindedSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
-  CPCoefficient     parSigTimeCos_11_BS("parSigTimeCos_11_BS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
-  CPCoefficient     parSigTimeCos_12_BS("parSigTimeCos_12_BS",parSigTimeBlindedC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeSin_11_BS("parSigTimeSin_11_BS",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeSin_12_BS("parSigTimeSin_12_BS",parSigTimeSin2b,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kSin);
+  CPCoefficient     parSigTimeCos_11_BS("parSigTimeCos_11_BS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_11,CPCoefficient::kCos);
+  CPCoefficient     parSigTimeCos_12_BS("parSigTimeCos_12_BS",parSigTimeC,obsTagOS,parSigEtaP0_OS,parSigEtaP1_OS,parSigEtaMean_OS,obsEtaOS,parSigEtaDeltaP0_OS,parSigEtaDeltaP1_OS,obsTagSS,parSigEtaP0_SS,parSigEtaP1_SS,parSigEtaMean_SS,obsEtaSS,parSigEtaDeltaP0_SS,parSigEtaDeltaP1_SS,parSigEtaDeltaProd_12,CPCoefficient::kCos);
 
 //=========================================================================================================================================================================================================================
 
@@ -928,14 +950,24 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
   if (config.getBool("minos")) fitting_args.Add((TObject*)(new RooCmdArg(Minos(minosargset))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
-  fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","migrad"))));
+  if (!plot_likelihood) fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
+  if (!plot_likelihood) fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
+  if (!plot_likelihood) fitting_args.Add((TObject*)(new RooCmdArg(Timer(true))));
+  if (!plot_likelihood) fitting_args.Add((TObject*)(new RooCmdArg(Minimizer("Minuit2","migrad"))));
   if (cp_fit && !pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS)))));
   if (!cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsTimeErr)))));
   if (cp_fit && pereventresolution) fitting_args.Add((TObject*)(new RooCmdArg(ConditionalObservables(RooArgSet(obsEtaOS,obsEtaSS,obsTimeErr)))));
   fitting_args.Add((TObject*)(new RooCmdArg(Offset(config.getBool("offset")))));
+
+  double sum_weights(0), sum_squared_weights(0);
+  if (correct_sweights) {
+    for (int i = 0; i < data->numEntries(); ++i) {
+      data->get(i);
+      sum_weights += data->get()->getRealValue("SigWeight");
+      sum_squared_weights += data->get()->getRealValue("SigWeight")*data->get()->getRealValue("SigWeight");
+    }
+  }
+  RooFormulaVar corrected_sweight("corrected_sweight","sweights corrected to enable minos calculations","@0*@1/@2",RooArgList(SigWeight,RooConst(sum_weights),RooConst(sum_squared_weights)));
 
   if (massfittervalidation) {
 
@@ -1245,17 +1277,298 @@ int main(int argc, char * argv[]){
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(0))));
     RooFitResult* fit_result;
     if (correct_sweights) {
-      double sum_weights(0), sum_squared_weights(0);
-      for (int i = 0; i < data->numEntries(); ++i) {
-        data->get(i);
-        sum_weights += data->get()->getRealValue("SigWeight");
-        sum_squared_weights += data->get()->getRealValue("SigWeight")*data->get()->getRealValue("SigWeight");
-      }
-      RooFormulaVar corrected_sweight("corrected_sweight","sweights corrected to enable minos calculations","@0*@1/@2",RooArgList(SigWeight,RooConst(sum_weights),RooConst(sum_squared_weights)));
       data->addColumn(corrected_sweight);
       RooDataSet* data_with_corrected_sweight = new RooDataSet("data_with_corrected_sweight","data_with_corrected_sweight",data,*(data->get()),"","corrected_sweight");
-      fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(false))));
-      fit_result = pdf->fitTo(*data_with_corrected_sweight,fitting_args);
+      if (plot_likelihood) {
+        gROOT->SetStyle("Plain");
+        setStyle("LHCbOptimized");
+        TLatex label(0.25,0.8,"LHCb 3fb^{-1}");
+        RooPlot* frame;
+        ((RooRealVar*)pdf->getParameters(*data_with_corrected_sweight)->find("parSigTimeAccCSpline1"))->setConstant();
+        ((RooRealVar*)pdf->getParameters(*data_with_corrected_sweight)->find("parSigTimeAccCSpline2"))->setConstant();
+        ((RooRealVar*)pdf->getParameters(*data_with_corrected_sweight)->find("parSigTimeAccCSpline4"))->setConstant();
+        parSigEtaDeltaProdOffset.setConstant();
+        parSigEtaDeltaProd_11.setConstant();
+        parSigTimeDeltaM.setConstant();
+        parSigTimeTau.setConstant();
+        RooAbsReal* nll = pdf->createNLL(*data_with_corrected_sweight,fitting_args);
+        RooMinuit minu(*nll);
+        fit_result = minu.fit("mr");
+        // frame = parSigTimeSin2b.frame(Range(parSigTimeSin2b.getVal()-3*parSigTimeSin2b.getError(),parSigTimeSin2b.getVal()+3*parSigTimeSin2b.getError()));
+        // RooAbsReal* profile = nll->createProfile(RooArgSet(parSigTimeSin2b));
+        // profile->plotOn(frame,LineColor(214));
+        // PlotSimple("Likelihoodscan_sin2b",frame,label,"/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotLikelihood/");
+        // frame = parSigTimeC.frame(Range(parSigTimeC.getVal()-3*parSigTimeC.getError(),parSigTimeC.getVal()+3*parSigTimeC.getError()));
+        // profile = nll->createProfile(RooArgSet(parSigTimeC));
+        // profile->plotOn(frame,LineColor(214));
+        // PlotSimple("Likelihoodscan_C",frame,label,"/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotLikelihood/");
+        frame = new RooPlot(parSigTimeSin2b,parSigTimeC,parSigTimeSin2b.getVal()-3*parSigTimeSin2b.getError(),parSigTimeSin2b.getVal()+3*parSigTimeSin2b.getError(),parSigTimeC.getVal()-3*parSigTimeC.getError(),parSigTimeC.getVal()+3*parSigTimeC.getError());
+
+        // draw a point at the current parameter values
+        TMarker* point= new TMarker(parSigTimeSin2b.getVal(), parSigTimeC.getVal(), 31);  // default: 8
+        frame->addObject(point);
+
+        // remember our original value of ERRDEF
+        double errdef= gMinuit->fUp;
+        int index_sin2b = fit_result->floatParsFinal().index("parSigTimeSin2b");
+        int index_C     = fit_result->floatParsFinal().index("parSigTimeC");
+        for (int i = 1; i <= 2 ; i++) {
+          // set the value corresponding to an n1-sigma contour
+          gMinuit->SetErrorDef(errdef*i*i);
+          // calculate and draw the contour
+          // TGraph* graph = (TGraph*)gMinuit->Contour(20, index_sin2b, index_C);  // default: 50
+          int npoints = 50;
+          int npfound;
+          Double_t *xcoor = new Double_t[npoints+1];
+          Double_t *ycoor = new Double_t[npoints+1];
+          gMinuit->mncont(index_sin2b,index_C,npoints,xcoor,ycoor,npfound);
+
+       //     /* System generated locals */
+       //    Int_t i__1;
+
+       //    /* Local variables */
+       //    Double_t d__1, d__2;
+       //    Double_t dist, xdir, ydir, aopt,  u1min, u2min;
+       //    Double_t abest, scalx, scaly;
+       //    Double_t a1, a2, val2mi, val2pl, dc, sclfac, bigdis, sigsav;
+       //    Int_t nall, iold, line, mpar, ierr, inew, move, next, i, j, nfcol, iercr;
+       //    Int_t idist=0, npcol, kints, i2, i1, lr, nfcnco=0, ki1, ki2, ki3, ke3;
+       //    Int_t nowpts, istrav, nfmxin, isw2, isw4;
+
+       //    /* Function Body */
+       //    Int_t ke1 = index_sin2b+1;
+       //    Int_t ke2 = index_C+1;
+       //    ki1 = fNiofex[ke1-1];
+       //    ki2 = fNiofex[ke2-1];
+
+       //    nfcnco  = fNfcn;
+       //    fNfcnmx = (npoints + 5)*100*(fNpar + 1);
+       //    //          The minimum
+       //    gMinuit->mncuve();
+       //    u1min  = fU[ke1-1];
+       //    u2min  = fU[ke2-1];
+       //    ierrf  = 0;
+       //    fCfrom = "MNContour ";
+       //    fNfcnfr = nfcnco;
+       //    if (fISW[4] >= 0) {
+       //       Printf(" START MNCONTOUR CALCULATION OF %4d POINTS ON CONTOUR.",npoints);
+       //       if (fNpar > 2) {
+       //          if (fNpar == 3) {
+       //             ki3 = 6 - ki1 - ki2;
+       //             ke3 = fNexofi[ki3-1];
+       //             Printf(" EACH POINT IS A MINIMUM WITH RESPECT TO PARAMETER %3d  %s",ke3,(const char*)fCpnam[ke3-1]);
+       //          } else {
+       //             Printf(" EACH POINT IS A MINIMUM WITH RESPECT TO THE OTHER %3d VARIABLE PARAMETERS.",fNpar - 2);
+       //          }
+       //       }
+       //    }
+
+       //    //          Find the first four points using MNMNOT
+       //    //                                      first two points
+       //    gMinuit->mnmnot(ke1, ke2, val2pl, val2mi);
+       //    if (fErn[ki1-1] == fUndefi) {
+       //       xptu[0] = fAlim[ke1-1];
+       //       gMinuit->mnwarn("W", "MNContour ", "Contour squeezed by parameter limits.");
+       //    } else {
+       //       xptu[0] = u1min + fErn[ki1-1];
+       //    }
+       //    yptu[0] = val2mi;
+
+       //    if (fErp[ki1-1] == fUndefi) {
+       //       xptu[2] = fBlim[ke1-1];
+       //       gMinuit->mnwarn("W", "MNContour ", "Contour squeezed by parameter limits.");
+       //    } else {
+       //       xptu[2] = u1min + fErp[ki1-1];
+       //    }
+       //    yptu[2] = val2pl;
+       //    scalx = 1 / (xptu[2] - xptu[0]);
+       //    //                                        next two points
+       //    gMinuit->mnmnot(ke2, ke1, val2pl, val2mi);
+       //    if (fErn[ki2-1] == fUndefi) {
+       //       yptu[1] = fAlim[ke2-1];
+       //       gMinuit->mnwarn("W", "MNContour ", "Contour squeezed by parameter limits.");
+       //    } else {
+       //       yptu[1] = u2min + fErn[ki2-1];
+       //    }
+       //    xptu[1] = val2mi;
+       //    if (fErp[ki2-1] == fUndefi) {
+       //       yptu[3] = fBlim[ke2-1];
+       //       gMinuit->mnwarn("W", "MNContour ", "Contour squeezed by parameter limits.");
+       //    } else {
+       //       yptu[3] = u2min + fErp[ki2-1];
+       //    }
+       //    xptu[3] = val2pl;
+       //    scaly   = 1 / (yptu[3] - yptu[1]);
+       //    nowpts  = 4;
+       //    next    = 5;
+
+       //    //                                     save some values before fixing
+       //    isw2   = fISW[1];
+       //    isw4   = fISW[3];
+       //    sigsav = fEDM;
+       //    istrav = fIstrat;
+       //    dc     = fDcovar;
+       //    fApsi  = fEpsi*.5;
+       //    abest  = fAmin;
+       //    mpar   = fNpar;
+       //    nfmxin = fNfcnmx;
+       //    for (i = 1; i <= mpar; ++i) { fXt[i-1] = fX[i-1]; }
+       //    i__1 = mpar*(mpar + 1) / 2;
+       //    for (j = 1; j <= i__1; ++j) { fVthmat[j-1] = fVhmat[j-1]; }
+       //    for (i = 1; i <= mpar; ++i) {
+       //       fCONTgcc[i-1] = fGlobcc[i-1];
+       //       fCONTw[i-1]   = fWerr[i-1];
+       //    }
+       //    //                          fix the two parameters in question
+       //    kints = fNiofex[ke1-1];
+       //    gMinuit->mnfixp(kints-1, ierr);
+       //    kints = fNiofex[ke2-1];
+       //    gMinuit->mnfixp(kints-1, ierr);
+       //    //                                   Fill in the rest of the points
+       //    for (inew = next; inew <= npoints; ++inew) {
+       //      //            find the two neighbouring points with largest separation
+       //      bigdis = 0;
+       //      for (iold = 1; iold <= inew - 1; ++iold) {
+       //        i2 = iold + 1;
+       //        if (i2 == inew) i2 = 1;
+       //        d__1 = scalx*(xptu[iold-1] - xptu[i2-1]);
+       //        d__2 = scaly*(yptu[iold-1] - yptu[i2-1]);
+       //        dist = d__1*d__1 + d__2*d__2;
+       //        if (dist > bigdis) {
+       //          bigdis = dist;
+       //          idist  = iold;
+       //        }
+       //      }
+       //      i1 = idist;
+       //      i2 = i1 + 1;
+       //      if (i2 == inew) i2 = 1;
+       //      //                  next point goes between I1 and I2
+       //      a1 = .5;
+       //      a2 = .5;
+       // L300:
+       //      fXmidcr = a1*xptu[i1-1] + a2*xptu[i2-1];
+       //      fYmidcr = a1*yptu[i1-1] + a2*yptu[i2-1];
+       //      xdir    = yptu[i2-1] - yptu[i1-1];
+       //      ydir    = xptu[i1-1] - xptu[i2-1];
+       //      sclfac  = TMath::Max(TMath::Abs(xdir*scalx),TMath::Abs(ydir*scaly));
+       //      fXdircr = xdir / sclfac;
+       //      fYdircr = ydir / sclfac;
+       //      fKe1cr  = ke1;
+       //      fKe2cr  = ke2;
+       //      //               Find the contour crossing point along DIR
+       //      fAmin = abest;
+       //      gMinuit->mncros(aopt, iercr);
+       //      if (iercr > 1) {
+       //        //             If cannot find mid-point, try closer to point 1
+       //        if (a1 > .5) {
+       //          if (fISW[4] >= 0) {
+       //            Printf(" MNCONT CANNOT FIND NEXT POINT ON CONTOUR.  ONLY %3d POINTS FOUND.",nowpts);
+       //          }
+       //          ierrf = nowpts;
+       //          fCstatu = "SUCCESSFUL";
+       //          if (nowpts < npoints)         fCstatu = "INCOMPLETE";
+       //          //               make a lineprinter plot of the contour
+       //          if (fISW[4] >= 0) {
+       //            fXpt[0]  = u1min;
+       //            fYpt[0]  = u2min;
+       //            fChpt[0] = ' ';
+       //            nall = TMath::Min(nowpts + 1,101);
+       //            for (i = 2; i <= nall; ++i) {
+       //               fXpt[i-1]  = xptu[i-2];
+       //               fYpt[i-1]  = yptu[i-2];
+       //               fChpt[i-1] = 'X';
+       //            }
+       //            fChpt[nall] = 0;
+       //            Printf(" Y-AXIS: PARAMETER %3d  %s",ke2,(const char*)fCpnam[ke2-1]);
+
+       //            mnplot(fXpt, fYpt, fChpt, nall, fNpagwd, fNpagln);
+
+       //            Printf("                         X-AXIS: PARAMETER %3d  %s",ke1,(const char*)fCpnam[ke1-1]);
+       //          }
+       //          //                print out the coordinates around the contour
+       //          if (fISW[4] >= 1) {
+       //            npcol = (nowpts + 1) / 2;
+       //            nfcol = nowpts / 2;
+       //            Printf("%5d POINTS ON CONTOUR.   FMIN=%13.5e   ERRDEF=%11.3g",nowpts,abest,fUp);
+       //            Printf("         %s%s%s%s",(const char*)fCpnam[ke1-1],
+       //                                       (const char*)fCpnam[ke2-1],
+       //                                       (const char*)fCpnam[ke1-1],
+       //                                       (const char*)fCpnam[ke2-1]);
+       //            for (line = 1; line <= nfcol; ++line) {
+       //              lr = line + npcol;
+       //              Printf(" %5d%13.5e%13.5e          %5d%13.5e%13.5e",line,xptu[line-1],yptu[line-1],lr,xptu[lr-1],yptu[lr-1]);
+       //            }
+       //            if (nfcol < npcol) {
+       //              Printf(" %5d%13.5e%13.5e",npcol,xptu[npcol-1],yptu[npcol-1]);
+       //            }
+       //          }
+       //          //                                       contour finished. reset v
+       //          fItaur = 1;
+       //          mnfree(1);
+       //          mnfree(1);
+       //          i__1 = mpar*(mpar + 1) / 2;
+       //          for (j = 1; j <= i__1; ++j) { fVhmat[j-1] = fVthmat[j-1]; }
+       //          for (i = 1; i <= mpar; ++i) {
+       //             fGlobcc[i-1] = fCONTgcc[i-1];
+       //             fWerr[i-1]   = fCONTw[i-1];
+       //             fX[i-1]      = fXt[i-1];
+       //          }
+       //          mninex(fX);
+       //          fEDM    = sigsav;
+       //          fAmin   = abest;
+       //          fISW[1] = isw2;
+       //          fISW[3] = isw4;
+       //          fDcovar = dc;
+       //          fItaur  = 0;
+       //          fNfcnmx = nfmxin;
+       //          fIstrat = istrav;
+       //          fU[ke1-1] = u1min;
+       //          fU[ke2-1] = u2min;
+       //          fCfrom  = "MNContour ";
+       //          fNfcnfr = nfcnco;
+       //        }
+       //        gMinuit->mnwarn("W", "MNContour ", "Cannot find midpoint, try closer.");
+       //        a1 = .75;
+       //        a2 = .25;
+       //        goto L300;
+       //      }
+       //      //                 Contour has been located, insert new point in list
+       //      for (move = nowpts; move >= i1 + 1; --move) {
+       //        xptu[move] = xptu[move-1];
+       //        yptu[move] = yptu[move-1];
+       //      }
+       //      ++nowpts;
+       //      xptu[i1] = fXmidcr + fXdircr*aopt;
+       //      yptu[i1] = fYmidcr + fYdircr*aopt;
+       //    }
+
+          if (npfound!= npoints) {
+             // mncont did go wrong
+             Warning("Contour","Returning a TGraph with %d points only",npfound);
+             npoints = npfound;
+          }
+          xcoor[npoints] = xcoor[0];  // add first point at end to get closed polyline
+          ycoor[npoints] = ycoor[0];
+          TGraph* graph = new TGraph(npoints+1, xcoor, ycoor);
+          delete [] xcoor;
+          delete [] ycoor;
+
+          graph->SetLineStyle(i);
+          graph->SetLineWidth(2);
+          graph->SetLineColor(kBlue);
+          frame->addObject(graph,"L");
+        }
+
+        // // restore the original ERRDEF
+        // gMinuit->SetErrorDef(errdef);
+        // // frame = minu.contour(parSigTimeSin2b,parSigTimeC,1,0);
+        PlotSimple("2DLikelihoodscan",frame,label,"/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotLikelihood/");
+        return 1;
+      }
+      else {
+        fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(false))));
+        fit_result = pdf->fitTo(*data_with_corrected_sweight,fitting_args);
+      }
     }
     else {
       fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
@@ -1281,39 +1594,122 @@ int main(int argc, char * argv[]){
     doofit::plotting::correlations::CorrelationPlot cplot(*fit_result);
     cplot.Plot("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
 
-    PlotConfig cfg_plot_time("cfg_plot_time");
-    cfg_plot_time.set_plot_appendix(config.getString("identifier"));
-    cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
-    cfg_plot_time.set_simultaneous_plot_all_slices(true);
-    // cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
-    // cfg_plot_time.set_y_axis_label("Kandidaten");
-    std::vector<std::string> components_time;
-    PlotSimultaneous Time(cfg_plot_time, obsTime, *data, *pdf, components_time);
-    std::vector<double> os_mistag_bins;
-    os_mistag_bins += 0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5;
-    RooBinning os_mistag_binning(os_mistag_bins.size()-1, os_mistag_bins.data(), "os_mistag_binning_for_plotting");
-    // RooBinning os_mistag_binning(6, 0.0, 0.5, "os_mistag_binning_for_plotting");
-    obsEtaOS.setBinning(os_mistag_binning);
-    std::vector<double> ss_mistag_bins;
-    ss_mistag_bins += 0.10, 0.20, 0.25, 0.30, 0.35, 0.40, 0.42, 0.44, 0.45, 0.46, 0.47, 0.5;
-    // RooBinning ss_mistag_binning(ss_mistag_bins.size()-1, ss_mistag_bins.data(), "ss_mistag_binning_for_plotting");
-    RooBinning ss_mistag_binning(6, 0.0, 0.5, "ss_mistag_binning_for_plotting");
-    obsEtaSS.setBinning(ss_mistag_binning);
-    std::vector<double> time_error_bins;
-    time_error_bins += 0.005, 0.010, 0.015, 0.020, 0.025, 0.030, 0.035, 0.040, 0.045, 0.050, 0.055, 0.060, 0.070, 0.080, 0.090, 0.100, 0.150;
-    RooBinning time_error_binning(time_error_bins.size()-1, time_error_bins.data(), "time_error_binning_for_plotting");
-    obsTimeErr.setBinning(time_error_binning);
-    RooDataSet proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
-    RooArgSet projargset("projargset");
-    if (cp_fit && !pereventresolution) projargset.add(RooArgSet(obsEtaOS,obsEtaSS));
-    if (!cp_fit && pereventresolution) projargset.add(obsTimeErr);
-    if (cp_fit && pereventresolution) projargset.add(RooArgSet(obsTimeErr,obsEtaOS,obsEtaSS));
-    Time.AddPlotArg(NumCPU(1));
-    // Time.AddPlotArg(Normalization(1./data->numEntries()));
-    Time.AddPlotArg(ProjWData(projargset,*data,true));
-    Time.set_scaletype_x(kLinear);
-    Time.set_scaletype_y(kLogarithmic);
-    /*if (!pereventresolution)*/  Time.PlotIt();
+    if (plot_time_distribution) {
+      PlotConfig cfg_plot_time("cfg_plot_time");
+      cfg_plot_time.set_plot_appendix(config.getString("identifier"));
+      cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotTime");
+      cfg_plot_time.set_simultaneous_plot_all_slices(true);
+      // cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+      // cfg_plot_time.set_y_axis_label("Kandidaten");
+      std::vector<std::string> components_time;
+      PlotSimultaneous Time(cfg_plot_time, obsTime, *data, *pdf, components_time);
+      std::vector<double> os_mistag_bins;
+      os_mistag_bins += 0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5;
+      RooBinning os_mistag_binning(os_mistag_bins.size()-1, os_mistag_bins.data(), "os_mistag_binning_for_plotting");
+      // RooBinning os_mistag_binning(6, 0.0, 0.5, "os_mistag_binning_for_plotting");
+      obsEtaOS.setBinning(os_mistag_binning);
+      std::vector<double> ss_mistag_bins;
+      ss_mistag_bins += 0.10, 0.20, 0.25, 0.30, 0.35, 0.40, 0.42, 0.44, 0.45, 0.46, 0.47, 0.5;
+      // RooBinning ss_mistag_binning(ss_mistag_bins.size()-1, ss_mistag_bins.data(), "ss_mistag_binning_for_plotting");
+      RooBinning ss_mistag_binning(6, 0.0, 0.5, "ss_mistag_binning_for_plotting");
+      obsEtaSS.setBinning(ss_mistag_binning);
+      std::vector<double> time_error_bins;
+      time_error_bins += 0.005, 0.010, 0.015, 0.020, 0.025, 0.030, 0.035, 0.040, 0.045, 0.050, 0.055, 0.060, 0.070, 0.080, 0.090, 0.100, 0.150;
+      RooBinning time_error_binning(time_error_bins.size()-1, time_error_bins.data(), "time_error_binning_for_plotting");
+      obsTimeErr.setBinning(time_error_binning);
+      RooDataSet proj_data("proj_data","proj_data",data,RooArgSet(obsEtaOS,obsEtaSS,obsTagOS,obsTagSS,obsTimeErr));
+      RooArgSet projargset("projargset");
+      if (cp_fit && !pereventresolution) projargset.add(RooArgSet(obsEtaOS,obsEtaSS));
+      if (!cp_fit && pereventresolution) projargset.add(obsTimeErr);
+      if (cp_fit && pereventresolution) projargset.add(RooArgSet(obsTimeErr,obsEtaOS,obsEtaSS));
+      Time.AddPlotArg(NumCPU(1));
+      Time.AddPlotArg(ProjWData(projargset,*data,true));
+      Time.set_scaletype_x(kLinear);
+      Time.set_scaletype_y(kLogarithmic);
+      Time.PlotIt();
+    }
+  }
+  if (plot_asymmetry) {
+    RooFormulaVar     parSigOmegaMean("parSigOmegaMean","parSigOmegaMean","0.5*(@0+@1)",RooArgList(obsEta_B0,obsEta_B0bar));
+    RooFormulaVar     parSigDeltaOmega("parSigDeltaOmega","parSigDeltaOmega","(@0-@1)",RooArgList(obsEta_B0,obsEta_B0bar));
+    CPCoefficient     parSigTimeCosh_11_combined("parSigTimeCosh_11_combined",RooConst(1.0),obsTag_combined,parSigOmegaMean,RooConst(0.0),RooConst(0.0),RooConst(0.0),parSigDeltaOmega,RooConst(0.0),parSigEtaDeltaProd_11,CPCoefficient::kCosh);
+    CPCoefficient     parSigTimeCosh_12_combined("parSigTimeCosh_12_combined",RooConst(1.0),obsTag_combined,parSigOmegaMean,RooConst(0.0),RooConst(0.0),RooConst(0.0),parSigDeltaOmega,RooConst(0.0),parSigEtaDeltaProd_12,CPCoefficient::kCosh);
+    CPCoefficient     parSigTimeSin_11_combined("parSigTimeSin_11_combined",parSigTimeSin2b,obsTag_combined,parSigOmegaMean,RooConst(0.0),RooConst(0.0),RooConst(0.0),parSigDeltaOmega,RooConst(0.0),parSigEtaDeltaProd_11,CPCoefficient::kSin);
+    CPCoefficient     parSigTimeSin_12_combined("parSigTimeSin_12_combined",parSigTimeSin2b,obsTag_combined,parSigOmegaMean,RooConst(0.0),RooConst(0.0),RooConst(0.0),parSigDeltaOmega,RooConst(0.0),parSigEtaDeltaProd_12,CPCoefficient::kSin);
+    CPCoefficient     parSigTimeCos_11_combined("parSigTimeCos_11_combined",parSigTimeC,obsTag_combined,parSigOmegaMean,RooConst(0.0),RooConst(0.0),RooConst(0.0),parSigDeltaOmega,RooConst(0.0),parSigEtaDeltaProd_11,CPCoefficient::kCos);
+    CPCoefficient     parSigTimeCos_12_combined("parSigTimeCos_12_combined",parSigTimeC,obsTag_combined,parSigOmegaMean,RooConst(0.0),RooConst(0.0),RooConst(0.0),parSigDeltaOmega,RooConst(0.0),parSigEtaDeltaProd_12,CPCoefficient::kCos);
+    RooBDecay         pdfSigTime_11_combined("pdfSigTime_11_combined","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_11_combined,parSigTimeSinh,parSigTimeCos_11_combined,parSigTimeSin_11_combined,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+    RooBDecay         pdfSigTime_12_combined("pdfSigTime_12_combined","P_{S}^{l}(t,d|#sigma_{t},#eta)",obsTime,parSigTimeTau,parSigEtaDeltaG,parSigTimeCosh_12_combined,parSigTimeSinh,parSigTimeCos_12_combined,parSigTimeSin_12_combined,parSigTimeDeltaM,*efficiencymodel,RooBDecay::SingleSided);
+    RooSimultaneous   pdfSigTime_combined("pdfSigTime_combined","combined signal decay time PDF",catYear);
+    pdfSigTime_combined.addPdf(pdfSigTime_11_combined,"2011");
+    pdfSigTime_combined.addPdf(pdfSigTime_12_combined,"2012");
+    pdfSigTime_combined.getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+    RooDataSet* data_asymmetryplot = dynamic_cast<RooDataSet*>(data->reduce("catTagged_combined==1"));
+    data_asymmetryplot->Print();
+    Double_t asymbins[9] = {0.25, 0.75, 1.25, 1.75, 2.5, 3.7, 5.0, 7.0, 10.25};
+    RooBinning binAsymBins(8,asymbins,"AsymBins");
+    obsTime.setBinning(binAsymBins,"AsymBins");
+    gROOT->SetStyle("Plain");
+    setStyle("LHCbOptimized");
+    RooPlot* plot_frame = obsTime.frame();
+    data_asymmetryplot->plotOn(plot_frame,Asymmetry(obsTag_combined),Binning("AsymBins"));
+    int nbins = 100;
+    int nsteps = 100;
+    double nentries = data_asymmetryplot->numEntries();
+
+    RooArgSet norm_set_sig(*(pdfSigTime_combined.getObservables(*data)),"norm_set_sig");
+    norm_set_sig.Print();
+
+    RooArgSet small_set_sig(norm_set_sig, "small_set_sig");
+    small_set_sig.remove(obsTag_combined,true,true);
+    small_set_sig.remove(obsTime,true,true);
+    small_set_sig.remove(obsTimeErr,true,true);
+    small_set_sig.remove(obsEta_B0,true,true);
+    small_set_sig.remove(obsEta_B0bar,true,true);
+    small_set_sig.Print();
+
+    RooAbsReal* norm_integral_sig = pdfSigTime_combined.createIntegral(norm_set_sig, RooFit::NormSet(norm_set_sig));
+    RooAbsReal* small_integral_sig = pdfSigTime_combined.createIntegral(small_set_sig, RooFit::NormSet(norm_set_sig));
+
+    double increment = 10./nsteps;
+    double width = 10./nbins;
+    double obs_value = 0.25;
+
+    double value_sig1 = 0;
+    double value_sig2 = 0;
+    double weight = 0;
+    RooCurve* curve = new RooCurve();
+    double x_val, y_val;
+    std::vector<double> x_vals(nsteps+1, 0);
+    std::vector<double> y_vals(nsteps+1, 0);
+    Progress p("Plot asymmetry", nsteps);
+    for (int i = 0; i <= nsteps; i++){
+      obsTime.setVal(obs_value);
+      value_sig1 = 0.;
+      value_sig2 = 0.;
+      for (int j = 0; j < nentries; ++j) {
+        data_asymmetryplot->get(j);
+        weight = data_asymmetryplot->weight();
+        obsEta_B0.setVal(data_asymmetryplot->get(j)->getRealValue("obsEta_B0_combined"));
+        obsEta_B0bar.setVal(data_asymmetryplot->get(j)->getRealValue("obsEta_B0bar_combined"));
+        if (pereventresolution) obsTimeErr.setVal(data_asymmetryplot->get(j)->getRealValue("obsTimeErr"));
+        obsTag_combined.setIndex(1);
+        value_sig1 += weight*small_integral_sig->getVal();
+        obsTag_combined.setIndex(-1);
+        value_sig2 += weight*small_integral_sig->getVal();
+      }
+      curve->addPoint(obs_value, (value_sig2 - value_sig1)/(value_sig1 + value_sig2));
+      obs_value += increment;
+      ++p;
+    }
+    p.Finish();
+    curve->SetLineColor(214);
+    plot_frame->addPlotable(curve, "same");
+    plot_frame->SetMinimum(-0.7);
+    plot_frame->SetMaximum(0.7);
+    plot_frame->GetYaxis()->SetTitle("Signal yield asymmetry");
+    TLatex label(0.25,0.8,"LHCb 3fb^{-1}");
+    PlotSimple("Asymmetry",plot_frame,label,"/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAsymmetry/");
   }
   if (plot_acceptance) {
     TFile fitresultfile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");

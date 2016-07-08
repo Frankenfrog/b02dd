@@ -1,9 +1,9 @@
-parSigTimeC                   =  1.75  L(-2 - 2.5)
+parSigTimeC                   =  0.25  L(-1 - 1)
 parSigEtaDeltaG               =  0.000 C
 parSigTimeDeltaM              =  0.510 L(0.4 - 0.7)
 parSigTimeDeltaMMean          =  0.510 C
 parSigTimeDeltaMSigma         =  0.004 C
-parSigTimeSin2b               =  1.15  L(-2 - 2.5)
+parSigTimeSin2b               = -0.55  L(-1.5 - 1)
 parSigTimeTau                 =  1.519 L(1.4 - 1.6)
 parSigTimeTauMean             =  1.519 C
 parSigTimeTauSigma            =  0.005 C
