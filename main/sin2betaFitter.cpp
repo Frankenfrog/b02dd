@@ -259,8 +259,8 @@ int main(int argc, char * argv[]){
   RooDataSet*       data;
   EasyTuple         tuple(config.getString("tuple"),"B02DD",RooArgSet(observables,categories));
   tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || correct_sweights) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-  else if (decaytimefit || cp_fit || plot_acceptance || plot_asymmetry)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
+  if (bootstrapping || massfit || calculate_sweights || plot_mass_distribution || correct_sweights || plot_asymmetry) data = &(tuple.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+  else if (decaytimefit || cp_fit || plot_acceptance)  data = &(tuple.ConvertToDataSet(WeightVar(SigWeight),Cut(TString(config.getString("cut")))));
   else if (!(massfittervalidation || plot_correlation_matrix || mistag_histograms || timeerr_histograms)) {
     cout << "What do you want to do? No use case is activated right now!" <<  endl;
     return 0;
@@ -603,8 +603,12 @@ int main(int argc, char * argv[]){
   RooRealVar          parSigEtaDeltaG("parSigEtaDeltaG","#Delta#Gamma",0.);
 
   // CPV parameters
-  RooRealVar          parSigTimeSin2b("parSigTimeSin2b","#it{S_{D^{+}D^{-}}}",0.7,-2,2);
-  RooRealVar          parSigTimeC("parSigTimeC","#it{C_{D^{+}D^{-}}}",0,-2,2);
+  // RooRealVar          parSigTimeSin2b("parSigTimeSin2b","#it{S_{D^{+}D^{-}}}",0.7,-2,2);
+  // RooRealVar          parSigTimeC("parSigTimeC","#it{C_{D^{+}D^{-}}}",0,-2,2);
+  RooRealVar          parSinPhi("parSinPhi","parSinPhi",0.5,0,1);
+  RooRealVar          parLambda("parLambda","parLambda",0.75,0,2);
+  RooFormulaVar       parSigTimeSin2b("parSigTimeSin2b","#it{S_{D^{+}D^{-}}}","-2*@0*@1/(1+@1*@1)",RooArgList(parSinPhi,parLambda));
+  RooFormulaVar       parSigTimeC("parSigTimeC","#it{C_{D^{+}D^{-}}}","(1-@0*@0)/(1+@0*@0)",parLambda);
   RooUnblindUniform   parSigTimeBlindedSin2b("parSigTimeBlindedSin2b","Blinding of #it{S_{D^{+}D^{-}}}","SB02DD3fb",2.,parSigTimeSin2b);
   RooUnblindUniform   parSigTimeBlindedC("parSigTimeBlindedC","Blinding of #it{C_{D^{+}D^{-}}}","CB02DD3fb",2.,parSigTimeC);
 
@@ -948,7 +952,8 @@ int main(int argc, char * argv[]){
   pdf->getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
-  RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
+  // RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
+  RooArgSet minosargset(parLambda,parSinPhi);
   if (config.getBool("minos")) fitting_args.Add((TObject*)(new RooCmdArg(Minos(minosargset))));
   if (!plot_likelihood) fitting_args.Add((TObject*)(new RooCmdArg(Strategy(2))));
   if (!plot_likelihood) fitting_args.Add((TObject*)(new RooCmdArg(Save(true))));
@@ -1282,7 +1287,7 @@ int main(int argc, char * argv[]){
       if (plot_likelihood) {
         gROOT->SetStyle("Plain");
         setStyle("LHCbOptimized");
-        TLatex label(0.25,0.8,"LHCb 3fb^{-1}");
+        TLatex label(0.25,0.8,"LHCb");
         RooPlot* frame;
         ((RooRealVar*)pdf->getParameters(*data_with_corrected_sweight)->find("parSigTimeAccCSpline1"))->setConstant();
         ((RooRealVar*)pdf->getParameters(*data_with_corrected_sweight)->find("parSigTimeAccCSpline2"))->setConstant();
@@ -1302,7 +1307,7 @@ int main(int argc, char * argv[]){
         // profile = nll->createProfile(RooArgSet(parSigTimeC));
         // profile->plotOn(frame,LineColor(214));
         // PlotSimple("Likelihoodscan_C",frame,label,"/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotLikelihood/");
-        frame = new RooPlot(parSigTimeSin2b,parSigTimeC,parSigTimeSin2b.getVal()-3*parSigTimeSin2b.getError(),parSigTimeSin2b.getVal()+3*parSigTimeSin2b.getError(),parSigTimeC.getVal()-3*parSigTimeC.getError(),parSigTimeC.getVal()+3*parSigTimeC.getError());
+        // frame = new RooPlot(parSigTimeSin2b,parSigTimeC,parSigTimeSin2b.getVal()-3*parSigTimeSin2b.getError(),parSigTimeSin2b.getVal()+3*parSigTimeSin2b.getError(),parSigTimeC.getVal()-3*parSigTimeC.getError(),parSigTimeC.getVal()+3*parSigTimeC.getError());
 
         // draw a point at the current parameter values
         TMarker* point= new TMarker(parSigTimeSin2b.getVal(), parSigTimeC.getVal(), 31);  // default: 8
@@ -1312,7 +1317,7 @@ int main(int argc, char * argv[]){
         double errdef= gMinuit->fUp;
         int index_sin2b = fit_result->floatParsFinal().index("parSigTimeSin2b");
         int index_C     = fit_result->floatParsFinal().index("parSigTimeC");
-        for (int i = 1; i <= 2 ; i++) {
+        for (int i = 1; i <= 1 ; i++) {
           // set the value corresponding to an n1-sigma contour
           gMinuit->SetErrorDef(errdef*i*i);
           // calculate and draw the contour
@@ -1644,7 +1649,15 @@ int main(int argc, char * argv[]){
     pdfSigTime_combined.addPdf(pdfSigTime_11_combined,"2011");
     pdfSigTime_combined.addPdf(pdfSigTime_12_combined,"2012");
     pdfSigTime_combined.getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
-    RooDataSet* data_asymmetryplot = dynamic_cast<RooDataSet*>(data->reduce("catTagged_combined==1"));
+    data->addColumn(parSigOmegaMean);
+    double sum_dilutionsquared(0);
+    for (int i = 0; i < data->numEntries(); ++i) {
+      data->get(i);
+      sum_dilutionsquared += data->get()->getRealValue("SigWeight")*(1. - 2.*data->get()->getRealValue("parSigOmegaMean"));
+    }
+    RooFormulaVar     sigweight_with_mistag("sigweight_with_mistag","sigweight_with_mistag","@0/@1",RooArgList(SigWeight,RooConst(sum_dilutionsquared)));
+    data->addColumn(sigweight_with_mistag);
+    RooDataSet* data_asymmetryplot = new RooDataSet("data_asymmetryplot","data_asymmetryplot",data,*(data->get()),"catTagged_combined==1","sigweight_with_mistag");
     data_asymmetryplot->Print();
     Double_t asymbins[9] = {0.25, 0.75, 1.25, 1.75, 2.5, 3.7, 5.0, 7.0, 10.25};
     RooBinning binAsymBins(8,asymbins,"AsymBins");
@@ -1705,10 +1718,10 @@ int main(int argc, char * argv[]){
     p.Finish();
     curve->SetLineColor(214);
     plot_frame->addPlotable(curve, "same");
-    plot_frame->SetMinimum(-0.7);
-    plot_frame->SetMaximum(0.7);
+    plot_frame->SetMinimum(-1.);
+    plot_frame->SetMaximum(1.);
     plot_frame->GetYaxis()->SetTitle("Signal yield asymmetry");
-    TLatex label(0.25,0.8,"LHCb 3fb^{-1}");
+    TLatex label(0.25,0.8,"LHCb");
     PlotSimple("Asymmetry",plot_frame,label,"/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/PlotAsymmetry/");
   }
   if (plot_acceptance) {
@@ -1754,7 +1767,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString id
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
   TCanvas c("c","c",800,600);
-  TLatex label(3,0.2,"LHCb 3fb^{-1}");
+  TLatex label(3,0.2,"LHCb");
   // TLatex label(3,0.2,"#splitline{LHCb 3fb^{-1}}{inoffiziell}");
 
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
