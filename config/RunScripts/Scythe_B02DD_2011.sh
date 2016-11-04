@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RUN_NAME=Production
-INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/2011/
+INPUT_PATH=/fhgfs/groups/e5/lhcb/analysis/B2OC/B02DD/Data/2011/
 INPUT_FILE_NAME=DT2011_B02DD_Stripping21_DVv36r5_20150820_pseyfert_combined_TupleA_kkpikpipi.root
 BASE_FILE_NAME=DT2011_B02DD_Stripping21r1_DVv36r5_20150820_pseyfert_combined_kkpikpipi
 DATE=20150917

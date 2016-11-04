@@ -15,17 +15,17 @@ parResSigmaCorrectionFactor1  =  1.000 C
 parResSigmaCorrectionFactor2  =  1.000 C
 parResFraction2				  =  0.500 C
 
-parSigTimeAccCSpline1 =  0.63  L(0 - 2)
-parSigTimeAccCSpline2 =  0.84  L(0 - 2)
-parSigTimeAccCSpline3 =  0.9   L(0 - 2)
-parSigTimeAccCSpline4 =  0.9   C L(0 - 2)
+// parSigTimeAccCSpline1 =  0.63  L(0 - 2)
+// parSigTimeAccCSpline2 =  0.84  L(0 - 2)
+// parSigTimeAccCSpline3 =  0.9   L(0 - 2)
+// parSigTimeAccCSpline4 =  0.9   C L(0 - 2)
 
-// parSigTimeAccCSpline1 =  0.73 L(0 - 2)
-// parSigTimeAccCSpline2 =  0.8  L(0 - 2)
-// parSigTimeAccCSpline3 =  0.9  L(0 - 2)
-// parSigTimeAccCSpline4 =  0.99 L(0 - 2)
-// parSigTimeAccCSpline5 =  1    C L(0 - 2)
-// parSigTimeAccCSpline6 =  0.99 L(0 - 2)
+parSigTimeAccCSpline1 =  0.73 L(0 - 2)
+parSigTimeAccCSpline2 =  0.8  L(0 - 2)
+parSigTimeAccCSpline3 =  0.9  L(0 - 2)
+parSigTimeAccCSpline4 =  0.99 L(0 - 2)
+parSigTimeAccCSpline5 =  1    C L(0 - 2)
+parSigTimeAccCSpline6 =  0.99 L(0 - 2)
 
 parSigEtaDeltaP0_OS 		=  0.0 C L(0 - 0.03) 
 parSigEtaDeltaP0_SS 		=  0.0 C L(-0.02 - 0.02) 

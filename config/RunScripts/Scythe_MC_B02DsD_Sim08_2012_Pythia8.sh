@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RUN_NAME=MCProduction
-INPUT_PATH=/home/fmeier/storage03/Tuple/
+INPUT_PATH=/home/fmeier/lhcb-tank/Tuple/
 INPUT_FILE_NAME=MC_Sim08h_2012_Pythia8_B02DsD_Stripping21_DVv36r6_20150713_fmeier_combined_TupleA.root
 BASE_FILE_NAME=MC_Sim08h_2012_Pythia8_B02DsD_Stripping21_DVv36r6_20150713_fmeier
 DATE=20150714

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RUN_NAME=MCProduction
-INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/MC/Sim08/2012/
+INPUT_PATH=/fhgfs/groups/e5/lhcb/analysis/B2OC/B02DD/MC/Sim08/2012/
 INPUT_FILE_NAME=MC_Sim08a_2012_Pythia8_B02DsDst_Stripping20_DVv36r6_20150512_fmeier_combined_TupleA.root
 BASE_FILE_NAME=MC_Sim08a_2012_Pythia8_B02DsDst_Stripping20_DVv36r6_20150512_fmeier
 DATE=20150512

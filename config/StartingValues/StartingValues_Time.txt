@@ -2,11 +2,11 @@ parSigTimeC                   =  0.25  L(-1 - 1)
 parSigEtaDeltaG               =  0.000 C
 parSigTimeDeltaM              =  0.510 L(0.4 - 0.7)
 parSigTimeDeltaMMean          =  0.510 C
-parSigTimeDeltaMSigma         =  0.004 C
+parSigTimeDeltaMSigma         =  0.003 C
 parSigTimeSin2b               = -0.55  L(-1.5 - 1)
 parSigTimeTau                 =  1.519 L(1.4 - 1.6)
-parSigTimeTauMean             =  1.519 C
-parSigTimeTauSigma            =  0.005 C
+parSigTimeTauMean             =  1.520 C
+parSigTimeTauSigma            =  0.004 C
 
 parResMean                    =  0. C L(-0.1 - 0.1) // 0.00066
 parResCorrectionOffset1       =  0.0036  C L(0 - 1)

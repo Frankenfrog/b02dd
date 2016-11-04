@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RUN_NAME=Production
-INPUT_PATH=/fhgfs/groups/e5/lhcb/NTuples/B02DD/Data/2011/
+INPUT_PATH=/fhgfs/groups/e5/lhcb/analysis/B2OC/B02DD/Data/2011/
 INPUT_FILE_NAME=DT2011_B02DDWS_Stripping21r1_DVv36r1_20150501_fmeier_combined_TupleA.root
 BASE_FILE_NAME=DT2011_B02DDWS_Stripping21r1_DVv36r1_20150501_fmeier_combined
 DATE=20150504
