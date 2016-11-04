@@ -45,6 +45,7 @@ using namespace boost::assign;
 using namespace std;
 using namespace RooFit;
 using namespace doocore::io;
+using namespace doocore::lutils;
 
 void CreateComparisonHistogram(TTree& tree_Sim08, TTree& tree_Sim09, TString pdf_name, int nbins, TString obs_name, TString title, double min, double max);
 
@@ -121,11 +122,11 @@ int main(int argc, const char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
 
   RooFitResult* fit_result_Sim08 = pdfSigMass.fitTo(Sim08_data, fitting_args);
-  pdfSigMass.getParameters(Sim08_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim08.txt");
+  pdfSigMass.getParameters(Sim08_data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_Mass_Sim08.txt");
   cout << "B0 Mass resolution Sim08: "  <<  B0MassResolution.getVal() <<  " pm "  <<  B0MassResolution.getPropagatedError(*fit_result_Sim08)  <<  endl;
 
   RooFitResult* fit_result_Sim09 = pdfSigMass.fitTo(Sim09_data, fitting_args);
-  pdfSigMass.getParameters(Sim09_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim09.txt");
+  pdfSigMass.getParameters(Sim09_data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_Mass_Sim09.txt");
   cout << "B0 Mass resolution Sim09: "  <<  B0MassResolution.getVal() <<  " pm "  <<  B0MassResolution.getPropagatedError(*fit_result_Sim09)  <<  endl;
 
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter_Sim08(*fit_result_Sim08);
@@ -134,11 +135,11 @@ int main(int argc, const char * argv[]){
   fitresultprinter_Sim09.Print();
 
   fit_result_Sim08 = pdfSigDMass.fitTo(Sim08_data, fitting_args);
-  pdfSigDMass.getParameters(Sim08_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim08.txt");
+  pdfSigDMass.getParameters(Sim08_data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_DMass_Sim08.txt");
   cout << "D Mass resolution Sim08: "  <<  DMassResolution.getVal() <<  " pm "  <<  DMassResolution.getPropagatedError(*fit_result_Sim08)  <<  endl;
 
   fit_result_Sim09 = pdfSigDMass.fitTo(Sim09_data, fitting_args);
-  pdfSigDMass.getParameters(Sim09_data)->writeToFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim09.txt");
+  pdfSigDMass.getParameters(Sim09_data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_DMass_Sim09.txt");
   cout << "D Mass resolution Sim09: "  <<  DMassResolution.getVal() <<  " pm "  <<  DMassResolution.getPropagatedError(*fit_result_Sim09)  <<  endl;
 
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter_Sim08_DMass(*fit_result_Sim08);
@@ -151,28 +152,28 @@ int main(int argc, const char * argv[]){
   TCanvas c("c","c",800,600);
   RooPlot* plot = obsMass.frame();
   Sim08_data.plotOn(plot, MarkerColor(1), Rescale(1./Sim08_data.numEntries()));
-  pdfSigMass.getParameters(Sim08_data)->readFromFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim08.txt");
+  pdfSigMass.getParameters(Sim08_data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_Mass_Sim08.txt");
   pdfSigMass.plotOn(plot, LineColor(1), Normalization(1./Sim08_data.numEntries()));
   Sim09_data.plotOn(plot, MarkerColor(4), Rescale(1./Sim09_data.numEntries()));
-  pdfSigMass.getParameters(Sim09_data)->readFromFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_Mass_Sim09.txt");
+  pdfSigMass.getParameters(Sim09_data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_Mass_Sim09.txt");
   pdfSigMass.plotOn(plot, LineColor(4), Normalization(1./Sim09_data.numEntries()));
   plot->SetMaximum(0.1);
   plot->GetYaxis()->SetTitle("Arbitrary units");
   plot->Draw();
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/MCComparison/PlotMass/B0Mass.pdf");
+  printPlot(&c, "B0Mass", "/home/fmeier/lhcb-tank/b02dd/run/MCComparison/PlotMass");
 
   plot = obsMassDauOne.frame();
   Sim08_data.plotOn(plot, MarkerColor(1), Rescale(1./Sim08_data.numEntries()));
-  pdfSigDMass.getParameters(Sim08_data)->readFromFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim08.txt");
+  pdfSigDMass.getParameters(Sim08_data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_DMass_Sim08.txt");
   pdfSigDMass.plotOn(plot, LineColor(1), Normalization(1./Sim08_data.numEntries()));
   Sim09_data.plotOn(plot, MarkerColor(4), Rescale(1./Sim09_data.numEntries()));
-  pdfSigDMass.getParameters(Sim09_data)->readFromFile("/home/fmeier/storage03/b02dd/run/MCComparison/FitResults_DMass_Sim09.txt");
+  pdfSigDMass.getParameters(Sim09_data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MCComparison/FitResults_DMass_Sim09.txt");
   pdfSigDMass.plotOn(plot, LineColor(4), Normalization(1./Sim09_data.numEntries()));
   plot->SetMaximum(0.04);
   plot->GetYaxis()->SetTitle("Arbitrary units");
   gStyle->SetLabelOffset(1.5,"y");
   plot->Draw();
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/MCComparison/PlotMass/DMass.pdf");  
+  printPlot(&c, "DMass", "/home/fmeier/lhcb-tank/b02dd/run/MCComparison/PlotMass");
 
   return 0;
 }

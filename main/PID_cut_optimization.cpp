@@ -149,7 +149,7 @@ int main(int argc, char * argv[]){
   RooExtendPdf      pdfBkgExtend("pdfBkgExtend","pdfBkgExtend",pdfBkgMass,parBkgYield);
 
   pdfBkgExtend.getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
-  pdfBkgExtend.getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/PID-Optimization/StartingValues_Mass.new");
+  pdfBkgExtend.getParameters(data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/PID-Optimization/StartingValues_Mass.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(config.getInt("num_cpu")))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
@@ -210,7 +210,7 @@ void KaonPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Kaon/FOM_KaonPID_"+final_state+".pdf");
+  printPlot(&c, TString("FOM_KaonPID_"+final_state), "/home/fmeier/lhcb-tank/b02dd/run/PID-Optimization/Kaon");
 
   for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
 }
@@ -253,7 +253,7 @@ void PionPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Pion"+pionnumber+"/FOM_PionPID_"+final_state+".pdf");
+  printPlot(&c, TString("FOM_PionPID_"+final_state), TString("/home/fmeier/lhcb-tank/b02dd/run/PID-Optimization/Pion"+pionnumber));
 
   for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
 }
@@ -299,7 +299,7 @@ void KKPiPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& fitti
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S/#sqrt{S+B}");
   gr.Draw("AP");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/KKpi/FOM_"+particle+"PID_KKpi.pdf");
+  printPlot(&c, TString("FOM_"+particle+"PID_KKpi"), TString("/home/fmeier/lhcb-tank/b02dd/run/PID-Optimization/KKpi"));
 
   for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
 }
@@ -345,7 +345,7 @@ void ElectronPID_Optimization(RooAbsPdf* pdf, RooDataSet* data, RooLinkedList& f
   gr.GetXaxis()->SetTitle("cut value");
   gr.GetYaxis()->SetTitle("FOM = S^{2}/#sqrt{S+B}");
   gr.Draw("AP");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/PID-Optimization/Electron"+pionnumber+"/ElectronPID.pdf");
+  printPlot(&c, "ElectronPID", TString("/home/fmeier/lhcb-tank/b02dd/run/PID-Optimization/Electron"+pionnumber));
 
   for (int i = 0; i < x_vals.size(); ++i)  cout << x_vals.at(i) <<  "\t"  <<  y_vals.at(i) <<  endl;
 }

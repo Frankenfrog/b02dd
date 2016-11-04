@@ -283,7 +283,7 @@ void CreateScatterPlot(RooDataSet& data, TString hist_name, int nbins, TString x
   hist->SetMinimum(0);
   hist->FillN(x_values.size(), &x_values[0], &y_values[0], &weights[0]);
   hist->Draw("colz");
-  canvas.SaveAs("/home/fmeier/storage03/b02dd/"+hist_name+".pdf");  
+  canvas.SaveAs("/home/fmeier/lhcb-tank/b02dd/"+hist_name+".pdf");
   delete hist;
 }
 
@@ -332,8 +332,10 @@ void CreateProfileHistogram(RooDataSet& data, TString profile_name, int nbins, T
     fit_function->SetLineColor(2);
     profile->Fit(fit_function, "R");
   }
+  profile->GetYaxis()->SetNdivisions(505);
   profile->Draw();
-  canvas.SaveAs("/home/fmeier/storage03/b02dd/"+profile_name+".pdf");  
+  printPlot(&canvas,profile_name,"/home/fmeier/lhcb-tank/b02dd/run/Correlation");
+  // canvas.SaveAs("/home/fmeier/lhcb-tank/b02dd/"+profile_name+".pdf");
   delete profile;
 }
 

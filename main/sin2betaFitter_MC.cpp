@@ -77,7 +77,7 @@ using namespace doofit::plotting;
 using namespace doofit::roofit::functions;
 using namespace doofit::roofit::pdfs;
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree, TString cut = "");
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree, TString cut = "", TString name_appendix = "");
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -364,7 +364,7 @@ int main(int argc, char * argv[]){
 
   // Get Starting Values and Fit PDF to data
   pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_MC.txt");
-  // pdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/StartingValues.txt");
+  // pdf->getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/StartingValues.txt");
   pdf->Print();
   
   RooArgSet             constrainingPdfs("constrainingPdfs");
@@ -399,11 +399,11 @@ int main(int argc, char * argv[]){
   RooAbsPdf*  constrainingPdf;
   while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
     constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_MC.txt");
-    // constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/StartingValues.txt");
+    // constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/StartingValues.txt");
   }
   
   // Fit PDF to data
-  pdf->getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/StartingValues.new");
+  pdf->getParameters(*data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/StartingValues.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   RooArgSet minosargset(parSigTimeSin2b,parSigTimeC);
@@ -422,26 +422,28 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Offset(true))));
 
   RooFitResult* fit_result = pdf->fitTo(*data,fitting_args);
-  pdf->getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.txt");
+  pdf->getParameters(*data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/FitResults.txt");
   fit_result->Print("v");
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
   fit_result->correlationMatrix().Print();
-  TFile   fitresultwritetofile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.root","recreate");
+  TFile   fitresultwritetofile("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/FitResults.root","recreate");
   fit_result->Write("fit_result");
   fitresultwritetofile.Close();
 
   // Plots
-  pdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/FitResults.txt");
+  pdf->getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/FitResults.txt");
+  TString knots_appendix = "";
+  if (config.getBool("alternative_knots")) knots_appendix += "_6knots";
   if (config.getBool("Kpipi"))  {
     if (config.getBool("KKpi")) PlotAcceptance(&accspline, fit_result, &tree);
-    else PlotAcceptance(&accspline, fit_result, &tree, "&&catDDFinalStateParticles==1");
+    else PlotAcceptance(&accspline, fit_result, &tree, "&&catDDFinalStateParticles==1", "_MC_Kpipi"+knots_appendix);
   }
-  else PlotAcceptance(&accspline, fit_result, &tree, "&&catDDFinalStateParticles==0");
+  else PlotAcceptance(&accspline, fit_result, &tree, "&&catDDFinalStateParticles==0", "_MC_KKpi"+knots_appendix);
  
   PlotConfig cfg_plot_time("cfg_plot_time");
   cfg_plot_time.set_plot_appendix("");
-  cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotTime");
+  cfg_plot_time.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/PlotTime");
   std::vector<std::string> components_time;
   if (!truetag){
     PlotSimultaneous Time(cfg_plot_time, obsTime, *data, *((RooSimultaneous*)pdf), components_time);
@@ -480,7 +482,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree, TString cut){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tree, TString cut, TString name_appendix){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
@@ -492,7 +494,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tre
   RooRealVar        obsTime("obsTime","#it{t}",0.25,10.25,"ps");
   RooRealVar        obsTime_True("obsTime_True","#it{t}_{true}",0.25,10.25,"ps");
 
-  TFile* file_acceptance_histograms = new TFile("/home/fmeier/storage03/b02dd/Histograms/HIST_DecayTimeAcceptance.root","recreate");
+  TFile* file_acceptance_histograms = new TFile("/home/fmeier/lhcb-tank/b02dd/Histograms/HIST_DecayTimeAcceptance.root","recreate");
   TH1D* hist_acceptance_Kpipi = new TH1D("hist_acceptance_Kpipi","hist_acceptance_Kpipi",100,obsTime.getMin(),obsTime.getMax());
   tree->Draw("obsTime_True>>hist_acceptance_Kpipi","exp(obsTime_True/1.519)*(idxPV==0&&(catBkg==0||catBkg==50)&&obsTime_True>0.25&&obsTime_True<10.25&&catDDFinalStateParticles==1)");
   TH1D* hist_acceptance_KKpi = new TH1D("hist_acceptance_KKpi","hist_acceptance_KKpi",100,obsTime.getMin(),obsTime.getMax());
@@ -518,8 +520,8 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tre
   plot->SetMinimum(0.);
   plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
-  plot->Draw();
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline.pdf");
+  TLatex label(0.25,0.8,"LHCb");
+  PlotSimple("Acceptancespline",plot,label,"/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/PlotAcceptance",false,true);
   
   c.SetLogx(false);
   plot = obsTime.frame();
@@ -530,7 +532,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TTree* tre
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   hist_acceptance.Draw("same");
-
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/sin2betaFit/PlotAcceptance/Acceptancespline_nolog.pdf");
+  label.Draw();
+  printPlot(&c,"Acceptancespline_nolog"+name_appendix,"/home/fmeier/lhcb-tank/b02dd/run/MC/sin2betaFit/PlotAcceptance");
 }
 

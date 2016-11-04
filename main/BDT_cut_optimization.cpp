@@ -338,7 +338,7 @@ int main(int argc, char * argv[]){
     pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_BDT_Optimization_wYields.txt");
   } 
   pdfMass->Print();
-  pdfMass->getParameters(data)->writeToFile("/home/fmeier/storage03/b02dd/run/Mass/StartingValues_Mass.new");
+  pdfMass->getParameters(data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/Mass/StartingValues_Mass.new");
 
   // Lifetime and mixing parameters
   RooRealVar          parSigTimeTau("parSigTimeTau","#tau",1.5,1.,2.);
@@ -651,7 +651,7 @@ int main(int argc, char * argv[]){
           reduced_data_sweighted = new RooDataSet("reduced_data_sweighted","reduced_data_sweighted",reduced_data,*(reduced_data->get()),TString(catTag.GetName())+"!=0","sum_of_signal_weights_year_finalstate");
         }
         fit_result = pdf.fitTo(*reduced_data_sweighted,fitting_args);
-        pdf.getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Time_"+to_string(i)+".txt"));
+        pdf.getParameters(data)->writeToFile(TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Time_"+to_string(i)+".txt"));
         doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
         fitresultprinter.Print();
         if (fit_result->status() > 0) continue;
@@ -664,7 +664,7 @@ int main(int argc, char * argv[]){
         fit_result = pdfMass->fitTo(*reduced_data,fitting_args);
         if (fit_result->status() > 0) continue;
         bdt_cut += cutvalue;
-        pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Mass_"+to_string(i)+".txt"));
+        pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/FitResults/FitResults_Mass_"+to_string(i)+".txt"));
         doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
         fitresultprinter.Print();
         if (single_optimization) {
@@ -694,7 +694,7 @@ int main(int argc, char * argv[]){
       gr_S_sensitivity->GetYaxis()->SetTitle("sensitivity S_{D^{+}D^{-}}");
       gr_S_sensitivity->GetXaxis()->SetLimits(scan_begin,scan_end);
       gr_S_sensitivity->Draw("AC");
-      c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivity_S.pdf"));
+      printPlot(&c, "Sensitivity_S", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
   
       TGraph*  gr_C_sensitivity = new TGraph(sensitivity_C.size(), &bdt_cut[0], &sensitivity_C[0]);
       gr_C_sensitivity->SetLineColor(2);
@@ -702,9 +702,9 @@ int main(int argc, char * argv[]){
       gr_C_sensitivity->GetYaxis()->SetTitle("sensitivity C_{D^{+}D^{-}}");
       gr_C_sensitivity->GetXaxis()->SetLimits(scan_begin,scan_end);
       gr_C_sensitivity->Draw("AC");
-      c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivity_C.pdf"));
+      printPlot(&c, "Sensitivity_C", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
   
-      TFile   sensitivitiesfile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.root"),"recreate");
+      TFile   sensitivitiesfile(TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.root"),"recreate");
       gr_S_sensitivity->Write("gr_S_sensitivity");
       gr_C_sensitivity->Write("gr_C_sensitivity");
       sensitivitiesfile.Close();
@@ -712,7 +712,7 @@ int main(int argc, char * argv[]){
       for (int i = 0; i < sensitivity_S.size(); ++i)  cout <<  bdt_cut.at(i)  <<  "\t"  <<  round(sensitivity_S.at(i)*10000)/10000 <<  "\t"  <<  round(10000*sensitivity_C.at(i))/10000 <<  "\t" << round(sensitivity_S.at(i)*10000)/10000 + round(sensitivity_C.at(i)*10000)/10000 << endl;
     }
     else {
-      TFile sensitivitiesfile(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.root"),"read");
+      TFile sensitivitiesfile(TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.root"),"read");
       TGraph* read_in_sensitivity_S = dynamic_cast<TGraph*>(sensitivitiesfile.Get("gr_S_sensitivity"));
       TGraph* read_in_sensitivity_C = dynamic_cast<TGraph*>(sensitivitiesfile.Get("gr_C_sensitivity"));
       TMultiGraph* mg = new TMultiGraph();
@@ -726,7 +726,7 @@ int main(int argc, char * argv[]){
       mg->GetXaxis()->SetLimits(scan_begin,scan_end);
       mg->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
       mg->GetYaxis()->SetTitle("sensitivity");
-      c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Sensitivities.pdf"));
+      printPlot(&c, "Sensitivities", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
       sensitivitiesfile.Close();
     }
   }
@@ -753,7 +753,7 @@ int main(int argc, char * argv[]){
     BDT_cut_value.SetY1(gr_signal_yield->GetYaxis()->GetXmin());
     BDT_cut_value.SetY2(gr_signal_yield->GetYaxis()->GetXmax());
     BDT_cut_value.Draw();
-    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalYield.pdf"));
+    printPlot(&c, "SignalYield", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
   
     TGraph*  gr_background_yield = new TGraph(background_yield.size(), &bdt_cut[0], &background_yield[0]);
     gr_background_yield->SetLineColor(2);
@@ -764,7 +764,7 @@ int main(int argc, char * argv[]){
     BDT_cut_value.SetY1(gr_background_yield->GetYaxis()->GetXmin());
     BDT_cut_value.SetY2(gr_background_yield->GetYaxis()->GetXmax());
     BDT_cut_value.Draw();
-    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/BackgroundYield.pdf"));
+    printPlot(&c, "BackgroundYield", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
   
     TGraph*  gr_signal_efficiency = new TGraph(signal_efficiency.size(), &bdt_cut[0], &signal_efficiency[0]);
     gr_signal_efficiency->SetLineColor(2);
@@ -775,7 +775,7 @@ int main(int argc, char * argv[]){
     BDT_cut_value.SetY1(gr_signal_efficiency->GetYaxis()->GetXmin());
     BDT_cut_value.SetY2(gr_signal_efficiency->GetYaxis()->GetXmax());
     BDT_cut_value.Draw();
-    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalEfficiency.pdf"));
+    printPlot(&c, "SignalEfficiency", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
   
     TGraph*  gr_signal_significance = new TGraph(signal_significance.size(), &bdt_cut[0], &signal_significance[0]);
     gr_signal_significance->SetLineColor(2);
@@ -786,14 +786,14 @@ int main(int argc, char * argv[]){
     BDT_cut_value.SetY1(gr_signal_significance->GetYaxis()->GetXmin());
     BDT_cut_value.SetY2(gr_signal_significance->GetYaxis()->GetXmax());
     BDT_cut_value.Draw();
-    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/SignalSignificance.pdf"));
+    printPlot(&c, "SignalSignificance", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
   
     TGraph*  ROC_curve = new TGraph(signal_efficiency.size(), &signal_efficiency[0], &background_rejection[0]);
     ROC_curve->SetLineColor(2);
     ROC_curve->GetXaxis()->SetTitle("signal efficiency");
     ROC_curve->GetYaxis()->SetTitle("background rejection");
     ROC_curve->Draw("AC");
-    c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/ROC_Curve.pdf"));
+    printPlot(&c, "ROC_Curve", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
 
     // TMultiGraph* mg = new TMultiGraph();
     // mg->Add(gr_signal_efficiency);
@@ -801,7 +801,7 @@ int main(int argc, char * argv[]){
     // mg->Draw("AC");
     // mg->GetXaxis()->SetTitle(TString(config.getString("BDT_as_axis_title")));
     // mg->GetYaxis()->SetTitle("signal yield");
-    // c.SaveAs(TString("/home/fmeier/storage03/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")+"/Summary.pdf"));
+    // printPlot(&c, "Summary", TString("/home/fmeier/lhcb-tank/b02dd/run/BDT-Optimization/"+config.getString("bdt_classifier")));
 
     for (int i = 0; i < signal_yield.size(); ++i)  cout <<  (int)signal_yield.at(i) <<  "\t"  <<  (int)background_yield.at(i) <<  endl;
   }

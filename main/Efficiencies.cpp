@@ -135,5 +135,5 @@ void PlotHist(TTree* tree_kpipi, TTree* tree_kkpi, TString cut, TString name){
   hist.GetXaxis()->SetTitle("#it{m_{D^{+}D^{-}}} (MeV/c^{2})");
   hist.SetMinimum(0);
   hist.Draw();
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/Selection/"+name+".pdf");
+  printPlot(&c, name, "/home/fmeier/lhcb-tank/b02dd/run/Selection");
 }

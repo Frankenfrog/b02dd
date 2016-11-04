@@ -58,7 +58,7 @@ int main(int argc, const char * argv[]){
 
   EasyTuple         sweighted_tuple(config.getString("tuple"),config.getString("tree"),observables);
   sweighted_tuple.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-  RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar("SigWeight"));
+  RooDataSet&       signaldata = sweighted_tuple.ConvertToDataSet(WeightVar(sweightname));
   signaldata.Print();
 
   RooDataSet        signaldata_OS("signaldata_OS","signaldata_OS",observables,Import(signaldata),Cut("abs("+OS_tag_observable+")==1&&abs("+SS_tag_observable+")==0"),WeightVar(sweightname));

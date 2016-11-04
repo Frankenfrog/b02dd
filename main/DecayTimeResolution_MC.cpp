@@ -103,11 +103,11 @@ int main(int argc, char * argv[]){
   // Get Starting Values and Fit PDF to data
   // pdf.getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
   
-  pdf.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/StartingValues_MC_Resolution.txt");
+  pdf.getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MC/StartingValues_MC_Resolution.txt");
   pdf.Print();
   
   // Fit PDF to data
-  pdf.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/StartingValues.new");
+  pdf.getParameters(*data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MC/StartingValues.new");
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   fitting_args.Add((TObject*)(new RooCmdArg(Minos(false))));
@@ -122,12 +122,12 @@ int main(int argc, char * argv[]){
   fitting_args.Add((TObject*)(new RooCmdArg(Offset(true))));
 
   RooFitResult* fit_result = pdf.fitTo(*data,fitting_args);
-  pdf.getParameters(*data)->writeToFile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".txt"));
+  pdf.getParameters(*data)->writeToFile(TString("/home/fmeier/lhcb-tank/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".txt"));
   fit_result->Print("v");
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
   fitresultprinter.Print();
   fit_result->correlationMatrix().Print();
-  TFile   fitresultwritetofile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".root"),"recreate");
+  TFile   fitresultwritetofile(TString("/home/fmeier/lhcb-tank/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".root"),"recreate");
   fit_result->Write("fit_result");
   fitresultwritetofile.Close();
 
@@ -143,11 +143,11 @@ int main(int argc, char * argv[]){
   cout << Dilution/entriesintree  <<  endl;
 
   // Plots
-  pdf.getParameters(*data)->readFromFile(TString("/home/fmeier/storage03/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".txt"));
+  pdf.getParameters(*data)->readFromFile(TString("/home/fmeier/lhcb-tank/b02dd/run/MC/FitResults_Resolution_"+config.getString("resolutionmodelname")+".txt"));
  
   PlotConfig cfg_plot_time("cfg_plot_time");
   cfg_plot_time.set_plot_appendix("");
-  cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/MC/PlotResolution");
+  cfg_plot_time.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/MC/PlotResolution");
   cfg_plot_time.set_label_text("MC");
   std::vector<std::string> components_time;
   components_time += "respereventGauss1", "respereventGauss2", "pdfGauss_wrongPV";

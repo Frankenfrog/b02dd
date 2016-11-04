@@ -159,33 +159,33 @@ int main(int argc, char * argv[]){
   RooGaussian         conpdfSigTimeTau2("conpdfSigTimeTau2","constraint for #tau",parSigTimeTau2,parSigTimeTauMean,parSigTimeTauSigma);
   
   RooFitResult* fit_result1 = pdfSigTime1.fitTo(*data,ExternalConstraints(conpdfSigTimeTau1),NumCPU(num_cpu,0),Strategy(2),Save(true),Minimizer("Minuit2","minimize"));
-  pdfSigTime1.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/FitResults1.txt");
+  pdfSigTime1.getParameters(*data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/FitResults1.txt");
   fit_result1->Print("v");
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result1);
   fitresultprinter.Print();
   fit_result1->correlationMatrix().Print();
-  TFile   fitresultwritetofile1("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/FitResults1.root","recreate");
+  TFile   fitresultwritetofile1("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/FitResults1.root","recreate");
   fit_result1->Write("fit_result");
   fitresultwritetofile1.Close();
 
   RooFitResult* fit_result2 = pdfSigTime2.fitTo(*data,ExternalConstraints(conpdfSigTimeTau2),NumCPU(num_cpu,0),Strategy(2),Save(true),Minimizer("Minuit2","minimize"));
-  pdfSigTime2.getParameters(*data)->writeToFile("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/FitResults2.txt");
+  pdfSigTime2.getParameters(*data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/FitResults2.txt");
   fit_result2->Print("v");
   doofit::fitter::easyfit::FitResultPrinter fitresultprinter2(*fit_result2);
   fitresultprinter2.Print();
   fit_result2->correlationMatrix().Print();
-  TFile   fitresultwritetofile2("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/FitResults2.root","recreate");
+  TFile   fitresultwritetofile2("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/FitResults2.root","recreate");
   fit_result2->Write("fit_result");
   fitresultwritetofile2.Close();
 
   // Plots
-  pdfSigTime1.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/FitResults1.txt");
-  pdfSigTime2.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/FitResults2.txt");
+  pdfSigTime1.getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/FitResults1.txt");
+  pdfSigTime2.getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/FitResults2.txt");
   PlotAcceptance(&accspline1, fit_result1, &accspline2, fit_result2, &tree);
  
   // PlotConfig cfg_plot_time("cfg_plot_time");
   // cfg_plot_time.set_plot_appendix("");
-  // cfg_plot_time.set_plot_directory("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/PlotTime");
+  // cfg_plot_time.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots/PlotTime");
   // std::vector<std::string> components_time;
   // Plot Time(cfg_plot_time, obsTime, *data, pdfSigTime1, components_time);
   // Time.AddPlotArg(NumCPU(1));
@@ -229,7 +229,6 @@ void PlotAcceptance(RooAbsReal* acceptance1, RooFitResult* fit_result1, RooAbsRe
   plot->GetYaxis()->SetTitle("acceptance");
   plot->Draw();
   hist_acceptance.Draw("same");
-
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/MC/SplineKnots/Acceptancespline.pdf");
+  printPlot(&c, "Acceptancespline", "/home/fmeier/lhcb-tank/b02dd/run/MC/SplineKnots");
 }
 

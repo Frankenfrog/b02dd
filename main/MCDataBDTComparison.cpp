@@ -118,19 +118,19 @@ int main(int argc, char * argv[]){
   TCanvas c("c","c",800,600);
   hist_BDT1_data->DrawNormalized();
   hist_BDT1_MC->DrawNormalized("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/BDT1_datavsMC.pdf");
+  c.SaveAs("/home/fmeier/lhcb-tank/b02dd/run/BDT1_datavsMC.pdf");
 
   hist_BDT2_data->DrawNormalized();
   hist_BDT2_MC->DrawNormalized("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/BDT2_datavsMC.pdf");
+  c.SaveAs("/home/fmeier/lhcb-tank/b02dd/run/BDT2_datavsMC.pdf");
 
   hist_BDTG1_data->DrawNormalized();
   hist_BDTG1_MC->DrawNormalized("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/BDTG1_datavsMC.pdf");
+  c.SaveAs("/home/fmeier/lhcb-tank/b02dd/run/BDTG1_datavsMC.pdf");
 
   hist_BDTG2_data->DrawNormalized();
   hist_BDTG2_MC->DrawNormalized("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/BDTG2_datavsMC.pdf");
+  c.SaveAs("/home/fmeier/lhcb-tank/b02dd/run/BDTG2_datavsMC.pdf");
   
   return 0;
 }

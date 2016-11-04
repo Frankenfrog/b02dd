@@ -803,7 +803,7 @@ int main(int argc, char * argv[]){
       cout  <<  i <<  endl;
       try {
         data = tfac.Generate();
-        ws->allVars().readFromFile("/home/fmeier/storage03/Systematics/ProdAsymm/generation.par");
+        ws->allVars().readFromFile("/home/fmeier/lhcb-tank/Systematics/ProdAsymm/generation.par");
         pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
         splotfit = new SPlotFit2(*pdfMass,*data,set_of_yields);
         splotfit->set_use_minos(false);
@@ -845,7 +845,7 @@ int main(int argc, char * argv[]){
         while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
           constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
           constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
-          // constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/run/sin2betaFit_sFit/StartingValues.txt");
+          // constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/StartingValues.txt");
         }
         parSigEtaDeltaProd_11.setVal(ws->var("parSigEtaDeltaProd_11")->getVal());
         parSigEtaDeltaProdOffset.setVal(ws->var("parSigEtaDeltaProdOffset")->getVal());

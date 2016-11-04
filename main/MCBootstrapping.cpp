@@ -931,7 +931,7 @@ int main(int argc, char * argv[]){
           RooAbsReal* profile = nll->createProfile(RooArgSet(parSigTimeSin2b,parSigTimeC));
           profile->plotOn(frame,LineColor(2));
           TLatex* label = new TLatex(1,1,"");
-          PlotSimple("Likelihoodscan",frame,*label,"/home/fmeier/storage03/b02dd/Bootstrapping/MCTest");
+          PlotSimple("Likelihoodscan",frame,*label,"/home/fmeier/lhcb-tank/b02dd/Bootstrapping/MCTest");
           delete profile;
           delete nll;
           delete data_bootstrapped;
@@ -939,13 +939,13 @@ int main(int argc, char * argv[]){
           i--;
         }
       }
-      // TFile file_hist_eta(TString("/home/fmeier/storage03/b02dd/Bootstrapping/MCTest/Hist_Eta"+TString(argv[2])+".root"),"recreate");
+      // TFile file_hist_eta(TString("/home/fmeier/lhcb-tank/b02dd/Bootstrapping/MCTest/Hist_Eta"+TString(argv[2])+".root"),"recreate");
       // hist_eta_max_converged->Write("hist_eta_max_converged");
       // hist_eta_min_converged->Write("hist_eta_min_converged");
       // hist_eta_max_failed->Write("hist_eta_max_failed");
       // hist_eta_min_failed->Write("hist_eta_min_failed");
       // file_hist_eta.Close();
-      // TFile file_hist_sine_term(TString("/home/fmeier/storage03/b02dd/Bootstrapping/MCTest/Hist_Sine_Term"+TString(argv[2])+".root"),"recreate");
+      // TFile file_hist_sine_term(TString("/home/fmeier/lhcb-tank/b02dd/Bootstrapping/MCTest/Hist_Sine_Term"+TString(argv[2])+".root"),"recreate");
       // hist_sine_term_failed->Write("hist_sine_term_failed");
       // hist_sine_term_converged->Write("hist_sine_term_converged");
       // file_hist_sine_term.Close();

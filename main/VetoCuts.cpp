@@ -78,7 +78,7 @@ int main(int argc, char * argv[]){
   hist_lambda_before.Draw();
   hist_lambda_after.SetLineColor(2);
   hist_lambda_after.Draw("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/Selection/LambdaVeto.pdf");
+  printPlot(&c, "LambdaVeto", "/home/fmeier/lhcb-tank/b02dd/run/Selection");
 
   TH1D hist_Ds_before("hist_Ds_before","hist_Ds_before",100,1900,2000);
   TH1D hist_Ds_before_kpipi = DsHist(tree_kpipi, false);
@@ -97,7 +97,7 @@ int main(int argc, char * argv[]){
   hist_Ds_before.Draw();
   hist_Ds_after.SetLineColor(2);
   hist_Ds_after.Draw("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/Selection/DsVeto.pdf");
+  printPlot(&c, "DsVeto", "/home/fmeier/lhcb-tank/b02dd/run/Selection");
 
   gStyle->SetTitleOffset(1.00,"Y");
   gStyle->SetPadLeftMargin(0.14);
@@ -119,7 +119,7 @@ int main(int argc, char * argv[]){
   hist_Phi_before.Draw();
   hist_Phi_after.SetLineColor(2);
   hist_Phi_after.Draw("same");
-  c.SaveAs("/home/fmeier/storage03/b02dd/run/Selection/PhiVeto.pdf");
+  printPlot(&c, "PhiVeto", "/home/fmeier/lhcb-tank/b02dd/run/Selection");
 
   return 0;
 }
