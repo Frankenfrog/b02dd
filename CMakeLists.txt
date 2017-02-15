@@ -16,8 +16,8 @@ are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo
 MinSizeRel.")
 ENDIF()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb -std=c++0x" CACHE STRING "Debug options." FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++0x" CACHE STRING "Debug options." FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb -std=c++0x -std=c++14" CACHE STRING "Debug options." FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++0x -std=c++14" CACHE STRING "Debug options." FORCE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{DOOFITSYS}/cmake/Modules/")
@@ -40,7 +40,7 @@ if(${APPLE})
 endif(${APPLE})
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   MESSAGE( STATUS "Building for Linux, switching off C++11 flags for Linux/gcc" )
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -std=c++1y")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 FIND_PACKAGE(Boost 1.48 COMPONENTS program_options filesystem thread system random REQUIRED)
