@@ -61,7 +61,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/config/CommonConfig.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"
@@ -830,7 +830,7 @@ int main(int argc, char * argv[]){
 //========================================================================================================================================================================================================================
   
   // Mistag distributions
-  TFile* mistag_histograms = new TFile("/home/fmeier/storage03/b02dd/Histograms/HIST_Eta_Distributions.root","read");
+  TFile* mistag_histograms = new TFile("/home/fmeier/lhcb-tank/b02dd/Histograms/HIST_Eta_Distributions.root","read");
   TH1D*    TH1_Sig_OS_eta = dynamic_cast<TH1D*>(mistag_histograms->Get("hist_Sig_OS_eta"));
   TH1D*    TH1_Sig_SS_eta = dynamic_cast<TH1D*>(mistag_histograms->Get("hist_Sig_SS_eta"));
   RooDataHist DataHist_Sig_OS_eta("DataHist_Sig_OS_eta","DataHist_Sig_OS_eta",obsEtaOS,TH1_Sig_OS_eta);
@@ -913,7 +913,7 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < 5 ; ++i) {
       cout  <<  i <<  endl;
       try {
-        pdf_generate.getParameters(data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
+        pdf_generate.getParameters(data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         parBkgCharmlessYield_KKpi.setVal(random.Gaus(28.7,19.5));
         cout << parBkgCharmlessYield_KKpi.GetName() << "\t"  <<  parBkgCharmlessYield_KKpi.getVal() <<  endl;
         while (parBkgCharmlessYield_KKpi.getVal() <= 0.0) {
@@ -954,11 +954,11 @@ int main(int argc, char * argv[]){
         data = tfac.Generate();
         // EasyTuple tuple(*data);
         // tuple.WriteDataSetToTree("testsignalgenerationdatasample.root","TestTree");
-        // pdfMass.getParameters(data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
+        // pdfMass.getParameters(data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         splotfit = new SPlotFit2(pdfMass,*data,set_of_yields);
         splotfit->set_use_minos(false);
         splotfit->set_num_cpu(config.getInt("num_cpu"));
-        splotfit->set_startingvalues("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
+        splotfit->set_startingvalues("/home/fmeier/lhcb-tank/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         RooMsgService::instance().setStreamStatus(0, false);
         RooMsgService::instance().setStreamStatus(1, false);
         stopwatch.Start(true);
@@ -970,10 +970,10 @@ int main(int argc, char * argv[]){
         data->addColumn(sum_of_signal_weights_year_finalstate);
         data_sweighted = new RooDataSet("data_sweighted","data_sweighted",data,*(data->get()),"","sum_of_signal_weights_year_finalstate");
         data_sweighted->Print();
-        pdfTime.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
+        pdfTime.getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         iterator = constrainingPdfs.createIterator();
         while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
+          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/MassModel/GaussUncertainties/generation.par");
         }
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));

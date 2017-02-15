@@ -45,7 +45,7 @@
 // from DooFit
 #include "doofit/roofit/functions/CPCoefficient.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/config/CommonConfig.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"

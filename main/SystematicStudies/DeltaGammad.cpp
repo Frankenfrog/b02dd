@@ -61,7 +61,7 @@
 #include "doofit/plotting/Plot/Plot.h"
 #include "doofit/plotting/Plot/PlotSimultaneous.h"
 #include "doofit/plotting/Plot/PlotConfig.h"
-#include "doofit/plotting/fitresult/FitResultPrinter.h"
+#include "doofit/fitter/easyfit/FitResultPrinter.h"
 #include "doofit/config/CommonConfig.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStd.h"
 #include "doofit/toy/ToyStudyStd/ToyStudyStdConfig.h"
@@ -340,7 +340,7 @@ int main(int argc, char * argv[]){
 
   cout  <<  "simultaneous PDF built"  <<  endl;
 
-  Gaussian_Constraints.readFromFile("/home/fmeier/storage03/b02dd/Systematics/DeltaGammad/generation.par");
+  Gaussian_Constraints.readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/DeltaGammad/generation.par");
 
   RooRealVar            parSigEtaDeltaP0P1CorrelationCoeff_OS("parSigEtaDeltaP0P1CorrelationCoeff_OS","correlation coefficient between calibration parameters p0 and p1 or Delta p0 and Delta p1 for OS",0.14);
   TMatrixDSym           covariancematrixSigEtaDelta_OS = CreateCovarianceMatrix(2, &parSigEtaDeltaP0Sigma_OS, &parSigEtaDeltaP1Sigma_OS, &parSigEtaDeltaP0P1CorrelationCoeff_OS);
@@ -383,7 +383,7 @@ int main(int argc, char * argv[]){
 //========================================================================================================================================================================================================================
 
   // Mistag distributions
-  TFile* mistag_histograms = new TFile("/home/fmeier/storage03/b02dd/Histograms/HIST_Eta_Distributions.root","read");
+  TFile* mistag_histograms = new TFile("/home/fmeier/lhcb-tank/b02dd/Histograms/HIST_Eta_Distributions.root","read");
   TH1D*    TH1_Sig_OS_eta = dynamic_cast<TH1D*>(mistag_histograms->Get("hist_Sig_OS_eta"));
   TH1D*    TH1_Sig_SS_eta = dynamic_cast<TH1D*>(mistag_histograms->Get("hist_Sig_SS_eta"));
   RooDataHist DataHist_Sig_OS_eta("DataHist_Sig_OS_eta","DataHist_Sig_OS_eta",obsEtaOS,TH1_Sig_OS_eta);
@@ -454,10 +454,10 @@ int main(int argc, char * argv[]){
       cout  <<  i <<  endl;
       try {
         data = tfac.Generate();
-        pdfTime_fit.getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/DeltaGammad/generation.par");
+        pdfTime_fit.getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/DeltaGammad/generation.par");
         iterator = constrainingPdfs.createIterator();
         while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/storage03/b02dd/Systematics/DecayTimeFitValidation/generation.par");
+          constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/DecayTimeFitValidation/generation.par");
         }
         parSigEtaDeltaProdMean_11.setVal(conpdfSigEtaDeltaProd_11.generate(parSigEtaDeltaProd_11,1)->get()->getRealValue("parSigEtaDeltaProd_11"));
         parSigEtaDeltaProdOffsetMean.setVal(conpdfSigEtaDeltaProd_12.generate(parSigEtaDeltaProdOffset,1)->get()->getRealValue("parSigEtaDeltaProdOffset"));
