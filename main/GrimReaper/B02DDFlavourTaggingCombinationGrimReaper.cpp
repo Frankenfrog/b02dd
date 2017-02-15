@@ -30,6 +30,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
   TaggingRdcr():
     // create leaves
     var_out_tag_leaf_(NULL),
+    var_out_eta_leaf_(NULL),
     var_out_eta_B0_leaf_(NULL),
     var_out_eta_B0bar_leaf_(NULL),
     cat_out_tagged_leaf_(NULL),
@@ -42,6 +43,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
 
     // leaves to write
     var_out_tag_value_(NULL),
+    var_out_eta_value_(NULL),
     var_out_eta_B0_value_(NULL),
     var_out_eta_B0bar_value_(NULL),
     cat_out_tagged_value_(NULL),
@@ -58,6 +60,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
     delta_p1_SS_(0.07),
     
     tag_("obsTag"),
+    eta_("obsEta"),
     eta_B0_("obsEta_B0"),
     eta_B0bar_("obsEta_B0bar"),
     cat_("catTagged"),
@@ -71,6 +74,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
  private:
   // create leaves
   dooselection::reducer::ReducerLeaf<Int_t>*    var_out_tag_leaf_;
+  dooselection::reducer::ReducerLeaf<Double_t>* var_out_eta_leaf_;
   dooselection::reducer::ReducerLeaf<Double_t>* var_out_eta_B0_leaf_;
   dooselection::reducer::ReducerLeaf<Double_t>* var_out_eta_B0bar_leaf_;
   dooselection::reducer::ReducerLeaf<Int_t>*    cat_out_tagged_leaf_;
@@ -83,6 +87,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
 
   // leaves to write
   Int_t*    var_out_tag_value_;
+  Double_t* var_out_eta_value_;
   Double_t* var_out_eta_B0_value_;
   Double_t* var_out_eta_B0bar_value_;
   Int_t*    cat_out_tagged_value_;
@@ -100,6 +105,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
   double delta_p1_SS_;
 
   std::string tag_;
+  std::string eta_;
   std::string eta_B0_;
   std::string eta_B0bar_;
   std::string cat_;
@@ -109,6 +115,7 @@ class TaggingRdcr : virtual public dooselection::reducer::Reducer {
 void TaggingRdcr::CreateSpecialBranches(){
   // Create new leaves
   var_out_tag_leaf_        = &CreateIntLeaf(tag_+appendix_);
+  var_out_eta_leaf_        = &CreateDoubleLeaf(eta_+appendix_);
   var_out_eta_B0_leaf_     = &CreateDoubleLeaf(eta_B0_+appendix_);
   var_out_eta_B0bar_leaf_  = &CreateDoubleLeaf(eta_B0bar_+appendix_);
   cat_out_tagged_leaf_     = &CreateIntLeaf(cat_+appendix_);
@@ -120,6 +127,7 @@ void TaggingRdcr::CreateSpecialBranches(){
   var_in_eta_SS_     = (Double_t*)GetInterimLeafByName("obsEtaSS").branch_address();
 
   var_out_tag_value_        = (Int_t*)var_out_tag_leaf_->branch_address();
+  var_out_eta_value_        = (Double_t*)var_out_eta_leaf_->branch_address();
   var_out_eta_B0_value_     = (Double_t*)var_out_eta_B0_leaf_->branch_address();
   var_out_eta_B0bar_value_  = (Double_t*)var_out_eta_B0bar_leaf_->branch_address();
   cat_out_tagged_value_     = (Int_t*)cat_out_tagged_leaf_->branch_address();
@@ -144,41 +152,47 @@ void TaggingRdcr::UpdateSpecialLeaves(){
   double omega_SS_B0bar  = p0_SS_ - 0.5 * delta_p0_SS_ + ( p1_SS_ - 0.5 * delta_p1_SS_ ) * ( mistag_SS - avg_eta_SS_ );
 
   if ((mistag_OS >= 0.5 || omega_OS >= 0.5) && mistag_SS >= 0.5){
-    *var_out_tag_value_ = 1;
-    *var_out_eta_B0_value_ = 0.5;
+    *var_out_tag_value_       = 1;
+    *var_out_eta_value_       = 0.5;
+    *var_out_eta_B0_value_    = 0.5;
     *var_out_eta_B0bar_value_ = 0.5;
-    *cat_out_tagged_value_ = 0;
+    *cat_out_tagged_value_    = 0;
   }
   else if (mistag_OS < 0.5 && omega_OS < 0.5 && mistag_SS >= 0.5){
-    *var_out_tag_value_ = -tag_OS;
-    *var_out_eta_B0_value_ = omega_OS_B0;
+    *var_out_tag_value_       = -tag_OS;
+    *var_out_eta_value_       = omega_OS;
+    *var_out_eta_B0_value_    = omega_OS_B0;
     *var_out_eta_B0bar_value_ = omega_OS_B0bar;
-    *cat_out_tagged_value_ = 1;
+    *cat_out_tagged_value_    = 1;
   }
   else if ((mistag_OS >= 0.5 || omega_OS >= 0.5) && mistag_SS < 0.5){
-    *var_out_tag_value_ = -tag_SS;
-    *var_out_eta_B0_value_ = omega_SS_B0;
+    *var_out_tag_value_       = -tag_SS;
+    *var_out_eta_value_       = omega_SS;
+    *var_out_eta_B0_value_    = omega_SS_B0;
     *var_out_eta_B0bar_value_ = omega_SS_B0bar;
-    *cat_out_tagged_value_ = 1;
+    *cat_out_tagged_value_    = 1;
   }
   else {
     if (tag_OS == tag_SS){
-      *var_out_tag_value_ = -tag_OS; 
+      *var_out_tag_value_       = -tag_OS;
+      *var_out_eta_value_       = ( omega_OS * omega_SS ) / ( omega_OS * omega_SS + ( 1 - omega_OS ) * ( 1 - omega_SS ));
       *var_out_eta_B0_value_    = ( omega_OS_B0 * omega_SS_B0 ) / ( omega_OS_B0 * omega_SS_B0 + ( 1 - omega_OS_B0 ) * ( 1 - omega_SS_B0 ));
       *var_out_eta_B0bar_value_ = ( omega_OS_B0bar * omega_SS_B0bar ) / ( omega_OS_B0bar * omega_SS_B0bar + ( 1 - omega_OS_B0bar ) * ( 1 - omega_SS_B0bar ));
-      *cat_out_tagged_value_ = 1;
+      *cat_out_tagged_value_    = 1;
     }
     else if (omega_OS <= omega_SS){
-      *var_out_tag_value_ = -tag_OS; 
-      *var_out_eta_B0_value_ = ( omega_OS_B0 * ( 1 - omega_SS_B0 )) / ( omega_OS_B0 * ( 1 - omega_SS_B0 ) + ( 1 - omega_OS_B0 ) * omega_SS_B0 );
+      *var_out_tag_value_       = -tag_OS;
+      *var_out_eta_value_       = ( omega_OS * ( 1 - omega_SS )) / ( omega_OS * ( 1 - omega_SS ) + ( 1 - omega_OS ) * omega_SS );
+      *var_out_eta_B0_value_    = ( omega_OS_B0 * ( 1 - omega_SS_B0 )) / ( omega_OS_B0 * ( 1 - omega_SS_B0 ) + ( 1 - omega_OS_B0 ) * omega_SS_B0 );
       *var_out_eta_B0bar_value_ = ( omega_OS_B0bar * ( 1 - omega_SS_B0bar )) / ( omega_OS_B0bar * ( 1 - omega_SS_B0bar ) + ( 1 - omega_OS_B0bar ) * omega_SS_B0bar );
-      *cat_out_tagged_value_ = 1; 
+      *cat_out_tagged_value_    = 1;
     }
     else {
-      *var_out_tag_value_ = -tag_SS; 
-      *var_out_eta_B0_value_ = ( omega_SS_B0 * ( 1 - omega_OS_B0 )) / ( omega_SS_B0 * ( 1 - omega_OS_B0 ) + ( 1 - omega_SS_B0 ) * omega_OS_B0 );
+      *var_out_tag_value_       = -tag_SS;
+      *var_out_eta_value_       = ( omega_SS * ( 1 - omega_OS )) / ( omega_SS * ( 1 - omega_OS ) + ( 1 - omega_SS ) * omega_OS );
+      *var_out_eta_B0_value_    = ( omega_SS_B0 * ( 1 - omega_OS_B0 )) / ( omega_SS_B0 * ( 1 - omega_OS_B0 ) + ( 1 - omega_SS_B0 ) * omega_OS_B0 );
       *var_out_eta_B0bar_value_ = ( omega_SS_B0bar * ( 1 - omega_OS_B0bar )) / ( omega_SS_B0bar * ( 1 - omega_OS_B0bar ) + ( 1 - omega_SS_B0bar ) * omega_OS_B0bar );
-      *cat_out_tagged_value_ = 1;
+      *cat_out_tagged_value_    = 1;
     }
   }
 }
