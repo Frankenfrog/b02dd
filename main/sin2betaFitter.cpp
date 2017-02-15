@@ -180,6 +180,14 @@ int main(int argc, char * argv[]){
   RooCategory       catTagged_combined("catTagged_combined","tagged by combination of OS and SS");
   catTagged_combined.defineType("tagged",1);
   catTagged_combined.defineType("untagged",0);
+  RooCategory       obsTagOS_wZero("obsTag"+OS_tagger,"Flavour Tag");
+  obsTagOS_wZero.defineType("B0",1);
+  obsTagOS_wZero.defineType("B0bar",-1);
+  obsTagOS_wZero.defineType("untagged",0);
+  RooCategory       obsTagSS_wZero("obsTag"+SS_tagger,"Flavour Tag");
+  obsTagSS_wZero.defineType("B0",1);
+  obsTagSS_wZero.defineType("B0bar",-1);
+  obsTagSS_wZero.defineType("untagged",0);
   
   RooCategory       catYear("catYear","year of data taking");
   catYear.defineType("2011",2011);
@@ -258,6 +266,8 @@ int main(int argc, char * argv[]){
     observables.add(obsEtaSS);
     observables.add(obsTagOS);
     observables.add(obsTagSS);
+    observables.add(obsTagOS_wZero);
+    observables.add(obsTagSS_wZero);
   }
   if (plot_asymmetry) observables.add(RooArgSet(obsTag_combined,obsEta_B0,obsEta_B0bar,catTagged_combined));
   RooArgSet         categories(catYear,catTag,catDDFinalState,catDDFinalStateParticles,catDminusFinalState,catDplusFinalState,catMag,"categories");
@@ -309,12 +319,18 @@ int main(int argc, char * argv[]){
     return 0;
   }
   if (plot_mass_distribution) {
+    EasyTuple         tuple2(config.getString("tuple2"),"B02DD",RooArgSet(observables,categories));
+    tuple2.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
+    RooDataSet* data2 = &(tuple2.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+    data->Print();
+    data->append(*data2);
+    data->Print();
     PlotConfig cfg_plot_mass("cfg_plot_mass");
     cfg_plot_mass.InitializeOptions();
     cfg_plot_mass.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/Mass/Plots/"+config.getString("identifier"));
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
     // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
-    // cfg_plot_mass.set_y_axis_label("Kandidaten");
+    cfg_plot_mass.set_y_axis_label("Kandidaten");
     Plot Mass(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
     Mass.set_scaletype_x(kLinear);
     Mass.set_scaletype_y(kBoth);
