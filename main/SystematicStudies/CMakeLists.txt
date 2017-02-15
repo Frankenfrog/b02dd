@@ -11,6 +11,7 @@ add_executable(MassModel MassModel.cpp)
 add_executable(zscale zscale.cpp)
 add_executable(CorrelationEtaTime CorrelationEtaTime.cpp)
 add_executable(DecayTimeResolution DecayTimeResolution.cpp)
+add_executable(Constraints Constraints.cpp)
 
 # Aliases for module libs
 
@@ -27,3 +28,4 @@ target_link_libraries(MassModel ${ALL_LIBRARIES})
 target_link_libraries(zscale ${ALL_LIBRARIES})
 target_link_libraries(CorrelationEtaTime CPToyMC ${ALL_LIBRARIES})
 target_link_libraries(DecayTimeResolution ${ALL_LIBRARIES})
+target_link_libraries(Constraints ${ALL_LIBRARIES})
