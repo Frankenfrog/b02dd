@@ -47,13 +47,18 @@ def main(name_file,name_tree,branch_pt, branch_eta, branch_weight,meson_type,cut
   #get dictionary
   the_bins = bins[meson_type]
   num_signal = 0.
+  name_of_hist = ""
   # calculate number of events in bins
   for key, value in the_bins.iteritems():
     cut_string =  "("+cuts+")*"+branch_weight
     cut_string += "*("+branch_pt+">="+str(value["pt"][0]*1000)+"&&"+branch_pt+"<"+str(value["pt"][1]*1000)
     cut_string += "&&"+branch_eta+">="+str(value["eta"][0])+"&&"+branch_eta+"<"+str(value["eta"][1])+")"
     the_tree.Draw(branch_pt,cut_string)
-    num_signal += gPad.GetPrimitive("htemp").GetEffectiveEntries()
+    if gPad.GetPrimitive("hframe"):
+      name_of_hist = "hframe"
+    else:
+      name_of_hist = "htemp"
+    num_signal += gPad.GetPrimitive(name_of_hist).GetEffectiveEntries()
 
 
   AP_mean = 0.
@@ -67,7 +72,11 @@ def main(name_file,name_tree,branch_pt, branch_eta, branch_weight,meson_type,cut
     cut_string += "*("+branch_pt+">="+str(value["pt"][0]*1000)+"&&"+branch_pt+"<"+str(value["pt"][1]*1000)
     cut_string += "&&"+branch_eta+">="+str(value["eta"][0])+"&&"+branch_eta+"<"+str(value["eta"][1])+")"
     the_tree.Draw(branch_pt,cut_string)
-    frac = gPad.GetPrimitive("htemp").GetEffectiveEntries() / num_signal # I hate root
+    if gPad.GetPrimitive("hframe"):
+      name_of_hist = "hframe"
+    else:
+      name_of_hist = "htemp"
+    frac = gPad.GetPrimitive(name_of_hist).GetEffectiveEntries() / num_signal
     frac_err = sqrt(frac*(1.-frac)/num_signal)
     AP_mean += frac * value["AP"]
     AP_err_stat += (frac*value["stat"])**2
