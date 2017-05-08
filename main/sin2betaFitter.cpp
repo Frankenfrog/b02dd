@@ -97,7 +97,7 @@ using namespace doofit::roofit::pdfs;
 using namespace doofit::fitter::splot;
 using namespace dooselection::reducer;
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString identifier = "");
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString identifier = "", TString plot_directory = "");
 TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealVar* p1sigma, RooRealVar* p0p1corr, RooRealVar* dp0sigma = 0, RooRealVar* dp1sigma = 0, RooRealVar* p0dp0corr = 0, RooRealVar* p0dp1corr = 0, RooRealVar* p1dp0corr = 0, RooRealVar* p1dp1corr = 0, RooRealVar* dp0dp1corr = 0);
 
 int main(int argc, char * argv[]){
@@ -255,11 +255,11 @@ int main(int argc, char * argv[]){
   Hlt2IncPhiDecision.defineType("not triggered",0);
 
   RooArgSet         observables(obsTime,obsMass,"observables");
-  observables.add(RooArgSet(Hlt2Topo2BodyBBDTDecision,Hlt2Topo3BodyBBDTDecision,Hlt2Topo4BodyBBDTDecision,Hlt2Topo2BodySimpleDecision,Hlt2Topo3BodySimpleDecision,Hlt2Topo4BodySimpleDecision,Hlt2IncPhiDecision));
-  observables.add(RooArgSet(varKaonMaxP,varPionOneMaxP,varPionTwoMaxP));
-  observables.add(RooArgSet(varDplusMassHypo_KpiK,varDminusMassHypo_KpiK,varPiTwominus_PID,varPiTwoplus_PID));
-  observables.add(RooArgSet(BDTwPIDs_classifier,BDTwPIDs_KKpi_classifier));
-  observables.add(idxRunNumber);
+  // observables.add(RooArgSet(Hlt2Topo2BodyBBDTDecision,Hlt2Topo3BodyBBDTDecision,Hlt2Topo4BodyBBDTDecision,Hlt2Topo2BodySimpleDecision,Hlt2Topo3BodySimpleDecision,Hlt2Topo4BodySimpleDecision,Hlt2IncPhiDecision));
+  // observables.add(RooArgSet(varKaonMaxP,varPionOneMaxP,varPionTwoMaxP));
+  // observables.add(RooArgSet(varDplusMassHypo_KpiK,varDminusMassHypo_KpiK,varPiTwominus_PID,varPiTwoplus_PID));
+  // observables.add(RooArgSet(BDTwPIDs_classifier,BDTwPIDs_KKpi_classifier));
+  // observables.add(idxRunNumber);
   if (pereventresolution || timeerr_histograms) observables.add(obsTimeErr);
   if (cp_fit || mistag_histograms){
     observables.add(obsEtaOS);
@@ -289,7 +289,7 @@ int main(int argc, char * argv[]){
   }
 
   if (mistag_histograms) {
-    TFile* file_mistag_histograms = new TFile("/home/fmeier/lhcb-tank/b02dd/Histograms/HIST_Eta_Distributions.root","recreate");
+    TFile* file_mistag_histograms = new TFile(TString(config.getString("plot_directory") + "/Histograms/HIST_Eta_Distributions.root"),"recreate");
     TTree&            tree = tuple.tree();
     TH1D* hist_Sig_OS_eta = new TH1D("hist_Sig_OS_eta","hist_Sig_OS_eta",100,0,0.5);
     tree.Draw(TString(obsEtaOS.GetName())+">>hist_Sig_OS_eta",TString(cut+"*SigWeight"));
@@ -307,7 +307,7 @@ int main(int argc, char * argv[]){
     if (!timeerr_histograms) return 0;
   }
   if (timeerr_histograms) {
-    TFile* file_timeerr_histograms = new TFile("/home/fmeier/lhcb-tank/b02dd/Histograms/HIST_TimeErr_Distributions.root","recreate");
+    TFile* file_timeerr_histograms = new TFile(TString(config.getString("plot_directory") + "/Histograms/HIST_TimeErr_Distributions.root"),"recreate");
     TTree&            tree = tuple.tree();
     TH1D* hist_Sig_timeerr = new TH1D("hist_Sig_timeerr","hist_Sig_timeerr",100,0.005,0.2);
     tree.Draw(TString(obsTimeErr.GetName())+">>hist_Sig_timeerr",TString(cut+"*SigWeight"));
@@ -319,18 +319,18 @@ int main(int argc, char * argv[]){
     return 0;
   }
   if (plot_mass_distribution) {
-    EasyTuple         tuple2(config.getString("tuple2"),"B02DD",RooArgSet(observables,categories));
-    tuple2.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
-    RooDataSet* data2 = &(tuple2.ConvertToDataSet(Cut(TString(config.getString("cut")))));
-    data->Print();
-    data->append(*data2);
-    data->Print();
+    // EasyTuple         tuple2(config.getString("tuple2"),"B02DD",RooArgSet(observables,categories));
+    // tuple2.set_cut_variable_range(VariableRangeCutting::kCutInclusive);
+    // RooDataSet* data2 = &(tuple2.ConvertToDataSet(Cut(TString(config.getString("cut")))));
+    // data->Print();
+    // data->append(*data2);
+    // data->Print();
     PlotConfig cfg_plot_mass("cfg_plot_mass");
     cfg_plot_mass.InitializeOptions();
-    cfg_plot_mass.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/Mass/Plots/"+config.getString("identifier"));
+    cfg_plot_mass.set_plot_directory(config.getString("plot_directory") + "/run/Mass/Plots/"+config.getString("identifier"));
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
-    // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
-    cfg_plot_mass.set_y_axis_label("Kandidaten");
+    cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
+    // cfg_plot_mass.set_y_axis_label("Kandidaten");
     Plot Mass(cfg_plot_mass, obsMass, *data, RooArgList(), "obsMass");
     Mass.set_scaletype_x(kLinear);
     Mass.set_scaletype_y(kBoth);
@@ -705,7 +705,7 @@ int main(int argc, char * argv[]){
 
   RooArgList        listofsplinecoefficients("listofsplinecoefficients");
   RooRealVar*       parSigTimeAccCSpline;
-  for (int i = 1; i <= (knots.size()+2) ; i++) {
+  for (auto i = 1; i <= (knots.size()+2) ; i++) {
     std::string binname = "parSigTimeAccCSpline" + boost::lexical_cast<std::string>(i);
     std::string bintitle = "h_{" + boost::lexical_cast<std::string>(i) + "}";
     parSigTimeAccCSpline = new RooRealVar(binname.c_str(),bintitle.c_str(),1,0,2);
@@ -724,7 +724,7 @@ int main(int argc, char * argv[]){
 
   RooArgList        listofsplinecoefficients_Kpipi("listofsplinecoefficients_Kpipi");
   RooRealVar*       parSigTimeAccCSpline_Kpipi;
-  for (int i = 1; i <= (knots.size()+2) ; i++) {
+  for (auto i = 1; i <= (knots.size()+2) ; i++) {
     std::string binname = "parSigTimeAccCSpline_Kpipi" + boost::lexical_cast<std::string>(i);
     std::string bintitle = "h_{" + boost::lexical_cast<std::string>(i) + "}";
     parSigTimeAccCSpline_Kpipi = new RooRealVar(binname.c_str(),bintitle.c_str(),1,0,2);
@@ -741,7 +741,7 @@ int main(int argc, char * argv[]){
 
   RooArgList        listofsplinecoefficients_KKpi("listofsplinecoefficients_KKpi");
   RooRealVar*       parSigTimeAccCSpline_KKpi;
-  for (int i = 1; i <= (knots.size()+2) ; i++) {
+  for (auto i = 1; i <= (knots.size()+2) ; i++) {
     std::string binname = "parSigTimeAccCSpline_KKpi" + boost::lexical_cast<std::string>(i);
     std::string bintitle = "h_{" + boost::lexical_cast<std::string>(i) + "}";
     parSigTimeAccCSpline_KKpi = new RooRealVar(binname.c_str(),bintitle.c_str(),1,0,2);
@@ -932,10 +932,10 @@ int main(int argc, char * argv[]){
   cout  <<  "simultaneous PDF built"  <<  endl;
 
   // Get Starting Values
-  pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
-  pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
-  pdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
-  Gaussian_Constraints.readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
+  pdf->getParameters(*data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Time.txt"));
+  pdf->getParameters(*data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Eta.txt"));
+  pdf->getParameters(*data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt"));
+  Gaussian_Constraints.readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Eta.txt"));
 
   pdf->Print();
 
@@ -971,11 +971,11 @@ int main(int argc, char * argv[]){
   TIterator*  iterator = constrainingPdfs.createIterator();
   RooAbsPdf*  constrainingPdf;
   while ((constrainingPdf = dynamic_cast<RooAbsPdf*>(iterator->Next()))){
-    constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
-    constrainingPdf->getParameters(*data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
+    constrainingPdf->getParameters(*data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Eta.txt"));
+    constrainingPdf->getParameters(*data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Time.txt"));
   }
 
-  pdf->getParameters(*data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/StartingValues.new");
+  pdf->getParameters(*data)->writeToFile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/StartingValues.new"));
   RooLinkedList fitting_args;
   fitting_args.Add((TObject*)(new RooCmdArg(NumCPU(num_cpu,0))));
   RooArgSet minosargset;
@@ -995,7 +995,7 @@ int main(int argc, char * argv[]){
 
   double sum_weights(0), sum_squared_weights(0);
   if (correct_sweights) {
-    for (int i = 0; i < data->numEntries(); ++i) {
+    for (auto i = 0; i < data->numEntries(); ++i) {
       data->get(i);
       sum_weights += data->get()->getRealValue("SigWeight");
       sum_squared_weights += data->get()->getRealValue("SigWeight")*data->get()->getRealValue("SigWeight");
@@ -1042,11 +1042,11 @@ int main(int argc, char * argv[]){
       RooFitResult* fit_result;
       TStopwatch  stopwatch;
 
-      for (int i = 0; i < config.getInt("nToysMassFit") ; ++i) {
+      for (auto i = 0; i < config.getInt("nToysMassFit") ; ++i) {
         cout  <<  i <<  endl;
         try {
           data = tfac.Generate();
-          pdfMass->getParameters(data)->readFromFile("/home/fmeier/lhcb-tank/b02dd/Systematics/MassFitValidation/generation.par");
+          pdfMass->getParameters(data)->readFromFile(TString(config.getString("plot_directory") + "/Systematics/MassFitValidation/generation.par"));
           stopwatch.Start(true);
           fit_result = pdfMass->fitTo(*data,fitting_args);
           stopwatch.Stop();
@@ -1124,16 +1124,16 @@ int main(int argc, char * argv[]){
           }
           else set_of_yields.add(RooArgSet(parSigYield,parBkgDsDYield,parSigBsYield,parBkgYield/*,parBkgDstDYield*/,parBkgBsDsDYield));
 
-      for (int i = 0; i < config.getInt("nBootstraps") ; ++i) {
+      for (auto i = 0; i < config.getInt("nBootstraps") ; ++i) {
         cout  <<  i <<  endl;
         try {
           data_bootstrapped = new RooDataSet("data_bootstrapped","data_bootstrapped",RooArgSet(observables,categories));
-          for (int i = 0; i < data->numEntries(); ++i) {
+          for (auto i = 0; i < data->numEntries(); ++i) {
             data->get(random.Rndm()*data->numEntries());
             data_bootstrapped->add(*(data->get()));
           }
           data_bootstrapped->Print();
-          pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
+          pdfMass->getParameters(data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Mass.txt"));
           splotfit = new SPlotFit2(*pdfMass,*data_bootstrapped,set_of_yields);
           splotfit->set_use_minos(false);
           splotfit->set_num_cpu(config.getInt("num_cpu"));
@@ -1159,9 +1159,9 @@ int main(int argc, char * argv[]){
             data_bootstrapped_sweighted = new RooDataSet("data_bootstrapped_sweighted","data_bootstrapped_sweighted",data_bootstrapped,*(data_bootstrapped->get()),TString(catTag.GetName())+"!=0","parSigYield_sw");
           }
           data_bootstrapped_sweighted->Print();
-          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Time.txt");
-          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Eta.txt");
-          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt");
+          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Time.txt"));
+          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Eta.txt"));
+          pdf->getParameters(*data_bootstrapped_sweighted)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Acceptance_Splines.txt"));
           stopwatch.Start(true);
           fit_result = pdf->fitTo(*data_bootstrapped_sweighted,fitting_args);
           stopwatch.Stop();
@@ -1181,8 +1181,8 @@ int main(int argc, char * argv[]){
     }
   }
   if (massfit || calculate_sweights) {
-    pdfMass->getParameters(data)->readFromFile("/home/fmeier/git/b02dd/config/StartingValues/StartingValues_Mass.txt");
-    pdfMass->getParameters(data)->writeToFile("/home/fmeier/lhcb-tank/b02dd/run/Mass/StartingValues_Mass.new");
+    pdfMass->getParameters(data)->readFromFile(TString(config.getString("repo") + "/b02dd/config/StartingValues/StartingValues_Mass.txt"));
+    pdfMass->getParameters(data)->writeToFile(TString(config.getString("plot_directory") + "/run/Mass/StartingValues_Mass.new"));
     fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(false))));
     fitting_args.Add((TObject*)(new RooCmdArg(Extended(true))));
     fitting_args.Add((TObject*)(new RooCmdArg(Optimize(1))));
@@ -1190,11 +1190,11 @@ int main(int argc, char * argv[]){
     RooFitResult* fit_result = pdfMass->fitTo(*data, fitting_args);
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
-    pdfMass->getParameters(data)->writeToFile(TString("/home/fmeier/lhcb-tank/b02dd/run/Mass/FitResults_"+config.getString("identifier")+".txt"));
+    pdfMass->getParameters(data)->writeToFile(TString(config.getString("plot_directory") + "/run/Mass/FitResults_"+config.getString("identifier")+".txt"));
 
     PlotConfig cfg_plot_mass("cfg_plot_mass");
     cfg_plot_mass.InitializeOptions();
-    cfg_plot_mass.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/Mass/Plots/"+config.getString("identifier"));
+    cfg_plot_mass.set_plot_directory(config.getString("plot_directory") + "/run/Mass/Plots/"+config.getString("identifier"));
     cfg_plot_mass.set_simultaneous_plot_all_categories(true);
     // cfg_plot_mass.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
     // cfg_plot_mass.set_y_axis_label("Kandidaten");
@@ -1243,7 +1243,7 @@ int main(int argc, char * argv[]){
       spr.set_output_tree_path("B02DD");
       if (cut.empty()) spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax()));
       else spr.set_cut_string(string(obsMass.GetName())+">="+to_string(obsMass.getMin())+"&&"+string(obsMass.GetName())+"<="+to_string(obsMass.getMax())+"&&"+string(cut));
-      spr.set_plot_directory(string("/home/fmeier/lhcb-tank/b02dd/run/Reducer/Plots"));
+      spr.set_plot_directory(string(config.getString("plot_directory") + "/run/Reducer/Plots"));
       RooMsgService::instance().setStreamStatus(0, false);
       RooMsgService::instance().setStreamStatus(1, false);
       spr.Initialize();
@@ -1332,11 +1332,11 @@ int main(int argc, char * argv[]){
         // frame = parSigTimeSin2b.frame(Range(parSigTimeSin2b.getVal()-3*parSigTimeSin2b.getError(),parSigTimeSin2b.getVal()+3*parSigTimeSin2b.getError()));
         // RooAbsReal* profile = nll->createProfile(RooArgSet(parSigTimeSin2b));
         // profile->plotOn(frame,LineColor(214));
-        // PlotSimple("Likelihoodscan_sin2b",frame,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotLikelihood/");
+        // PlotSimple("Likelihoodscan_sin2b",frame,label,config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotLikelihood/");
         // frame = parSigTimeC.frame(Range(parSigTimeC.getVal()-3*parSigTimeC.getError(),parSigTimeC.getVal()+3*parSigTimeC.getError()));
         // profile = nll->createProfile(RooArgSet(parSigTimeC));
         // profile->plotOn(frame,LineColor(214));
-        // PlotSimple("Likelihoodscan_C",frame,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotLikelihood/");
+        // PlotSimple("Likelihoodscan_C",frame,label,config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotLikelihood/");
         frame = new RooPlot(*(RooRealVar*)parSigTimeSin2b,*(RooRealVar*)parSigTimeC,-1,-0.1,-0.2,0.7);
 
         // draw a point at the current parameter values
@@ -1438,8 +1438,8 @@ int main(int argc, char * argv[]){
         // // frame = minu.contour(parSigTimeSin2b,parSigTimeC,1,0);
         frame->GetYaxis()->SetNdivisions(505);
         // frame->Draw();
-        // c.SaveAs("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotLikelihood/pdf/2DLikelihoodscan.tex");
-        PlotSimple("2DLikelihoodscan",frame,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotLikelihood/", false, false, true);
+        // c.SaveAs(config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotLikelihood/pdf/2DLikelihoodscan.tex");
+        PlotSimple("2DLikelihoodscan",frame,label,config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotLikelihood/", false, false, true);
         return 1;
       }
       else if (calculate_significance || subsample_significance) {
@@ -1490,27 +1490,28 @@ int main(int argc, char * argv[]){
       fitting_args.Add((TObject*)(new RooCmdArg(SumW2Error(true))));
       fit_result = pdf->fitTo(*data,fitting_args);
     }
-    pdf->getParameters(*data)->writeToFile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+    pdf->getParameters(*data)->writeToFile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     fit_result->Print("v");
     doofit::fitter::easyfit::FitResultPrinter fitresultprinter(*fit_result);
     fitresultprinter.Print();
     fit_result->correlationMatrix().Print();
-    TFile   fitresultwritetofile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"recreate");
+    TFile   fitresultwritetofile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"recreate");
     fit_result->Write("fit_result");
     fitresultwritetofile.Close();
   }
   // Plots
-  pdf->getParameters(*data)->readFromFile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+  pdf->getParameters(*data)->readFromFile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
   if (plot_correlation_matrix) {
-    TFile fitresultfile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
+    TFile fitresultfile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
     RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
     doofit::plotting::correlations::CorrelationPlot cplot(*read_in_fit_result);
-    cplot.Plot("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotCorrelation");
+    cplot.Plot(config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotCorrelation");
   }
   if (plot_time_distribution) {
+    cout << "Plot Decay Time Distribution"  <<  endl;
     PlotConfig cfg_plot_time("cfg_plot_time");
     cfg_plot_time.set_plot_appendix(config.getString("identifier"));
-    cfg_plot_time.set_plot_directory("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotTime");
+    cfg_plot_time.set_plot_directory(config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotTime");
     cfg_plot_time.set_simultaneous_plot_all_slices(true);
     // cfg_plot_time.set_label_text("#splitline{LHCb 3fb^{-1}}{inoffiziell}");
     // cfg_plot_time.set_y_axis_label("Kandidaten");
@@ -1539,19 +1540,19 @@ int main(int argc, char * argv[]){
     Time.AddPlotArg(ProjWData(projargset,*data,true));
     Time.set_scaletype_x(kLinear);
     Time.set_scaletype_y(kLogarithmic);
-    // Time.PlotIt();
-    gROOT->SetStyle("Plain");
-    setStyle("LHCbOptimized");
-    TLatex label(0.7,0.35,"LHCb");
-    RooDataSet* data_sigandbkg = new RooDataSet("data_sigandbkg","data_sigandbkg",data,*(data->get()));
-    TH1* hist_sigandbkg = data_sigandbkg->createHistogram("hist_sigandbkg",obsTime);
-    RooPlot* plot = obsTime.frame();
-    // data_sigandbkg->plotOn(plot);
-    data->plotOn(plot);
-    // pdf->plotOn(plot,ProjWData(projargset,*data,true));
-    plot->SetMinimum(0.5);
-    plot->addTH1(hist_sigandbkg,"hist");
-    PlotSimple("obsTime_sigandbkg_"+config.getString("identifier"),plot,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotTime_SigandBkg",false);
+    Time.PlotIt();
+    // gROOT->SetStyle("Plain");
+    // setStyle("LHCbOptimized");
+    // TLatex label(0.7,0.35,"LHCb");
+    // RooDataSet* data_sigandbkg = new RooDataSet("data_sigandbkg","data_sigandbkg",data,*(data->get()));
+    // TH1* hist_sigandbkg = data_sigandbkg->createHistogram("hist_sigandbkg",obsTime);
+    // RooPlot* plot = obsTime.frame();
+    // // data_sigandbkg->plotOn(plot);
+    // data->plotOn(plot);
+    // // pdf->plotOn(plot,ProjWData(projargset,*data,true));
+    // plot->SetMinimum(0.5);
+    // plot->addTH1(hist_sigandbkg,"hist");
+    // PlotSimple("obsTime_sigandbkg_"+config.getString("identifier"),plot,label,config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotTime_SigandBkg",false);
   }
   if (plot_asymmetry) {
     RooFormulaVar     parSigOmegaMean("parSigOmegaMean","parSigOmegaMean","0.5*(@0+@1)",RooArgList(obsEta_B0,obsEta_B0bar));
@@ -1567,10 +1568,10 @@ int main(int argc, char * argv[]){
     RooSimultaneous   pdfSigTime_combined("pdfSigTime_combined","combined signal decay time PDF",catYear);
     pdfSigTime_combined.addPdf(pdfSigTime_11_combined,"2011");
     pdfSigTime_combined.addPdf(pdfSigTime_12_combined,"2012");
-    pdfSigTime_combined.getParameters(*data)->readFromFile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+    pdfSigTime_combined.getParameters(*data)->readFromFile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     data->addColumn(parSigOmegaMean);
     double sum_dilutionsquared(0);
-    for (int i = 0; i < data->numEntries(); ++i) {
+    for (auto i = 0; i < data->numEntries(); ++i) {
       data->get(i);
       sum_dilutionsquared += data->get()->getRealValue("SigWeight")*(1. - 2.*data->get()->getRealValue("parSigOmegaMean"));
     }
@@ -1611,12 +1612,12 @@ int main(int argc, char * argv[]){
       curve->Merge(curve_list);
       curve->SetLineColor(214);
       plot_frame->addPlotable(curve, "same");
-      PlotSimple("Asymmetry_TD",plot_frame,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotAsymmetry/");
+      PlotSimple("Asymmetry_TD",plot_frame,label,config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotAsymmetry/");
     }
     else {
-      int nbins = 100;
-      int nsteps = 100;
-      double nentries = data_asymmetryplot->numEntries();
+      const int nbins = 100;
+      const int nsteps = 100;
+      auto nentries = data_asymmetryplot->numEntries();
   
       RooArgSet norm_set_sig(*(pdfSigTime_combined.getObservables(*data)),"norm_set_sig");
       norm_set_sig.Print();
@@ -1645,37 +1646,37 @@ int main(int argc, char * argv[]){
       std::vector<double> y_vals(nsteps+1, 0);
       Progress p("Plot asymmetry", nsteps);
       for (int i = 0; i <= nsteps; i++){
-      obsTime.setVal(obs_value);
-      value_sig1 = 0.;
-      value_sig2 = 0.;
-      for (int j = 0; j < nentries; ++j) {
-        data_asymmetryplot->get(j);
-        weight = data_asymmetryplot->weight();
-        obsEta_B0.setVal(data_asymmetryplot->get(j)->getRealValue("obsEta_B0_combined"));
-        obsEta_B0bar.setVal(data_asymmetryplot->get(j)->getRealValue("obsEta_B0bar_combined"));
-        if (pereventresolution) obsTimeErr.setVal(data_asymmetryplot->get(j)->getRealValue("obsTimeErr"));
-        obsTag_combined.setIndex(1);
-        value_sig1 += weight*small_integral_sig->getVal();
-        obsTag_combined.setIndex(-1);
-        value_sig2 += weight*small_integral_sig->getVal();
-      }
-      curve->addPoint(obs_value, (value_sig2 - value_sig1)/(value_sig1 + value_sig2));
-      obs_value += increment;
-      ++p;
+        obsTime.setVal(obs_value);
+        value_sig1 = 0.;
+        value_sig2 = 0.;
+        for (auto j = 0; j < nentries; ++j) {
+          data_asymmetryplot->get(j);
+          weight = data_asymmetryplot->weight();
+          obsEta_B0.setVal(data_asymmetryplot->get(j)->getRealValue("obsEta_B0_combined"));
+          obsEta_B0bar.setVal(data_asymmetryplot->get(j)->getRealValue("obsEta_B0bar_combined"));
+          if (pereventresolution) obsTimeErr.setVal(data_asymmetryplot->get(j)->getRealValue("obsTimeErr"));
+          obsTag_combined.setIndex(1);
+          value_sig1 += weight*small_integral_sig->getVal();
+          obsTag_combined.setIndex(-1);
+          value_sig2 += weight*small_integral_sig->getVal();
+        }
+        curve->addPoint(obs_value, (value_sig2 - value_sig1)/(value_sig1 + value_sig2));
+        obs_value += increment;
+        ++p;
       }
       p.Finish();
       curve->SetLineColor(214);
       plot_frame->addPlotable(curve, "same");
-      PlotSimple("Asymmetry",plot_frame,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotAsymmetry/");
+      PlotSimple("Asymmetry",plot_frame,label,config.getString("plot_directory") + "/run/sin2betaFit_sFit/PlotAsymmetry/");
     }
   }
   if (plot_acceptance) {
-    TFile fitresultfile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
+    TFile fitresultfile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".root"),"read");
     RooFitResult* read_in_fit_result = dynamic_cast<RooFitResult*>(fitresultfile.Get("fit_result"));
-    pdf->getParameters(*data)->readFromFile(TString("/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
+    pdf->getParameters(*data)->readFromFile(TString(config.getString("plot_directory") + "/run/sin2betaFit_sFit/FitResults_"+config.getString("identifier")+".txt"));
     if (split_acceptance) {
-      PlotAcceptance(&accspline_Kpipi, read_in_fit_result, "_Kpipi");
-      PlotAcceptance(&accspline_KKpi, read_in_fit_result, "_KKpi");
+      PlotAcceptance(&accspline_Kpipi, read_in_fit_result, "_Kpipi", config.getString("plot_directory"));
+      PlotAcceptance(&accspline_KKpi, read_in_fit_result, "_KKpi", config.getString("plot_directory"));
     }
     else PlotAcceptance(&accspline, read_in_fit_result);
     fitresultfile.Close();
@@ -1707,7 +1708,7 @@ TMatrixDSym CreateCovarianceMatrix(const int size, RooRealVar* p0sigma, RooRealV
   return covariancematrix;
 }
 
-void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString identifier){
+void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString identifier, TString plot_directory){
 
   gROOT->SetStyle("Plain");
   setStyle("LHCb");
@@ -1723,7 +1724,7 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString id
   plot->SetMaximum(1.1);
   plot->GetYaxis()->SetTitle("acceptance");
   // plot->GetYaxis()->SetTitle("Akzeptanz");
-  PlotSimple("Acceptancespline"+identifier,plot,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotAcceptance",false,true);
+  PlotSimple("Acceptancespline"+identifier,plot,label,plot_directory + "/run/sin2betaFit_sFit/PlotAcceptance",false,true);
 
   plot = obsTime.frame();
   acceptance->plotOn(plot,VisualizeError(*fit_result,1),FillColor(kRed),FillStyle(3001),VLines());
@@ -1733,5 +1734,5 @@ void PlotAcceptance(RooAbsReal* acceptance, RooFitResult* fit_result, TString id
   plot->GetYaxis()->SetTitle("acceptance");
   // plot->GetYaxis()->SetTitle("Akzeptanz");
   plot->Draw();
-  PlotSimple("Acceptancespline_nolog"+identifier,plot,label,"/home/fmeier/lhcb-tank/b02dd/run/sin2betaFit_sFit/PlotAcceptance",false,false);
+  PlotSimple("Acceptancespline_nolog"+identifier,plot,label,plot_directory + "/run/sin2betaFit_sFit/PlotAcceptance",false,false);
 }
