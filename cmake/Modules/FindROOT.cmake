@@ -22,6 +22,8 @@ SET(ROOT_DEFINITIONS "")
 
 SET(ROOT_INSTALLED_VERSION_TOO_OLD FALSE)
 
+SET(ROOT_INSTALLED_VERSION_TOO_NEW FALSE)
+
 SET(ROOT_CONFIG_EXECUTABLE ROOT_CONFIG_EXECUTABLE-NOTFOUND)
 
 FIND_PROGRAM(ROOT_CONFIG_EXECUTABLE NAMES root-config PATHS
@@ -52,11 +54,20 @@ IF (ROOT_CONFIG_EXECUTABLE)
   IF (NOT ROOT_MIN_VERSION)
     SET(ROOT_MIN_VERSION "5.00/00")
   ENDIF (NOT ROOT_MIN_VERSION)
+
+  # from 6.08/00 on no backward compatibility for TMVA anymore
+  IF (NOT ROOT_MAX_VERSION)
+    SET(ROOT_MAX_VERSION "6.07/00")
+  ENDIF (NOT ROOT_MAX_VERSION)
    
   # now parse the parts of the user given version string into variables
   STRING(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+" "\\1" req_root_major_vers "${ROOT_MIN_VERSION}")
   STRING(REGEX REPLACE "^[0-9]+\\.([0-9][0-9])+\\/[0-9][0-9]+.*" "\\1" req_root_minor_vers "${ROOT_MIN_VERSION}")
   STRING(REGEX REPLACE "^[0-9]+\\.[0-9][0-9]+\\/([0-9][0-9]+)" "\\1" req_root_patch_vers "${ROOT_MIN_VERSION}")
+
+  STRING(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+" "\\1" max_root_major_vers "${ROOT_MAX_VERSION}")
+  STRING(REGEX REPLACE "^[0-9]+\\.([0-9][0-9])+\\/[0-9][0-9]+.*" "\\1" max_root_minor_vers "${ROOT_MAX_VERSION}")
+  STRING(REGEX REPLACE "^[0-9]+\\.[0-9][0-9]+\\/([0-9][0-9]+)" "\\1" max_root_patch_vers "${ROOT_MAX_VERSION}")
    
   # and now the version string given by qmake
   STRING(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+.*" "\\1" found_root_major_vers "${ROOTVERSION}")
@@ -69,6 +80,7 @@ IF (ROOT_CONFIG_EXECUTABLE)
 
   # compute an overall version number which can be compared at once
   MATH(EXPR req_vers "${req_root_major_vers}*10000 + ${req_root_minor_vers}*100 + ${req_root_patch_vers}")
+  MATH(EXPR max_vers "${max_root_major_vers}*10000 + ${max_root_minor_vers}*100 + ${max_root_patch_vers}")
   MATH(EXPR found_vers "${found_root_major_vers}*10000 + ${found_root_minor_vers}*100 + ${found_root_patch_vers}")
    
   IF (found_vers LESS req_vers)
@@ -77,6 +89,11 @@ IF (ROOT_CONFIG_EXECUTABLE)
   ELSE (found_vers LESS req_vers)
     SET(ROOT_FOUND TRUE)
   ENDIF (found_vers LESS req_vers)
+
+  IF (max_vers LESS found_vers)
+    MESSAGE("Current ROOT version \"${ROOTVERSION}\" is newer than 6.07/00, TMVA works differently now")
+    SET(ROOT_INSTALLED_VERSION_TOO_NEW TRUE)
+  ENDIF (max_vers LESS found_vers)
 
 ENDIF (ROOT_CONFIG_EXECUTABLE)
 
@@ -121,7 +138,7 @@ IF (ROOT_FOUND)
 #  REMOVE_FROM_LIST(root_flags "${root_libs_all}" "${root_library}")
 
   SET(ROOT_LIBRARIES ${root_flags})
-  SET(ROOFIT_LIBRARIES "-lRooFit -lRooFitCore -lRooStats -lHtml -lMinuit -lThread -lFoam -lMathMore -lTMVA -lMLP")
+  SET(ROOFIT_LIBRARIES "-lRooFit -lRooFitCore -lRooStats -lHtml -lMinuit -lThread -lFoam -lMatrix -lMathMore")
 
   # Make variables changeble to the advanced user
   MARK_AS_ADVANCED( ROOT_LIBRARY_DIR ROOT_INCLUDE_DIR ROOT_DEFINITIONS)
@@ -279,7 +296,7 @@ ENDMACRO (GENERATE_ROOT_TEST_SCRIPT)
 # other arguments are the header files of the classes that need a dictionary.
 #
 
-macro (root_generate_dictionaries)
+macro (root_generate_dictionaries_local)
 
   set (_INHEADERS ${ARGV})
   list (GET _INHEADERS 0 _FINALDICT)
@@ -293,23 +310,27 @@ macro (root_generate_dictionaries)
     set (_OUTTARGET ${_CLASS_BASE_NAME}_TARGET)
     set (_OUTDICT_HEADER ${_CLASS_BASE_NAME}_dict.h)
     set (_INHEADER_LINKDEF ${_CLASS_BASE_NAME}_LinkDef.h)
+    set (_OUTPCMDICT ${_CLASS_BASE_NAME}_dict_rdict.pcm)
+    get_property(inc_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER_LINKDEF})
       add_custom_command (
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_OUTCOMP} ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT_HEADER}
         #COMMAND LD_LIBRARY_PATH=${Root_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOTSYS}/bin/rootcint -f ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} -c -I${Root_INCDIR} -p ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER_LINKDEF}
-        COMMAND LD_LIBRARY_PATH=${Root_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules/rootcint_handler.py ${ROOTSYS}/bin/rootcint ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER_LINKDEF}
+        COMMAND LD_LIBRARY_PATH=${Root_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules/rootcint_handler.py ${ROOTSYS}/bin/rootcint ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER_LINKDEF} ${inc_dirs}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}
         IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${_OUTPCMDICT} $ENV{DOOFITSYS}/lib
         COMMENT "Generating dictionary for class ${_CLASS_BASE_NAME} with LinkDef ${_INHEADER_LINKDEF}"
       )
     else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER_LINKDEF})
       add_custom_command (
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_OUTCOMP} ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT_HEADER}
         #COMMAND LD_LIBRARY_PATH=${Root_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOTSYS}/bin/rootcint -f ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} -c -I${Root_INCDIR} -p ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}
-        COMMAND LD_LIBRARY_PATH=${Root_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules/rootcint_handler.py ${ROOTSYS}/bin/rootcint ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}
+        COMMAND LD_LIBRARY_PATH=${Root_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules/rootcint_handler.py ${ROOTSYS}/bin/rootcint ${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}  ${inc_dirs}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}
         IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${_OUTPCMDICT} $ENV{DOOFITSYS}/lib
         COMMENT "Generating dictionary for class ${_CLASS_BASE_NAME}"
       )
     endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_INHEADER_LINKDEF})
@@ -320,7 +341,7 @@ macro (root_generate_dictionaries)
   endforeach ()
 
   # This command adds at once the dictionaries to a single static library
-  add_library(${_FINALDICT} ${_ROOT_DICTS})
+  #add_library(${_FINALDICT} SHARED ${_ROOT_DICTS}) # Prevent an isolated library for the dictionary => commented out
 
   # make sure library depends on rootcint output (otherwise multi-core builds will fail)
   foreach (_INHEADER ${_INHEADERS})
@@ -333,9 +354,8 @@ macro (root_generate_dictionaries)
     SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT} PROPERTIES GENERATED 1)
     SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/${_OUTCOMP} PROPERTIES GENERATED 1)
     SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/${_OUTDICT_HEADER} PROPERTIES GENERATED 1)
-    add_dependencies(${_FINALDICT} ${_OUTTARGET})
+    #add_dependencies(${_FINALDICT} ${_OUTTARGET}) # As no library is built, this needed to be commented out. Transfer to your local CMakeLists.txt
   endforeach ()
 
   set(${_FINALDICT} "${_ROOT_DICTS}")
 endmacro ()
-

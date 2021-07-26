@@ -1,0 +1,41 @@
+parSigTimeC		      		  =  0  L(-1 - 1) 
+parSigEtaDeltaG    	  		  =  0.000 C
+parSigTimeDeltaM   	  		  =  0.510 L(0.4 - 0.6) 
+parSigTimeDeltaMMean  		  =  0.510 C
+parSigTimeDeltaMSigma 		  =  0.004 C
+parSigTimeSin2b       		  =  0.7  L(0 - 1) 
+parSigTimeTau         		  =  1.520 L(1.4 - 1.6) 
+parSigTimeTauMean     		  =  1.519 C
+parSigTimeTauSigma    		  =  0.005 C
+
+parResMean			  		  =  0.000 C
+parResCorrectionOffset1		  =  0.000 C
+parResCorrectionOffset2		  =  0.000 C
+parResSigmaCorrectionFactor1  =  1.000 C
+parResSigmaCorrectionFactor2  =  1.000 C
+parResFraction2				  =  0.500 C
+
+// parSigTimeAccCSpline1 =  0.63  L(0 - 2)
+// parSigTimeAccCSpline2 =  0.84  L(0 - 2)
+// parSigTimeAccCSpline3 =  0.9   L(0 - 2)
+// parSigTimeAccCSpline4 =  0.9   C L(0 - 2)
+
+parSigTimeAccCSpline1 =  0.73 L(0 - 2)
+parSigTimeAccCSpline2 =  0.8  L(0 - 2)
+parSigTimeAccCSpline3 =  0.9  L(0 - 2)
+parSigTimeAccCSpline4 =  0.99 L(0 - 2)
+parSigTimeAccCSpline5 =  1    C L(0 - 2)
+parSigTimeAccCSpline6 =  0.99 L(0 - 2)
+
+parSigEtaDeltaP0_OS 		=  0.0 C L(0 - 0.03) 
+parSigEtaDeltaP0_SS 		=  0.0 C L(-0.02 - 0.02) 
+parSigEtaDeltaP1_OS 		=  0.0 C L(0 - 0.1) 
+parSigEtaDeltaP1_SS 		=  0.0 C L(-0.7 - 0.3) 
+parSigEtaDeltaProdOffset 	=  0.0 C L(-0.01 - 0.01) 
+parSigEtaDeltaProd_11 		=  0.0 C L(-0.05 - 0.02) 
+parSigEtaMean_OS 			=  0.3576 C L(-INF - +INF) 
+parSigEtaMean_SS 			=  0.4293 C L(-INF - +INF) 
+parSigEtaP0_OS 				=  0.348  C L(0 - 0.4) 
+parSigEtaP0_SS 				=  0.4339 C L(0.3 - 0.5) 
+parSigEtaP1_OS 				=  0.89   C L(0.8 - 1.1) 
+parSigEtaP1_SS 				=  0.98   C L(0.7 - 1.1) 

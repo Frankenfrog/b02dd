@@ -1,0 +1,27 @@
+# Executables
+add_executable(B02DDVariablesGrimReaper B02DDVariablesGrimReaper.cpp)
+add_executable(B02DDWSVariablesGrimReaper B02DDWSVariablesGrimReaper.cpp)
+add_executable(B02DDFlavourTaggingGrimReaper B02DDFlavourTaggingGrimReaper.cpp)
+add_executable(B02DDFlavourTaggingCombinationGrimReaper B02DDFlavourTaggingCombinationGrimReaper.cpp)
+add_executable(FTSystematicsReducer FTSystematicsReducer.cpp)
+add_executable(RemoveDsDConstrainBranchesGrimReaper RemoveDsDConstrainBranchesGrimReaper.cpp)
+add_executable(InvertBDTGrimReaper InvertBDTGrimReaper.cpp)
+add_executable(B02DDPIDReweightingGrimReaper B02DDPIDReweightingGrimReaper.cpp)
+
+# Linker information
+target_link_libraries(B02DDVariablesGrimReaper dsReducer ${ALL_LIBRARIES})
+target_link_libraries(B02DDWSVariablesGrimReaper dsReducer ${ALL_LIBRARIES})
+target_link_libraries(B02DDFlavourTaggingGrimReaper dsReducer ${ALL_LIBRARIES})
+target_link_libraries(B02DDFlavourTaggingCombinationGrimReaper dsReducer ${ALL_LIBRARIES})
+target_link_libraries(FTSystematicsReducer dsReducer ${ALL_LIBRARIES})
+target_link_libraries(RemoveDsDConstrainBranchesGrimReaper dsReducer ${ALL_LIBRARIES})
+target_link_libraries(InvertBDTGrimReaper dsReducer ${ALL_LIBRARIES})
+target_link_libraries(B02DDPIDReweightingGrimReaper dsReducer ${ALL_LIBRARIES})
+
+install(TARGETS B02DDVariablesGrimReaper DESTINATION bin)
+install(TARGETS B02DDWSVariablesGrimReaper DESTINATION bin)
+install(TARGETS B02DDFlavourTaggingGrimReaper DESTINATION bin)
+install(TARGETS B02DDFlavourTaggingCombinationGrimReaper DESTINATION bin)
+install(TARGETS RemoveDsDConstrainBranchesGrimReaper DESTINATION bin)
+install(TARGETS InvertBDTGrimReaper DESTINATION bin)
+install(TARGETS B02DDPIDReweightingGrimReaper DESTINATION bin)

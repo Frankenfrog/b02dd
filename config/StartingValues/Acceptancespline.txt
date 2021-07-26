@@ -1,0 +1,11 @@
+parSigTimeAccCSpline1_1 =  0.7 L(0 - 2) 
+parSigTimeAccCSpline1_2 =  0.9 L(0 - 2) 
+parSigTimeAccCSpline1_3 =  1 C
+parSigTimeAccCSpline1_4 =  0.99 L(0 - 2) 
+parSigTimeTau1 =  1.5193  L(1 - 2) 
+
+parSigTimeAccCSpline2_1 =  0.7 L(0 - 2) 
+parSigTimeAccCSpline2_2 =  0.9 L(0 - 2) 
+parSigTimeAccCSpline2_3 =  1 C
+parSigTimeAccCSpline2_4 =  0.99 L(0 - 2) 
+parSigTimeTau2 =  1.5193  L(1 - 2) 

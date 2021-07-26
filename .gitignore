@@ -5,3 +5,5 @@ run*
 debug*
 config/config*
 python/python*
+*.pyc
+*.pdf

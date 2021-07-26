@@ -1,0 +1,64 @@
+parBkgExponent       = -0.00375 C L(-0.1 - 0.1)
+parBkgExponent_KKpi  = -0.004   L(-0.1 - 0.1)
+parBkgExponent_Kpipi = -0.006   L(-0.1 - 0.1)
+
+parSigMassCB1Alpha    =  1.18     C L(-INF - +INF)
+parSigMassCB1Expo     =  10.0     C L(-INF - +INF)
+parSigMassCB2Alpha    = -1.46     C L(-INF - +INF)
+parSigMassCB2Expo     =  10.0     C L(-INF - +INF)
+parSigMassCB3Alpha    =  0.12     C L(-INF - +INF)
+parSigMassCB3Expo     =  10.0     C L(-INF - +INF)
+parSigMassCBFraction  =  0.48     C L(0 - 1)
+parSigMassCBFraction2 =  0.0098   C L(0 - 1)
+parSigMassMean        =  5279.3   C L(5270 - 5290) // [MeV/c^{2}]
+parSigMassSigma1      =  8.5      C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigma2      =  9.0      C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigma3      =  16       C L(1 - 30) // [MeV/c^{2}]
+parSigMassSigmaScale  =  1.82     C L(0 - 2)
+
+parBkgDsDMassCB1Alpha   =  0.60   C L(0.01 - 2)
+parBkgDsDMassCB1Expo    =  10     C L(1 - 100)
+parBkgDsDMassCB2Alpha   = -1.8    C L(-5 - -0.1)
+parBkgDsDMassCB2Expo    =  10     C L(1 - 100)
+parBkgDsDMassCBFraction =  0.78   C L(0 - 1)
+parBkgDsDMean           =  5218   C L(5200 - 5230) // [MeV/c^{2}]
+parBkgDsDMassSigma1     =  18.9   C L(5 - 100) // [MeV/c^{2}]
+parBkgDsDMassSigma2     =  24     C L(5 - 100) // [MeV/c^{2}]
+
+parBkgBsDsDYield     =  0      C L(0 - 1000)
+parBkgDsDYield       =  1      L(-100 - 5000)
+parBkgYield          =  100    L(0 - 100000)
+parSigBsYield        =  10     L(-100 - 2000)
+parSigYield          =  10     L(-100 - 2000)
+
+parBkgBsDsDYield_11     =  0     L(0 - 1000)
+parBkgBsDsDYield_12     =  0     L(0 - 1000)
+parBkgDsDYield_11       =  275   L(0 - 5000)
+parBkgDsDYield_12       =  775   L(0 - 5000)
+parBkgYield_11          =  6000  L(0 - 50000)
+parBkgYield_12          =  15000 L(0 - 60000)
+parSigBsYield_11        =  100   L(0 - 2000)
+parSigBsYield_12        =  250   L(0 - 2000)
+parSigYield_11          =  400   L(0 - 2000)
+parSigYield_12          =  950   L(0 - 5000)
+
+parBkgDsDYield_11_KKpi    =  150  L(0 - 2000)
+parBkgDsDYield_11_Kpipi   =  300  L(0 - 2000)
+parBkgDsDYield_12_KKpi    =  300  L(0 - 2000)
+parBkgDsDYield_12_Kpipi   =  750  L(0 - 3000)
+parBkgYield_11_KKpi       =  700  L(0 - 100000)
+parBkgYield_11_Kpipi      =  1000 L(0 - 100000)
+parBkgYield_12_KKpi       =  1500 L(0 - 100000)
+parBkgYield_12_Kpipi      =  1800 L(0 - 100000)
+parSigBsYield_11_KKpi     =  15   L(0 - 1000)
+parSigBsYield_11_Kpipi    =  100  L(0 - 1000)
+parSigBsYield_12_KKpi     =  25   L(0 - 1000)
+parSigBsYield_12_Kpipi    =  200  L(0 - 1000)
+parSigYield_11_KKpi       =  70   L(0 - 1000)
+parSigYield_11_Kpipi      =  350  L(0 - 1000)
+parSigYield_12_KKpi       =  150  L(0 - 1000)
+parSigYield_12_Kpipi      =  900  L(0 - 2000)
+parBkgBsDsDYield_11_KKpi  =    1  L(0 - 2000)
+parBkgBsDsDYield_11_Kpipi =    4  L(0 - 2000)
+parBkgBsDsDYield_12_KKpi  =    2  L(0 - 2000)
+parBkgBsDsDYield_12_Kpipi =   11  L(0 - 2000)
